@@ -1,0 +1,13 @@
+{
+  "name": "sapphire",
+  "version": "1.0.0",
+  "description": "SAP 전문 인력과 기업을 연결, AI 기반 평가 및 매칭을 제공하는 채용 플랫폼",
+  "scripts": {
+    "client": "npm run dev --prefix apps/client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yyoungD/SAPPhire.git"
+  },
+  "license": "ISC"
+}
