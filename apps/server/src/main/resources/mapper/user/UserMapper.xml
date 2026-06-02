@@ -71,4 +71,31 @@
             #{role}
         )
     </insert>
+
+    <insert id="insertOAuthUser" parameterType="com.sapphire.domain.user.dto.User"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO users (
+            email,
+            name,
+            role,
+            oauth_provider,
+            oauth_id
+        )
+        VALUES (
+            #{email},
+            #{name},
+            #{role},
+            #{oauthProvider},
+            #{oauthId}
+        )
+    </insert>
+
+    <update id="updateOAuthInfo" parameterType="com.sapphire.domain.user.dto.User">
+        UPDATE users
+        SET oauth_provider = #{oauthProvider},
+            oauth_id = #{oauthId},
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
 </mapper>

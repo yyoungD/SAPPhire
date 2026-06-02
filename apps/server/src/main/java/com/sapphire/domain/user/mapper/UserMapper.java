@@ -13,4 +13,8 @@ public interface UserMapper {
     User findById(@Param("id") Long id);
 
     void insert(User user);
+
+    void insertOAuthUser(User user);
+
+    void updateOAuthInfo(User user);
 }

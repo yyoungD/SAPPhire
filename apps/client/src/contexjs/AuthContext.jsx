@@ -25,6 +25,12 @@ export function AuthProvider({ children }) {
         localStorage.setItem('sapphire.user', JSON.stringify(data.user));
         return data;
       },
+      completeOAuthLogin: (data) => {
+        authApi.completeOAuthLogin(data);
+        setUser(data.user);
+        localStorage.setItem('sapphire.user', JSON.stringify(data.user));
+        return data;
+      },
       signup: authApi.signup,
       logout: async () => {
         await authApi.logout();

@@ -1,5 +1,7 @@
-import { API_PATHS } from '../constanjs/apiPaths.js';
+import { API_BASE_URL, API_PATHS } from '../constanjs/apiPaths.js';
 import { apiClient, clearTokens, getRefreshToken, setTokens } from './apiClient.js';
+
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export const authApi = {
   signup: ({ email, password, name, phone = '', role, consents = [] }) =>
@@ -13,6 +15,15 @@ export const authApi = {
       method: 'POST',
       body: { email, password },
     });
+    setTokens(data);
+    return data;
+  },
+
+  startGoogleLogin: () => {
+    window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
+  },
+
+  completeOAuthLogin: (data) => {
     setTokens(data);
     return data;
   },

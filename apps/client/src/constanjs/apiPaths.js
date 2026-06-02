@@ -6,6 +6,7 @@ export const API_PATHS = {
     login: '/api/v1/auth/login',
     logout: '/api/v1/auth/logout',
     reissue: '/api/v1/auth/reissue',
+    googleOAuth: '/oauth2/authorization/google',
   },
   users: '/api/v1/users',
   consents: '/api/v1/consents',

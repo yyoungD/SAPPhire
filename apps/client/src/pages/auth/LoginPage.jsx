@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { authApi } from '../../api/authApi.js';
 import { ROUTES } from '../../constanjs/routes.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { navigate, roleHome } from '../../utils/authUtils.js';
@@ -11,7 +12,7 @@ const eyeIconUrl = new URL('../../assejs/images/container19.svg', import.meta.ur
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [role, setRole] = useState('USER');
+  const [role, setRole] = useState('PERSONAL');
   const [form, setForm] = useState({ email: '', password: '', keepSignedIn: false });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
@@ -52,18 +53,18 @@ export default function LoginPage() {
         <section className="signup-brand" style={{ '--brand-bg': `url(${bgUrl})` }}>
           <div>
             <h1>SAPPhire</h1>
-            <p>SAP 에코시스템의 정점에 서십시오. 엘리트 기술 전문가와 글로벌 리더를 잇는 정교한 매칭 시스템.</p>
+            <p>SAP 전문 인재와 기업을 연결하는 채용 플랫폼입니다.</p>
           </div>
           <aside>
             <strong>AI INSIGHT</strong>
-            <p>현재 Sapphire 네트워크에서는 고성능 S/4HANA 컨설턴트에 대한 수요가 지난 분기 대비 24% 증가했습니다.</p>
+            <p>SAP 역량과 채용 데이터를 바탕으로 더 정확한 매칭을 지원합니다.</p>
           </aside>
         </section>
         <section className="login-card">
           <h2>로그인</h2>
           <p>Sapphire SAP Recruitment Portal</p>
           <div className="role-tabs" role="tablist" aria-label="회원 유형">
-            <button type="button" className={role === 'USER' ? 'active' : ''} onClick={() => setRole('USER')}>
+            <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => setRole('PERSONAL')}>
               개인회원
             </button>
             <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => setRole('COMPANY')}>
@@ -112,7 +113,7 @@ export default function LoginPage() {
           <div className="divider">
             <span />또는<span />
           </div>
-          <button type="button" className="social-button">
+          <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
             Google 계정으로 계속하기
           </button>
           <button type="button" className="link-button" onClick={() => navigate(ROUTES.SIGNUP)}>

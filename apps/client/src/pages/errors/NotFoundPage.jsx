@@ -4,7 +4,7 @@
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>페이지를 찾을 수 없습니다</h1>
-        <p>백엔드 엔드포인트가 추가되면 이 화면에서 해당 API 모듈을 연결하면 됩니다.</p>
+        <p>요청한 프론트 경로가 등록되어 있지 않습니다.</p>
       </section>
     </main>
   );
