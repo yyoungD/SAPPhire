@@ -1,6 +1,7 @@
 package com.sapphire.domain.auth.service;
 
 import com.sapphire.domain.auth.domain.RefreshToken;
+import com.sapphire.domain.auth.dto.AdminLoginRequest;
 import com.sapphire.domain.auth.dto.LoginRequest;
 import com.sapphire.domain.auth.dto.LoginResponse;
 import com.sapphire.domain.auth.dto.OAuthSignupRequest;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 public class AuthServiceImpl implements AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private static final Set<String> ALLOWED_ROLES = Set.of("PERSONAL", "COMPANY");
+    private static final String ADMIN_LOGIN_ID = "admin";
+    private static final String ADMIN_EMAIL = "admin@sapphire.local";
 
     private final UserMapper userMapper;
     private final PersonalProfileMapper personalProfileMapper;
@@ -119,8 +122,26 @@ public class AuthServiceImpl implements AuthService {
         log.debug("로그인 요청 시작. email={}", email);
 
         User user = userMapper.findByEmail(email);
-        if (user == null || user.getPasswordHash() == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            log.warn("로그인 실패: 이메일 또는 비밀번호가 올바르지 않습니다. email={}", email);
+        return authenticate(user, request.password(), false);
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse adminLogin(AdminLoginRequest request) {
+        String loginId = request.loginId().trim();
+        if (!ADMIN_LOGIN_ID.equals(loginId)) {
+            throw new CustomException(ErrorCode.INVALID_LOGIN);
+        }
+
+        User user = userMapper.findByEmail(ADMIN_EMAIL);
+        return authenticate(user, request.password(), true);
+    }
+
+    private LoginResponse authenticate(User user, String password, boolean adminOnly) {
+        if (user == null || user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new CustomException(ErrorCode.INVALID_LOGIN);
+        }
+        if (adminOnly && !"ADMIN".equals(user.getRole())) {
             throw new CustomException(ErrorCode.INVALID_LOGIN);
         }
         validateActiveUser(user);
@@ -128,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshTokenValue = jwtTokenProvider.createRefreshToken(user);
         saveRefreshToken(user.getId(), refreshTokenValue);
-        log.info("로그인 성공. userId={}, email={}, role={}", user.getId(), user.getEmail(), user.getRole());
+        log.info("Login success. userId={}, email={}, role={}", user.getId(), user.getEmail(), user.getRole());
 
         return new LoginResponse(
                 accessToken,
