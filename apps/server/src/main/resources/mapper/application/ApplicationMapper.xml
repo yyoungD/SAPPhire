@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.application.mapper.ApplicationMapper">
+    <select id="existsOpenJob" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM job_posts
+            WHERE id = #{jobPostId}
+              AND status = 'OPEN'
+              AND deleted_at IS NULL
+        )
+    </select>
+
+    <select id="existsMyResume" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM resumes r
+            JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+            WHERE r.id = #{resumeId}
+              AND pp.user_id = #{userId}
+              AND r.deleted_at IS NULL
+        )
+    </select>
+
+    <select id="existsActiveApplication" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM job_applications
+            WHERE user_id = #{userId}
+              AND job_post_id = #{jobPostId}
+              AND status != 'WITHDRAWN'
+        )
+    </select>
+
+    <insert id="insert" parameterType="com.sapphire.domain.application.dto.ApplicationCreateParam"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO job_applications (
+            job_post_id,
+            resume_id,
+            user_id,
+            cover_letter,
+            status
+        )
+        VALUES (
+            #{jobPostId},
+            #{resumeId},
+            #{userId},
+            #{coverLetter},
+            'SUBMITTED'
+        )
+    </insert>
+
+    <insert id="insertStatusLog">
+        INSERT INTO application_status_logs (
+            application_id,
+            previous_status,
+            new_status,
+            memo,
+            changed_by_user_id
+        )
+        VALUES (
+            #{applicationId},
+            NULL,
+            'SUBMITTED',
+            'Application submitted',
+            #{userId}
+        )
+    </insert>
+
+    <insert id="insertAttachments">
+        INSERT INTO job_application_attachments (
+            application_id,
+            file_id
+        )
+        SELECT
+            #{applicationId},
+            f.id
+        FROM files f
+        WHERE f.uploader_user_id = #{userId}
+          AND f.file_category = 'ATTACHMENT'
+          AND f.id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+        ON CONFLICT (application_id, file_id) DO NOTHING
+    </insert>
+
+    <sql id="applicationListColumns">
+        ja.id,
+        ja.job_post_id,
+        ja.resume_id,
+        jp.title AS job_title,
+        cp.company_name,
+        u.name AS applicant_name,
+        r.title AS resume_title,
+        ja.status,
+        ja.applied_at,
+        ja.updated_at
+    </sql>
+
+    <select id="findMyApplications" resultType="com.sapphire.domain.application.dto.ApplicationListRow">
+        SELECT
+            <include refid="applicationListColumns" />
+        FROM job_applications ja
+        JOIN job_posts jp ON jp.id = ja.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        JOIN users u ON u.id = ja.user_id
+        JOIN resumes r ON r.id = ja.resume_id
+        WHERE ja.user_id = #{userId}
+        ORDER BY ja.applied_at DESC, ja.id DESC
+    </select>
+
+    <select id="findCompanyApplications" resultType="com.sapphire.domain.application.dto.ApplicationListRow">
+        SELECT
+            <include refid="applicationListColumns" />
+        FROM job_applications ja
+        JOIN job_posts jp ON jp.id = ja.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        JOIN users u ON u.id = ja.user_id
+        JOIN resumes r ON r.id = ja.resume_id
+        WHERE cp.user_id = #{userId}
+        ORDER BY ja.applied_at DESC, ja.id DESC
+    </select>
+
+    <sql id="applicationDetailColumns">
+        <include refid="applicationListColumns" />,
+        ja.cover_letter,
+        jp.location AS job_location,
+        jp.employment_type,
+        jp.work_type
+    </sql>
+
+    <select id="findMyApplicationDetail" resultType="com.sapphire.domain.application.dto.ApplicationDetailRow">
+        SELECT
+            <include refid="applicationDetailColumns" />
+        FROM job_applications ja
+        JOIN job_posts jp ON jp.id = ja.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        JOIN users u ON u.id = ja.user_id
+        JOIN resumes r ON r.id = ja.resume_id
+        WHERE ja.user_id = #{userId}
+          AND ja.id = #{id}
+    </select>
+
+    <select id="findCompanyApplicationDetail" resultType="com.sapphire.domain.application.dto.ApplicationDetailRow">
+        SELECT
+            <include refid="applicationDetailColumns" />
+        FROM job_applications ja
+        JOIN job_posts jp ON jp.id = ja.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        JOIN users u ON u.id = ja.user_id
+        JOIN resumes r ON r.id = ja.resume_id
+        WHERE cp.user_id = #{userId}
+          AND ja.id = #{id}
+    </select>
+</mapper>

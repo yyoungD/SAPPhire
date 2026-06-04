@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.resume.mapper.ResumeMapper">
+    <select id="findPersonalProfileIdByUserId" resultType="long">
+        SELECT id
+        FROM personal_profiles
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="clearPrimary">
+        UPDATE resumes
+        SET is_primary = FALSE,
+            updated_at = NOW()
+        WHERE personal_profile_id = #{personalProfileId}
+          AND deleted_at IS NULL
+    </update>
+
+    <insert id="insert" parameterType="com.sapphire.domain.resume.dto.ResumeCreateParam"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO resumes (
+            personal_profile_id,
+            title,
+            summary,
+            visibility,
+            is_primary,
+            resume_file_id
+        )
+        VALUES (
+            #{personalProfileId},
+            #{title},
+            #{summary},
+            #{visibility},
+            #{primary},
+            #{resumeFileId}
+        )
+    </insert>
+
+    <select id="findMyResumes" resultType="com.sapphire.domain.resume.dto.ResumeListRow">
+        SELECT
+            r.id,
+            r.title,
+            r.summary,
+            r.visibility,
+            r.is_primary,
+            r.updated_at,
+            latest_ai.overall_score AS ai_score,
+            COALESCE(skills.tags_csv, '') AS tags_csv,
+            items.module_score,
+            items.integration_score,
+            latest_ai.summary AS ai_summary,
+            COALESCE(items.suggestion_comments, '') AS suggestion_comments
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        LEFT JOIN LATERAL (
+            SELECT
+                ae.id,
+                ae.overall_score,
+                ae.summary
+            FROM ai_evaluations ae
+            WHERE ae.resume_id = r.id
+            ORDER BY ae.created_at DESC, ae.id DESC
+            LIMIT 1
+        ) latest_ai ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%module%' OR LOWER(aei.category) LIKE '%tech%' THEN aei.score
+                END) AS module_score,
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%integration%' OR LOWER(aei.category) LIKE '%fico%' THEN aei.score
+                END) AS integration_score,
+                STRING_AGG(aei.comment, '||' ORDER BY aei.id) FILTER (WHERE aei.comment IS NOT NULL AND aei.comment != '') AS suggestion_comments
+            FROM ai_evaluation_items aei
+            WHERE aei.ai_evaluation_id = latest_ai.id
+        ) items ON TRUE
+        LEFT JOIN (
+            SELECT
+                rss.resume_id,
+                STRING_AGG(ss.name, ',' ORDER BY rss.is_primary DESC, rss.id) AS tags_csv
+            FROM resume_sap_skills rss
+            JOIN sap_skills ss ON ss.id = rss.sap_skill_id
+            GROUP BY rss.resume_id
+        ) skills ON skills.resume_id = r.id
+        WHERE pp.user_id = #{userId}
+          AND r.deleted_at IS NULL
+        ORDER BY r.is_primary DESC, r.updated_at DESC, r.id DESC
+    </select>
+
+    <select id="findMyResumeDetail" resultType="com.sapphire.domain.resume.dto.ResumeDetailRow">
+        SELECT
+            r.id,
+            r.title,
+            r.summary,
+            r.visibility,
+            r.is_primary,
+            r.created_at,
+            r.updated_at,
+            latest_ai.overall_score AS ai_score,
+            latest_ai.summary AS ai_summary,
+            items.module_score,
+            items.integration_score,
+            COALESCE(items.suggestion_comments, '') AS suggestion_comments,
+            f.original_name AS original_file_name
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        LEFT JOIN files f ON f.id = r.resume_file_id
+        LEFT JOIN LATERAL (
+            SELECT
+                ae.id,
+                ae.overall_score,
+                ae.summary
+            FROM ai_evaluations ae
+            WHERE ae.resume_id = r.id
+            ORDER BY ae.created_at DESC, ae.id DESC
+            LIMIT 1
+        ) latest_ai ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%module%' OR LOWER(aei.category) LIKE '%tech%' THEN aei.score
+                END) AS module_score,
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%integration%' OR LOWER(aei.category) LIKE '%fico%' THEN aei.score
+                END) AS integration_score,
+                STRING_AGG(aei.comment, '||' ORDER BY aei.id) FILTER (WHERE aei.comment IS NOT NULL AND aei.comment != '') AS suggestion_comments
+            FROM ai_evaluation_items aei
+            WHERE aei.ai_evaluation_id = latest_ai.id
+        ) items ON TRUE
+        WHERE pp.user_id = #{userId}
+          AND r.id = #{resumeId}
+          AND r.deleted_at IS NULL
+    </select>
+
+    <select id="findResumeSkills" resultType="com.sapphire.domain.resume.dto.ResumeSkillRow">
+        SELECT
+            rss.id,
+            ss.code,
+            ss.name,
+            ss.skill_type,
+            rss.proficiency_level,
+            rss.years_of_experience,
+            rss.is_primary AS primary
+        FROM resume_sap_skills rss
+        JOIN sap_skills ss ON ss.id = rss.sap_skill_id
+        WHERE rss.resume_id = #{resumeId}
+        ORDER BY rss.is_primary DESC, rss.id
+    </select>
+
+    <select id="findResumeExperiences" resultType="com.sapphire.domain.resume.dto.ResumeExperienceRow">
+        SELECT
+            id,
+            company_name,
+            project_name,
+            position,
+            role,
+            project_type,
+            industry,
+            start_date,
+            end_date,
+            is_current AS "current",
+            description
+        FROM resume_experiences
+        WHERE resume_id = #{resumeId}
+        ORDER BY start_date DESC NULLS LAST, id DESC
+    </select>
+</mapper>
