@@ -39,17 +39,6 @@ import PositionOfferListPage from '../pages/company/positionOffers/PositionOffer
 import PositionOfferCreatePage from '../pages/company/positionOffers/PositionOfferCreatePage.jsx';
 import PositionOfferDetailPage from '../pages/company/positionOffers/PositionOfferDetailPage.jsx';
 import ProfileReviewCreatePage from '../pages/company/reviews/ProfileReviewCreatePage.jsx';
-import AdminLoginPage from '../pages/admin/AdminLoginPage.jsx';
-import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
-import AdminUserManagePage from '../pages/admin/users/AdminUserManagePage.jsx';
-import AdminUserDetailPage from '../pages/admin/users/AdminUserDetailPage.jsx';
-import AdminCompanyManagePage from '../pages/admin/companies/AdminCompanyManagePage.jsx';
-import AdminCompanyDetailPage from '../pages/admin/companies/AdminCompanyDetailPage.jsx';
-import AdminJobManagePage from '../pages/admin/jobs/AdminJobManagePage.jsx';
-import AdminJobDetailPage from '../pages/admin/jobs/AdminJobDetailPage.jsx';
-import AdminApplicationManagePage from '../pages/admin/applications/AdminApplicationManagePage.jsx';
-import AdminPositionOfferManagePage from '../pages/admin/positionOffers/AdminPositionOfferManagePage.jsx';
-import AdminReportManagePage from '../pages/admin/reporjs/AdminReportManagePage.jsx';
 import NotFoundPage from '../pages/errors/NotFoundPage.jsx';
 import SiteFooter from '../componenjs/layout/SiteFooter.jsx';
 
@@ -119,19 +108,8 @@ export default function AppRouter() {
       [ROUTES.POSITION_OFFER_CREATE]: guarded(PositionOfferCreatePage, ['COMPANY']),
       [ROUTES.POSITION_OFFER_DETAIL]: guarded(PositionOfferDetailPage, ['COMPANY']),
       [ROUTES.PROFILE_REVIEW_CREATE]: guarded(ProfileReviewCreatePage, ['COMPANY']),
-      [ROUTES.ADMIN_LOGIN]: <AdminLoginPage />,
-      [ROUTES.ADMIN_DASHBOARD]: guarded(AdminDashboardPage, ['ADMIN']),
-      [ROUTES.ADMIN_USERS]: guarded(AdminUserManagePage, ['ADMIN']),
-      [ROUTES.ADMIN_USER_DETAIL]: guarded(AdminUserDetailPage, ['ADMIN']),
-      [ROUTES.ADMIN_COMPANIES]: guarded(AdminCompanyManagePage, ['ADMIN']),
-      [ROUTES.ADMIN_COMPANY_DETAIL]: guarded(AdminCompanyDetailPage, ['ADMIN']),
-      [ROUTES.ADMIN_JOBS]: guarded(AdminJobManagePage, ['ADMIN']),
-      [ROUTES.ADMIN_JOB_DETAIL]: guarded(AdminJobDetailPage, ['ADMIN']),
-      [ROUTES.ADMIN_APPLICATIONS]: guarded(AdminApplicationManagePage, ['ADMIN']),
-      [ROUTES.ADMIN_POSITION_OFFERS]: guarded(AdminPositionOfferManagePage, ['ADMIN']),
-      [ROUTES.ADMIN_REPORTS]: guarded(AdminReportManagePage, ['ADMIN']),
     }),
-    [],
+    []
   );
 
   const page = routes[path] || <NotFoundPage />;
