@@ -10,7 +10,11 @@ public record LoginResponse(
             Long id,
             String email,
             String name,
-            String role
+            String phone,
+            String role,
+            String profileImageUrl,
+            String language,
+            String oauthProvider
     ) {
     }
 }

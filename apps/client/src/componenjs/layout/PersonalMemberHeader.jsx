@@ -1,4 +1,5 @@
 import { ROUTES } from '../../constanjs/routes.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import { navigate } from '../../utils/authUtils.js';
 
 const logoUrl = new URL('../../assejs/images/ci-10.png', import.meta.url).href;
@@ -12,6 +13,9 @@ const navItems = [
 ];
 
 export default function PersonalMemberHeader({ active = 'jobs' }) {
+  const { user } = useAuth();
+  const profileImageUrl = user?.profileImageUrl;
+
   return (
     <header className="member-header">
       <div className="member-brand">
@@ -35,7 +39,7 @@ export default function PersonalMemberHeader({ active = 'jobs' }) {
           <span />
         </div>
         <button type="button" className="avatar-button" onClick={() => navigate(ROUTES.USER_MY_PAGE)} aria-label="마이페이지">
-          <img src="https://placehold.co/36x36" alt="" />
+          {profileImageUrl ? <img src={profileImageUrl} alt="" /> : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
         </button>
       </div>
     </header>

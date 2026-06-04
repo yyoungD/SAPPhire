@@ -3,9 +3,6 @@ package com.sapphire.global.security.oauth;
 import com.sapphire.domain.auth.domain.RefreshToken;
 import com.sapphire.domain.auth.dto.LoginResponse;
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
-import com.sapphire.domain.consent.dto.UserConsent;
-import com.sapphire.domain.consent.mapper.ConsentMapper;
-import com.sapphire.domain.profile.mapper.PersonalProfileMapper;
 import com.sapphire.domain.user.dto.User;
 import com.sapphire.domain.user.mapper.UserMapper;
 import com.sapphire.global.security.jwt.JwtTokenProvider;
@@ -27,23 +24,17 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final UserMapper userMapper;
-    private final PersonalProfileMapper personalProfileMapper;
-    private final ConsentMapper consentMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final String frontendOAuthCallbackUrl;
 
     public OAuth2LoginSuccessHandler(
             UserMapper userMapper,
-            PersonalProfileMapper personalProfileMapper,
-            ConsentMapper consentMapper,
             RefreshTokenMapper refreshTokenMapper,
             JwtTokenProvider jwtTokenProvider,
             @Value("${app.oauth2.frontend-callback-url:http://localhost:5173/oauth/callback}") String frontendOAuthCallbackUrl
     ) {
         this.userMapper = userMapper;
-        this.personalProfileMapper = personalProfileMapper;
-        this.consentMapper = consentMapper;
         this.refreshTokenMapper = refreshTokenMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.frontendOAuthCallbackUrl = frontendOAuthCallbackUrl;
@@ -66,13 +57,19 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String oauthId = attribute(oauth2User, "sub", "id");
         String email = attribute(oauth2User, "email");
         String name = attribute(oauth2User, "name", "given_name");
+        String picture = attribute(oauth2User, "picture");
+        String locale = attribute(oauth2User, "locale");
 
         if (email == null || email.isBlank() || oauthId == null || oauthId.isBlank()) {
             redirectWithError(response, "missing_required_profile");
             return;
         }
 
-        User user = findOrCreateUser(provider, oauthId, email.trim().toLowerCase(), normalizedName(name, email));
+        User user = findUser(provider, oauthId, email.trim().toLowerCase(), picture, normalizedLocale(locale));
+        if (user == null) {
+            redirectWithSignupRequired(response, provider, oauthId, email.trim().toLowerCase(), normalizedName(name, email), picture, normalizedLocale(locale));
+            return;
+        }
         if (!"ACTIVE".equals(user.getStatus())) {
             redirectWithError(response, "inactive_user");
             return;
@@ -86,7 +83,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
-                user.getRole()
+                user.getPhone(),
+                user.getRole(),
+                user.getProfileImageUrl(),
+                user.getLanguage(),
+                user.getOauthProvider()
         );
 
         String targetUrl = UriComponentsBuilder.fromUriString(frontendOAuthCallbackUrl)
@@ -96,7 +97,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                 .queryParam("userId", userInfo.id())
                 .queryParam("email", userInfo.email())
                 .queryParam("name", userInfo.name())
+                .queryParam("phone", userInfo.phone())
                 .queryParam("role", userInfo.role())
+                .queryParam("profileImageUrl", userInfo.profileImageUrl())
+                .queryParam("language", userInfo.language())
+                .queryParam("oauthProvider", userInfo.oauthProvider())
                 .build()
                 .encode(StandardCharsets.UTF_8)
                 .toUriString();
@@ -104,33 +109,17 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private User findOrCreateUser(String provider, String oauthId, String email, String name) {
+    private User findUser(String provider, String oauthId, String email, String picture, String locale) {
         User existingUser = userMapper.findByEmail(email);
         if (existingUser != null) {
             existingUser.setOauthProvider(provider);
             existingUser.setOauthId(oauthId);
+            existingUser.setProfileImageUrl(picture);
+            existingUser.setLanguage(locale);
             userMapper.updateOAuthInfo(existingUser);
-            return existingUser;
+            return userMapper.findById(existingUser.getId());
         }
-
-        User user = new User();
-        user.setEmail(email);
-        user.setName(name);
-        user.setRole("PERSONAL");
-        user.setOauthProvider(provider);
-        user.setOauthId(oauthId);
-
-        userMapper.insertOAuthUser(user);
-        personalProfileMapper.insertDefault(user.getId());
-        consentMapper.findRequiredTermIds().forEach(termId -> {
-            UserConsent consent = new UserConsent();
-            consent.setUserId(user.getId());
-            consent.setTermId(termId);
-            consent.setAgreed(true);
-            consentMapper.insertUserConsent(consent);
-        });
-
-        return userMapper.findById(user.getId());
+        return null;
     }
 
     private void saveRefreshToken(Long userId, String refreshTokenValue) {
@@ -150,11 +139,41 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         response.sendRedirect(targetUrl);
     }
 
+    private void redirectWithSignupRequired(
+            HttpServletResponse response,
+            String provider,
+            String oauthId,
+            String email,
+            String name,
+            String picture,
+            String locale
+    ) throws IOException {
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendOAuthCallbackUrl)
+                .queryParam("signupRequired", true)
+                .queryParam("provider", provider)
+                .queryParam("oauthId", oauthId)
+                .queryParam("email", email)
+                .queryParam("name", name)
+                .queryParam("profileImageUrl", picture)
+                .queryParam("language", locale)
+                .build()
+                .encode(StandardCharsets.UTF_8)
+                .toUriString();
+        response.sendRedirect(targetUrl);
+    }
+
     private String normalizedName(String name, String email) {
         if (name != null && !name.isBlank()) {
             return name.trim();
         }
         return email.substring(0, email.indexOf('@'));
+    }
+
+    private String normalizedLocale(String locale) {
+        if (locale == null || locale.isBlank()) {
+            return "KO";
+        }
+        return locale.trim().toUpperCase().replace('-', '_');
     }
 
     private String attribute(OAuth2User user, String... keys) {

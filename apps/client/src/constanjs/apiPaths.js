@@ -4,6 +4,7 @@ export const API_PATHS = {
   auth: {
     signup: '/api/v1/auth/signup',
     login: '/api/v1/auth/login',
+    oauthSignup: '/api/v1/auth/oauth/signup',
     logout: '/api/v1/auth/logout',
     reissue: '/api/v1/auth/reissue',
     googleOAuth: '/oauth2/authorization/google',

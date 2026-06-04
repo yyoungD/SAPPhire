@@ -2,6 +2,7 @@ package com.sapphire.domain.auth.controller;
 
 import com.sapphire.domain.auth.dto.LoginRequest;
 import com.sapphire.domain.auth.dto.LoginResponse;
+import com.sapphire.domain.auth.dto.OAuthSignupRequest;
 import com.sapphire.domain.auth.dto.ReissueRequest;
 import com.sapphire.domain.auth.dto.ReissueResponse;
 import com.sapphire.domain.auth.dto.SignupRequest;
@@ -36,6 +37,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(ApiResponse.success(authService.login(request)));
+    }
+
+    @PostMapping("/oauth/signup")
+    public ResponseEntity<ApiResponse<LoginResponse>> oauthSignup(@Valid @RequestBody OAuthSignupRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(authService.oauthSignup(request)));
     }
 
     @PostMapping("/logout")

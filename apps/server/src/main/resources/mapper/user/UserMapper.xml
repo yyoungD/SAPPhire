@@ -23,6 +23,7 @@
             oauth_provider,
             oauth_id,
             profile_image_file_id,
+            profile_image_url,
             status,
             language,
             created_at,
@@ -31,6 +32,27 @@
         FROM users
         WHERE email = #{email}
           AND deleted_at IS NULL
+    </select>
+
+    <select id="findByEmailIncludingDeleted" resultType="com.sapphire.domain.user.dto.User">
+        SELECT
+            id,
+            email,
+            password_hash,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE email = #{email}
     </select>
 
     <select id="findById" resultType="com.sapphire.domain.user.dto.User">
@@ -44,6 +66,7 @@
             oauth_provider,
             oauth_id,
             profile_image_file_id,
+            profile_image_url,
             status,
             language,
             created_at,
@@ -79,14 +102,18 @@
             name,
             role,
             oauth_provider,
-            oauth_id
+            oauth_id,
+            profile_image_url,
+            language
         )
         VALUES (
             #{email},
             #{name},
             #{role},
             #{oauthProvider},
-            #{oauthId}
+            #{oauthId},
+            #{profileImageUrl},
+            #{language}
         )
     </insert>
 
@@ -94,6 +121,31 @@
         UPDATE users
         SET oauth_provider = #{oauthProvider},
             oauth_id = #{oauthId},
+            profile_image_url = #{profileImageUrl},
+            language = COALESCE(#{language}, language),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="restoreOAuthUser" parameterType="com.sapphire.domain.user.dto.User">
+        UPDATE users
+        SET name = #{name},
+            role = 'PERSONAL',
+            oauth_provider = #{oauthProvider},
+            oauth_id = #{oauthId},
+            profile_image_url = #{profileImageUrl},
+            language = COALESCE(#{language}, language, 'KO'),
+            status = 'ACTIVE',
+            deleted_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="withdrawById">
+        UPDATE users
+        SET status = 'DELETED',
+            deleted_at = NOW(),
             updated_at = NOW()
         WHERE id = #{id}
           AND deleted_at IS NULL

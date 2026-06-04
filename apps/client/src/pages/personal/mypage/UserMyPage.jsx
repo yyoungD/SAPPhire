@@ -1,22 +1,56 @@
 import { ROUTES } from '../../../constanjs/routes.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
+import { userApi } from '../../../api/userApi.js';
+import { getAccessToken } from '../../../api/apiClient.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
 
-const skills = [
-  ['SAP FI', 'Expert'],
-  ['SAP CO', 'Expert'],
-  ['S/4HANA', 'Intermediate'],
-  ['SAP MM', 'Intermediate'],
-  ['ABAP', 'Beginner'],
-];
+const emptyText = '등록 전';
+
+function firstLetter(name = '') {
+  return name.trim().slice(0, 1).toUpperCase() || 'U';
+}
 
 export default function UserMyPage() {
-  const { logout } = useAuth();
+  const { user, clearSession } = useAuth();
+  const displayName = user?.name || emptyText;
+  const displayEmail = user?.email || emptyText;
+  const displayPhone = user?.phone || emptyText;
+  const displayRole = user?.role === 'PERSONAL' ? '개인회원' : user?.role || emptyText;
+  const profileImageUrl = user?.profileImageUrl;
+  const loginProvider = user?.oauthProvider ? `${user.oauthProvider} 로그인` : '이메일 로그인';
+  const language = user?.language || emptyText;
 
-  const handleLogout = async () => {
-    await logout();
-    navigate(ROUTES.LOGIN);
+  const handleLogout = () => {
+    clearSession();
+    navigate(ROUTES.HOME);
+  };
+
+  const handleWithdraw = () => {
+    const confirmed = window.confirm('회원 탈퇴 시 계정이 비활성화되고 다시 로그인할 수 없습니다. 탈퇴하시겠습니까?');
+    if (!confirmed) return;
+
+    if (!getAccessToken()) {
+      clearSession();
+      navigate(ROUTES.HOME);
+      return;
+    }
+
+    userApi
+      .withdrawMe()
+      .then(() => {
+        clearSession();
+        navigate(ROUTES.HOME);
+      })
+      .catch((error) => {
+        if (error.status === 401) {
+          window.alert('로그인 정보가 만료되었습니다. 다시 로그인한 뒤 회원 탈퇴를 진행해 주세요.');
+          clearSession();
+          navigate(ROUTES.HOME);
+          return;
+        }
+        window.alert(error.message || '회원 탈퇴에 실패했습니다.');
+      });
   };
 
   return (
@@ -31,13 +65,19 @@ export default function UserMyPage() {
         <div className="mypage-grid">
           <section className="profile-column">
             <article className="profile-card profile-summary-card">
-              <div className="profile-avatar">김</div>
+              <div className="profile-avatar">
+                {profileImageUrl ? <img src={profileImageUrl} alt="" /> : firstLetter(displayName)}
+              </div>
               <div>
-                <h2>김사파 <span>(Kim Sapa)</span></h2>
+                <h2>
+                  {displayName} <span>({displayRole})</span>
+                </h2>
                 <div className="profile-contact">
-                  <span>sapa.kim@example.com</span>
-                  <span>010-1234-5678</span>
-                  <span>서울 강남구</span>
+                  <span>{displayEmail}</span>
+                  <span>{displayPhone}</span>
+                  <span>사용자 ID: {user?.id ?? emptyText}</span>
+                  <span>{loginProvider}</span>
+                  <span>언어: {language}</span>
                 </div>
               </div>
               <button type="button" className="secondary profile-edit" onClick={() => navigate(ROUTES.USER_UPDATE)}>
@@ -52,19 +92,19 @@ export default function UserMyPage() {
               <dl className="profile-dl">
                 <div>
                   <dt>희망 직무</dt>
-                  <dd>SAP FICO Consultant</dd>
+                  <dd>{emptyText}</dd>
                 </div>
                 <div>
                   <dt>희망 연봉</dt>
-                  <dd>협의 후 결정 (현재: 8,000만원)</dd>
+                  <dd>{emptyText}</dd>
                 </div>
                 <div>
                   <dt>근무 형태</dt>
-                  <dd>정규직, 계약직, 프리랜서</dd>
+                  <dd>{emptyText}</dd>
                 </div>
                 <div>
                   <dt>희망 근무지</dt>
-                  <dd>서울, 경기, 원격 가능</dd>
+                  <dd>{emptyText}</dd>
                 </div>
               </dl>
               <div className="toggle-row">
@@ -81,12 +121,7 @@ export default function UserMyPage() {
                 <h2>SAP 전문성</h2>
               </div>
               <div className="skill-cloud">
-                {skills.map(([name, level]) => (
-                  <span key={name}>
-                    {name}
-                    <strong>{level}</strong>
-                  </span>
-                ))}
+                <p className="empty-copy">등록된 SAP 스킬이 없습니다.</p>
               </div>
             </article>
 
@@ -94,19 +129,15 @@ export default function UserMyPage() {
               <div className="section-heading">
                 <h2>경력 요약</h2>
               </div>
-              <p className="career-copy">
-                8년차 SAP FICO 컨설턴트로 제조 및 리테일 산업의 S/4HANA 구축과 고도화 프로젝트를 수행했습니다. 재무회계와
-                관리회계 모듈 이해도가 높고, 글로벌 Roll-out 프로젝트 경험을 바탕으로 현업과 개발 조직 사이의 커뮤니케이션에
-                강점이 있습니다.
-              </p>
+              <p className="career-copy">등록된 경력 요약이 없습니다. 프로필 수정에서 경력과 SAP 전문성을 입력해 주세요.</p>
             </article>
           </section>
 
           <aside className="profile-side">
             <section className="ai-card">
               <p className="eyebrow">AI PROFILE SCORE</p>
-              <strong>92</strong>
-              <span>상위 8% SAP FICO 인재</span>
+              <strong>-</strong>
+              <span>AI 평가 전입니다.</span>
               <button type="button" className="primary-action" onClick={() => navigate(ROUTES.AI_EVALUATION)}>
                 AI 평가 보기
               </button>
@@ -116,15 +147,15 @@ export default function UserMyPage() {
               <dl className="stat-list">
                 <div>
                   <dt>추천 공고</dt>
-                  <dd>12</dd>
+                  <dd>0</dd>
                 </div>
                 <div>
                   <dt>지원 완료</dt>
-                  <dd>3</dd>
+                  <dd>0</dd>
                 </div>
                 <div>
                   <dt>받은 제안</dt>
-                  <dd>2</dd>
+                  <dd>0</dd>
                 </div>
               </dl>
             </section>
@@ -143,6 +174,9 @@ export default function UserMyPage() {
             <section className="profile-card compact-card logout-card">
               <button type="button" className="logout-button" onClick={handleLogout}>
                 로그아웃
+              </button>
+              <button type="button" className="withdraw-button" onClick={handleWithdraw}>
+                회원 탈퇴
               </button>
             </section>
           </aside>

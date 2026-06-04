@@ -1267,6 +1267,13 @@ dd {
   line-height: 1.75;
 }
 
+.empty-copy {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .detail-block {
   margin-top: 22px;
 }
@@ -1323,6 +1330,13 @@ dd {
   padding: 48px 0 80px;
 }
 
+.member-placeholder-shell {
+  min-height: calc(100vh - 80px);
+  padding: 48px 24px 80px;
+  display: grid;
+  place-items: start center;
+}
+
 .mypage-title {
   width: min(768px, 100%);
   margin-bottom: 24px;
@@ -1353,6 +1367,13 @@ dd {
   height: 96px;
   background: #eff6ff;
   font-size: 30px;
+  overflow: hidden;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .profile-summary-card h2 span {
@@ -1482,19 +1503,35 @@ dd {
 
 .logout-card {
   padding: 18px;
+  gap: 10px;
+}
+
+.logout-button,
+.withdraw-button {
+  min-height: 44px;
+  border-radius: 4px;
+  font-weight: 800;
 }
 
 .logout-button {
-  min-height: 44px;
   border: 1px solid #fecaca;
-  border-radius: 4px;
   color: #b42318;
   background: #fff7f7;
-  font-weight: 800;
 }
 
 .logout-button:hover {
   background: #fee2e2;
+}
+
+.withdraw-button {
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #ffffff;
+}
+
+.withdraw-button:hover {
+  color: #0b1c30;
+  background: #f1f5f9;
 }
 
 @media (max-width: 980px) {

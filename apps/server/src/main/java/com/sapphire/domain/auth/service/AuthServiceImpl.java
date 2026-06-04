@@ -3,6 +3,7 @@ package com.sapphire.domain.auth.service;
 import com.sapphire.domain.auth.domain.RefreshToken;
 import com.sapphire.domain.auth.dto.LoginRequest;
 import com.sapphire.domain.auth.dto.LoginResponse;
+import com.sapphire.domain.auth.dto.OAuthSignupRequest;
 import com.sapphire.domain.auth.dto.ReissueRequest;
 import com.sapphire.domain.auth.dto.ReissueResponse;
 import com.sapphire.domain.auth.dto.SignupRequest;
@@ -133,8 +134,47 @@ public class AuthServiceImpl implements AuthService {
                 accessToken,
                 refreshTokenValue,
                 "Bearer",
-                new LoginResponse.UserInfo(user.getId(), user.getEmail(), user.getName(), user.getRole())
+                toUserInfo(user)
         );
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse oauthSignup(OAuthSignupRequest request) {
+        String email = request.email().trim().toLowerCase();
+
+        User user = new User();
+        user.setEmail(email);
+        user.setName(request.name().trim());
+        user.setRole("PERSONAL");
+        user.setOauthProvider(request.provider().trim().toUpperCase());
+        user.setOauthId(request.oauthId().trim());
+        user.setProfileImageUrl(blankToNull(request.profileImageUrl()));
+        user.setLanguage(normalizedLanguage(request.language()));
+
+        User existingUser = userMapper.findByEmailIncludingDeleted(email);
+        if (existingUser != null) {
+            user.setId(existingUser.getId());
+            userMapper.restoreOAuthUser(user);
+        } else {
+            userMapper.insertOAuthUser(user);
+            personalProfileMapper.insertDefault(user.getId());
+
+            consentMapper.findRequiredTermIds().forEach(termId -> {
+                UserConsent consent = new UserConsent();
+                consent.setUserId(user.getId());
+                consent.setTermId(termId);
+                consent.setAgreed(true);
+                consentMapper.insertUserConsent(consent);
+            });
+        }
+
+        User savedUser = userMapper.findById(user.getId());
+        String accessToken = jwtTokenProvider.createAccessToken(savedUser);
+        String refreshTokenValue = jwtTokenProvider.createRefreshToken(savedUser);
+        saveRefreshToken(savedUser.getId(), refreshTokenValue);
+
+        return new LoginResponse(accessToken, refreshTokenValue, "Bearer", toUserInfo(savedUser));
     }
 
     @Override
@@ -221,5 +261,29 @@ public class AuthServiceImpl implements AuthService {
         refreshToken.setExpiresAt(jwtTokenProvider.getRefreshTokenExpiresAt());
         refreshTokenMapper.upsert(refreshToken);
         log.debug("Refresh token 저장 완료. userId={}, expiresAt={}", userId, refreshToken.getExpiresAt());
+    }
+
+    private LoginResponse.UserInfo toUserInfo(User user) {
+        return new LoginResponse.UserInfo(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getRole(),
+                user.getProfileImageUrl(),
+                user.getLanguage(),
+                user.getOauthProvider()
+        );
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String normalizedLanguage(String language) {
+        if (language == null || language.isBlank()) {
+            return "KO";
+        }
+        return language.trim().toUpperCase().replace('-', '_');
     }
 }

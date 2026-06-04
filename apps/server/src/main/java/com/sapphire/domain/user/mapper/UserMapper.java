@@ -10,6 +10,8 @@ public interface UserMapper {
 
     User findByEmail(@Param("email") String email);
 
+    User findByEmailIncludingDeleted(@Param("email") String email);
+
     User findById(@Param("id") Long id);
 
     void insert(User user);
@@ -17,4 +19,8 @@ public interface UserMapper {
     void insertOAuthUser(User user);
 
     void updateOAuthInfo(User user);
+
+    void restoreOAuthUser(User user);
+
+    int withdrawById(@Param("id") Long id);
 }

@@ -21,6 +21,23 @@ export function clearTokens() {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
+async function reissueTokens() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/reissue`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || payload?.success === false) return null;
+
+  const data = payload?.data ?? payload;
+  setTokens(data);
+  return data?.accessToken;
+}
+
 export async function apiClient(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const isFormData = options.body instanceof FormData;
@@ -35,7 +52,16 @@ export async function apiClient(path, options = {}) {
   }
 
   const body = isFormData || typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, body });
+  let response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, body });
+
+  if (response.status === 401 && path !== '/api/v1/auth/reissue') {
+    const newAccessToken = await reissueTokens();
+    if (newAccessToken) {
+      headers.set('Authorization', `Bearer ${newAccessToken}`);
+      response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, body });
+    }
+  }
+
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
 
   if (!response.ok || payload?.success === false) {

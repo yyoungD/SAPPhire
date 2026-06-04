@@ -17,6 +17,7 @@ public class User {
     private String oauthProvider;
     private String oauthId;
     private Long profileImageFileId;
+    private String profileImageUrl;
     private String status;
     private String language;
     private LocalDateTime createdAt;

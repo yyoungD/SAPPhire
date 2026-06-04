@@ -19,6 +19,15 @@ export const authApi = {
     return data;
   },
 
+  oauthSignup: async ({ provider, oauthId, email, name, profileImageUrl = '', language = '' }) => {
+    const data = await apiClient(API_PATHS.auth.oauthSignup, {
+      method: 'POST',
+      body: { provider, oauthId, email, name, profileImageUrl, language },
+    });
+    setTokens(data);
+    return data;
+  },
+
   startGoogleLogin: () => {
     window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
   },
