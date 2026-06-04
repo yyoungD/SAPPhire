@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.auth.mapper.RefreshTokenMapper">
+    <select id="findByRefreshToken" resultType="com.sapphire.domain.auth.domain.RefreshToken">
+        SELECT
+            id,
+            user_id,
+            refresh_token,
+            expires_at,
+            created_at,
+            updated_at
+        FROM refresh_tokens
+        WHERE refresh_token = #{refreshToken}
+    </select>
+
+    <insert id="upsert" parameterType="com.sapphire.domain.auth.domain.RefreshToken">
+        INSERT INTO refresh_tokens (
+            user_id,
+            refresh_token,
+            expires_at
+        )
+        VALUES (
+            #{userId},
+            #{refreshToken},
+            #{expiresAt}
+        )
+        ON CONFLICT (user_id)
+        DO UPDATE SET
+            refresh_token = EXCLUDED.refresh_token,
+            expires_at = EXCLUDED.expires_at,
+            updated_at = NOW()
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM refresh_tokens
+        WHERE user_id = #{userId}
+    </delete>
+
+    <delete id="deleteByRefreshToken">
+        DELETE FROM refresh_tokens
+        WHERE refresh_token = #{refreshToken}
+    </delete>
+</mapper>

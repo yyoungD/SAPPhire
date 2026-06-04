@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.user.mapper.UserMapper">
+    <select id="existsByEmail" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM users
+            WHERE email = #{email}
+              AND deleted_at IS NULL
+        )
+    </select>
+
+    <select id="findByEmail" resultType="com.sapphire.domain.user.dto.User">
+        SELECT
+            id,
+            email,
+            password_hash,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE email = #{email}
+          AND deleted_at IS NULL
+    </select>
+
+    <select id="findByEmailIncludingDeleted" resultType="com.sapphire.domain.user.dto.User">
+        SELECT
+            id,
+            email,
+            password_hash,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <select id="findById" resultType="com.sapphire.domain.user.dto.User">
+        SELECT
+            id,
+            email,
+            password_hash,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </select>
+
+    <insert id="insert" parameterType="com.sapphire.domain.user.dto.User"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO users (
+            email,
+            password_hash,
+            name,
+            phone,
+            role
+        )
+        VALUES (
+            #{email},
+            #{passwordHash},
+            #{name},
+            #{phone},
+            #{role}
+        )
+    </insert>
+
+    <insert id="insertOAuthUser" parameterType="com.sapphire.domain.user.dto.User"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO users (
+            email,
+            name,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_url,
+            language
+        )
+        VALUES (
+            #{email},
+            #{name},
+            #{role},
+            #{oauthProvider},
+            #{oauthId},
+            #{profileImageUrl},
+            #{language}
+        )
+    </insert>
+
+    <update id="updateOAuthInfo" parameterType="com.sapphire.domain.user.dto.User">
+        UPDATE users
+        SET oauth_provider = #{oauthProvider},
+            oauth_id = #{oauthId},
+            profile_image_url = #{profileImageUrl},
+            language = COALESCE(#{language}, language),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="restoreOAuthUser" parameterType="com.sapphire.domain.user.dto.User">
+        UPDATE users
+        SET name = #{name},
+            role = 'PERSONAL',
+            oauth_provider = #{oauthProvider},
+            oauth_id = #{oauthId},
+            profile_image_url = #{profileImageUrl},
+            language = COALESCE(#{language}, language, 'KO'),
+            status = 'ACTIVE',
+            deleted_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="withdrawById">
+        UPDATE users
+        SET status = 'DELETED',
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
+</mapper>

@@ -81,6 +81,12 @@ cd apps/server
 ./gradlew bootRun
 ```
 
+Swagger UI is available at:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
 The default local database settings are:
 
 ```text

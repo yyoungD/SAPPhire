@@ -1,10 +1,10 @@
-package com.sapphire.server;
+package com.sapphire;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ServerApplicationTests {
+class SapphireApplicationTests {
 
 	@Test
 	void contextLoads() {

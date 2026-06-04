@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.consent.mapper.ConsentMapper">
+    <select id="findRequiredTermIds" resultType="long">
+        SELECT id
+        FROM consent_terms
+        WHERE required = TRUE
+          AND active = TRUE
+    </select>
+
+    <select id="countActiveTermsByIds" resultType="int">
+        SELECT COUNT(*)
+        FROM consent_terms
+        WHERE active = TRUE
+          AND id IN
+          <foreach collection="termIds" item="termId" open="(" separator="," close=")">
+              #{termId}
+          </foreach>
+    </select>
+
+    <insert id="insertUserConsent" parameterType="com.sapphire.domain.consent.dto.UserConsent">
+        INSERT INTO user_consents (
+            user_id,
+            term_id,
+            agreed,
+            agreed_at
+        )
+        VALUES (
+            #{userId},
+            #{termId},
+            #{agreed},
+            CASE WHEN #{agreed} = TRUE THEN NOW() ELSE NULL END
+        )
+    </insert>
+</mapper>
