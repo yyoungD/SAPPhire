@@ -1,5 +1,6 @@
 package com.sapphire.domain.auth.service;
 
+import com.sapphire.domain.auth.dto.AdminLoginRequest;
 import com.sapphire.domain.auth.dto.LoginRequest;
 import com.sapphire.domain.auth.dto.LoginResponse;
 import com.sapphire.domain.auth.dto.OAuthSignupRequest;
@@ -12,6 +13,8 @@ public interface AuthService {
     SignupResponse signup(SignupRequest request);
 
     LoginResponse login(LoginRequest request);
+
+    LoginResponse adminLogin(AdminLoginRequest request);
 
     LoginResponse oauthSignup(OAuthSignupRequest request);
 

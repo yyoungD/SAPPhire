@@ -20,5 +20,4 @@ export const API_PATHS = {
   positionOffers: '/api/v1/position-offers',
   files: '/api/v1/files',
   ai: '/api/v1/ai',
-  admin: '/api/v1/admin',
 };
