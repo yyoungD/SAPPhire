@@ -173,10 +173,14 @@ public class AuthServiceImpl implements AuthService {
         user.setProfileImageUrl(blankToNull(request.profileImageUrl()));
         user.setLanguage(normalizedLanguage(request.language()));
 
+        User existingOAuthUser = userMapper.findByOAuth(user.getOauthProvider(), user.getOauthId());
+        if (existingOAuthUser != null) {
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL, "This social account is already registered.");
+        }
+
         User existingUser = userMapper.findByEmailIncludingDeleted(email);
         if (existingUser != null) {
-            user.setId(existingUser.getId());
-            userMapper.restoreOAuthUser(user);
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         } else {
             userMapper.insertOAuthUser(user);
             personalProfileMapper.insertDefault(user.getId());

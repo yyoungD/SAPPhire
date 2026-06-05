@@ -29,6 +29,12 @@ export const authApi = {
   },
 
   startGoogleLogin: () => {
+    sessionStorage.removeItem('sapphire.oauthLinkIntent');
+    window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
+  },
+
+  startGoogleLink: () => {
+    sessionStorage.setItem('sapphire.oauthLinkIntent', 'true');
     window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
   },
 

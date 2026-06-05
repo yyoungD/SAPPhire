@@ -65,9 +65,16 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             return;
         }
 
-        User user = findUser(provider, oauthId, email.trim().toLowerCase(), picture, normalizedLocale(locale));
+        String normalizedEmail = email.trim().toLowerCase();
+        String normalizedLocale = normalizedLocale(locale);
+
+        User user = findUser(provider, oauthId, picture, normalizedLocale);
         if (user == null) {
-            redirectWithSignupRequired(response, provider, oauthId, email.trim().toLowerCase(), normalizedName(name, email), picture, normalizedLocale(locale));
+            if (userMapper.findByEmail(normalizedEmail) != null) {
+                redirectWithLinkRequired(response, provider, oauthId, normalizedEmail, normalizedName(name, email), picture, normalizedLocale);
+                return;
+            }
+            redirectWithSignupRequired(response, provider, oauthId, normalizedEmail, normalizedName(name, email), picture, normalizedLocale);
             return;
         }
         if (!"ACTIVE".equals(user.getStatus())) {
@@ -109,17 +116,24 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private User findUser(String provider, String oauthId, String email, String picture, String locale) {
-        User existingUser = userMapper.findByEmail(email);
-        if (existingUser != null) {
-            existingUser.setOauthProvider(provider);
-            existingUser.setOauthId(oauthId);
-            existingUser.setProfileImageUrl(picture);
-            existingUser.setLanguage(locale);
-            userMapper.updateOAuthInfo(existingUser);
-            return userMapper.findById(existingUser.getId());
+    private User findUser(String provider, String oauthId, String picture, String locale) {
+        User existingUser = userMapper.findByOAuth(provider, oauthId);
+        if (existingUser == null) {
+            return null;
         }
-        return null;
+
+        existingUser.setProfileImageUrl(keepExistingWhenBlank(picture, existingUser.getProfileImageUrl()));
+        existingUser.setLanguage(keepExistingWhenBlank(locale, existingUser.getLanguage()));
+        userMapper.updateOAuthInfo(existingUser);
+        return userMapper.findById(existingUser.getId());
+    }
+
+    private String keepExistingWhenBlank(String value, String existingValue) {
+        return isBlank(value) ? existingValue : value.trim();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private void saveRefreshToken(Long userId, String refreshTokenValue) {
@@ -150,6 +164,29 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     ) throws IOException {
         String targetUrl = UriComponentsBuilder.fromUriString(frontendOAuthCallbackUrl)
                 .queryParam("signupRequired", true)
+                .queryParam("provider", provider)
+                .queryParam("oauthId", oauthId)
+                .queryParam("email", email)
+                .queryParam("name", name)
+                .queryParam("profileImageUrl", picture)
+                .queryParam("language", locale)
+                .build()
+                .encode(StandardCharsets.UTF_8)
+                .toUriString();
+        response.sendRedirect(targetUrl);
+    }
+
+    private void redirectWithLinkRequired(
+            HttpServletResponse response,
+            String provider,
+            String oauthId,
+            String email,
+            String name,
+            String picture,
+            String locale
+    ) throws IOException {
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendOAuthCallbackUrl)
+                .queryParam("linkRequired", true)
                 .queryParam("provider", provider)
                 .queryParam("oauthId", oauthId)
                 .queryParam("email", email)
