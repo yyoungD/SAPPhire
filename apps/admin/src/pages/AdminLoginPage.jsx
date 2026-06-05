@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { adminAuthApi } from '../api/adminAuthApi.js';
 
 export default function AdminLoginPage({ onLogin }) {
-  const [form, setForm] = useState({ loginId: 'admin', password: '' });
+  const [form, setForm] = useState({ email: 'admin@sapphire.local', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,10 +33,11 @@ export default function AdminLoginPage({ onLogin }) {
         <h1 id="admin-login-title">관리자 로그인</h1>
         <form className="login-form" onSubmit={submit}>
           <label>
-            아이디
+            이메일
             <input
-              name="loginId"
-              value={form.loginId}
+              name="email"
+              type="email"
+              value={form.email}
               onChange={update}
               autoComplete="username"
               required
