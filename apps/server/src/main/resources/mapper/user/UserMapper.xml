@@ -55,6 +55,29 @@
         WHERE email = #{email}
     </select>
 
+    <select id="findByOAuth" resultType="com.sapphire.domain.user.dto.User">
+        SELECT
+            id,
+            email,
+            password_hash,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            oauth_id,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE oauth_provider = #{oauthProvider}
+          AND oauth_id = #{oauthId}
+          AND deleted_at IS NULL
+    </select>
+
     <select id="findById" resultType="com.sapphire.domain.user.dto.User">
         SELECT
             id,

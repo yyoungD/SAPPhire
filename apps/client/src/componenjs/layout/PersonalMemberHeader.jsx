@@ -5,11 +5,11 @@ import { navigate } from '../../utils/authUtils.js';
 const logoUrl = new URL('../../assejs/images/ci-10.png', import.meta.url).href;
 
 const navItems = [
-  { key: 'ai', label: 'AI  추천', path: ROUTES.AI_EVALUATION },
+  { key: 'ai', label: 'AI 추천', path: ROUTES.AI_EVALUATION },
   { key: 'jobs', label: '채용 공고', path: ROUTES.JOBS },
   { key: 'offers', label: '포지션 제안', path: ROUTES.RECEIVED_OFFERS },
   { key: 'applications', label: '지원 현황', path: ROUTES.MY_APPLICATIONS },
-  { key: 'resume', label: '내 이력서', path: ROUTES.RESUMES },
+  { key: 'resume', label: '이력서', path: ROUTES.RESUMES },
 ];
 
 export default function PersonalMemberHeader({ active = 'jobs' }) {
@@ -33,7 +33,7 @@ export default function PersonalMemberHeader({ active = 'jobs' }) {
       <div className="member-actions">
         <label className="member-search">
           <span>검색</span>
-          <input placeholder="공고 이름, 회사 이름 검색..." />
+          <input placeholder="공고 이름, 회사 이름 검색.." />
         </label>
         <div className="member-icon-button" aria-hidden="true">
           <span />

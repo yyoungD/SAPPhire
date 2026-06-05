@@ -1,6 +1,7 @@
 import { ROUTES } from '../../../constanjs/routes.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
 import { userApi } from '../../../api/userApi.js';
+import { authApi } from '../../../api/authApi.js';
 import { getAccessToken } from '../../../api/apiClient.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
@@ -24,6 +25,15 @@ export default function UserMyPage() {
   const handleLogout = () => {
     clearSession();
     navigate(ROUTES.HOME);
+  };
+
+  const handleGoogleLink = () => {
+    if (!getAccessToken()) {
+      clearSession();
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+    authApi.startGoogleLink();
   };
 
   const handleWithdraw = () => {
@@ -83,6 +93,11 @@ export default function UserMyPage() {
               <button type="button" className="secondary profile-edit" onClick={() => navigate(ROUTES.USER_UPDATE)}>
                 프로필 수정
               </button>
+              {!user?.oauthProvider && (
+                <button type="button" className="secondary profile-edit" onClick={handleGoogleLink}>
+                  Google 계정 연결
+                </button>
+              )}
             </article>
 
             <article className="profile-card">

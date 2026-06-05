@@ -12,6 +12,8 @@ public interface UserMapper {
 
     User findByEmailIncludingDeleted(@Param("email") String email);
 
+    User findByOAuth(@Param("oauthProvider") String oauthProvider, @Param("oauthId") String oauthId);
+
     User findById(@Param("id") Long id);
 
     void insert(User user);

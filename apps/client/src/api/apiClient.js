@@ -38,6 +38,17 @@ async function reissueTokens() {
   return data?.accessToken;
 }
 
+function createApiError(response, payload) {
+  const proxyFailure = [502, 503, 504].includes(response.status);
+  const message = proxyFailure
+    ? '백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해 주세요.'
+    : payload?.error?.message || response.statusText || 'API 요청에 실패했습니다.';
+  const error = new Error(message);
+  error.status = response.status;
+  error.payload = payload;
+  return error;
+}
+
 export async function apiClient(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const isFormData = options.body instanceof FormData;
@@ -65,10 +76,7 @@ export async function apiClient(path, options = {}) {
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
 
   if (!response.ok || payload?.success === false) {
-    const error = new Error(payload?.error?.message || response.statusText || 'API 요청에 실패했습니다.');
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
+    throw createApiError(response, payload);
   }
 
   return payload?.data ?? payload;

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.file.mapper.FileMapper">
+    <insert id="insert" parameterType="com.sapphire.domain.file.dto.FileRecord"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO files (
+            uploader_user_id,
+            original_name,
+            stored_name,
+            file_path,
+            file_url,
+            content_type,
+            file_size,
+            file_category
+        )
+        VALUES (
+            #{uploaderUserId},
+            #{originalName},
+            #{storedName},
+            #{filePath},
+            #{fileUrl},
+            #{contentType},
+            #{fileSize},
+            #{fileCategory}
+        )
+    </insert>
+
+    <select id="findRecentByUserAndCategory" resultType="com.sapphire.domain.file.dto.FileRecord">
+        SELECT
+            id,
+            uploader_user_id,
+            original_name,
+            stored_name,
+            file_path,
+            file_url,
+            content_type,
+            file_size,
+            file_category,
+            created_at
+        FROM files
+        WHERE uploader_user_id = #{userId}
+          AND file_category = #{category}
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
