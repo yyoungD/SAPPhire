@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 public class AuthServiceImpl implements AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private static final Set<String> ALLOWED_ROLES = Set.of("PERSONAL", "COMPANY");
-    private static final String ADMIN_LOGIN_ID = "admin";
-    private static final String ADMIN_EMAIL = "admin@sapphire.local";
 
     private final UserMapper userMapper;
     private final PersonalProfileMapper personalProfileMapper;
@@ -128,12 +126,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public LoginResponse adminLogin(AdminLoginRequest request) {
-        String loginId = request.loginId().trim();
-        if (!ADMIN_LOGIN_ID.equals(loginId)) {
-            throw new CustomException(ErrorCode.INVALID_LOGIN);
-        }
-
-        User user = userMapper.findByEmail(ADMIN_EMAIL);
+        String email = request.email().trim().toLowerCase();
+        User user = userMapper.findByEmail(email);
         return authenticate(user, request.password(), true);
     }
 
