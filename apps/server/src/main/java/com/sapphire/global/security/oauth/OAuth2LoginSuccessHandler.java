@@ -68,7 +68,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String normalizedEmail = email.trim().toLowerCase();
         String normalizedLocale = normalizedLocale(locale);
 
-        User user = findUser(provider, oauthId, picture, normalizedLocale);
+        User connectedAccount = userMapper.findByOAuth(provider, oauthId);
+        User user = connectedAccount == null ? null : userMapper.findById(connectedAccount.getId());
         if (user == null) {
             if (userMapper.findByEmail(normalizedEmail) != null) {
                 redirectWithLinkRequired(response, provider, oauthId, normalizedEmail, normalizedName(name, email), picture, normalizedLocale);
@@ -81,6 +82,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             redirectWithError(response, "inactive_user");
             return;
         }
+
+        user = updateOAuthProfile(user, picture, normalizedLocale);
 
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
@@ -116,16 +119,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
-    private User findUser(String provider, String oauthId, String picture, String locale) {
-        User existingUser = userMapper.findByOAuth(provider, oauthId);
-        if (existingUser == null) {
-            return null;
-        }
-
-        existingUser.setProfileImageUrl(keepExistingWhenBlank(picture, existingUser.getProfileImageUrl()));
-        existingUser.setLanguage(keepExistingWhenBlank(locale, existingUser.getLanguage()));
-        userMapper.updateOAuthInfo(existingUser);
-        return userMapper.findById(existingUser.getId());
+    private User updateOAuthProfile(User user, String picture, String locale) {
+        user.setProfileImageUrl(keepExistingWhenBlank(picture, user.getProfileImageUrl()));
+        user.setLanguage(keepExistingWhenBlank(locale, user.getLanguage()));
+        userMapper.updateOAuthInfo(user);
+        return userMapper.findById(user.getId());
     }
 
     private String keepExistingWhenBlank(String value, String existingValue) {
