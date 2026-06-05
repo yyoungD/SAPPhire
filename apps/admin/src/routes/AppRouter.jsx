@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { clearAdminSession, readAdminUser } from '../api/apiClient.js';
+import { adminAuthApi } from '../api/adminAuthApi.js';
+import { readAdminUser } from '../api/apiClient.js';
 import { ROUTES } from '../constanjs/routes.js';
 import AdminDashboardPage from '../pages/AdminDashboardPage.jsx';
 import AdminLoginPage from '../pages/AdminLoginPage.jsx';
@@ -30,10 +31,15 @@ export default function AppRouter() {
     replaceRoute(ROUTES.ADMIN_DASHBOARD);
   };
 
-  const logout = () => {
-    clearAdminSession();
-    setUser(null);
-    replaceRoute(ROUTES.ADMIN_LOGIN);
+  const logout = async () => {
+    try {
+      await adminAuthApi.logout();
+    } catch (error) {
+      console.error('Admin logout API request failed.', error);
+    } finally {
+      setUser(null);
+      replaceRoute(ROUTES.ADMIN_LOGIN);
+    }
   };
 
   const routes = useMemo(
