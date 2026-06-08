@@ -8,18 +8,24 @@
         VALUES (#{userId})
     </insert>
 
-    <insert id="insertSignupProfile">
-        INSERT INTO company_profiles (
-            user_id,
-            company_name,
-            business_number,
-            verification_status
-        )
-        VALUES (
-            #{userId},
-            #{companyName},
-            #{businessNumber},
-            #{verificationStatus}
-        )
-    </insert>
+    <select id="findByUserId" resultType="com.sapphire.domain.profile.dto.CompanyProfile">
+        SELECT
+            cp.id,
+            cp.user_id,
+            u.email,
+            u.phone,
+            cp.company_name,
+            cp.business_number,
+            cp.industry,
+            cp.company_size,
+            cp.website_url,
+            cp.logo_file_id,
+            cp.description,
+            cp.address,
+            cp.verification_status
+        FROM company_profiles cp
+        JOIN users u ON u.id = cp.user_id
+        WHERE cp.user_id = #{userId}
+          AND u.deleted_at IS NULL
+    </select>
 </mapper>
