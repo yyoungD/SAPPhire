@@ -1,8 +1,11 @@
 package com.sapphire.domain.user.mapper;
 
+import com.sapphire.domain.user.dto.AdminUserResponse;
 import com.sapphire.domain.user.dto.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -15,6 +18,8 @@ public interface UserMapper {
     User findByOAuth(@Param("oauthProvider") String oauthProvider, @Param("oauthId") String oauthId);
 
     User findById(@Param("id") Long id);
+
+    List<AdminUserResponse> findAdminUsers();
 
     void insert(User user);
 

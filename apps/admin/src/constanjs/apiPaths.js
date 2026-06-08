@@ -5,4 +5,5 @@ export const API_PATHS = {
     login: '/api/v1/admin/auth/login',
     logout: '/api/v1/auth/logout',
   },
+  adminUsers: '/api/v1/admin/users',
 };

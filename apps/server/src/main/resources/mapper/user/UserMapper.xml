@@ -100,6 +100,27 @@
           AND deleted_at IS NULL
     </select>
 
+    <select id="findAdminUsers" resultType="com.sapphire.domain.user.dto.AdminUserResponse">
+        SELECT
+            id,
+            email,
+            name,
+            phone,
+            role,
+            oauth_provider,
+            profile_image_file_id,
+            profile_image_url,
+            status,
+            language,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users
+        WHERE deleted_at IS NULL
+          AND role = 'PERSONAL'
+        ORDER BY created_at DESC, id DESC
+    </select>
+
     <insert id="insert" parameterType="com.sapphire.domain.user.dto.User"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO users (

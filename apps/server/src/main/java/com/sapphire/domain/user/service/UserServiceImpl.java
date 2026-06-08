@@ -2,6 +2,7 @@ package com.sapphire.domain.user.service;
 
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
 import com.sapphire.domain.auth.dto.LoginResponse;
+import com.sapphire.domain.user.dto.AdminUserResponse;
 import com.sapphire.domain.user.dto.OAuthLinkRequest;
 import com.sapphire.domain.user.dto.User;
 import com.sapphire.domain.user.mapper.UserMapper;
@@ -18,6 +19,8 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,6 +39,12 @@ public class UserServiceImpl implements UserService {
         this.userMapper = userMapper;
         this.refreshTokenMapper = refreshTokenMapper;
         this.profileImageRoot = Path.of(profileImageUploadDir).toAbsolutePath().normalize();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> findAdminUsers() {
+        return userMapper.findAdminUsers();
     }
 
     @Override
