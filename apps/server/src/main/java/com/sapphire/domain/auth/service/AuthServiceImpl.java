@@ -12,10 +12,12 @@ import com.sapphire.domain.auth.dto.SignupResponse;
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
 import com.sapphire.domain.consent.dto.UserConsent;
 import com.sapphire.domain.consent.mapper.ConsentMapper;
+import com.sapphire.domain.file.dto.FileRecord;
 import com.sapphire.domain.profile.mapper.CompanyProfileMapper;
 import com.sapphire.domain.profile.mapper.PersonalProfileMapper;
 import com.sapphire.domain.user.dto.User;
 import com.sapphire.domain.user.mapper.UserMapper;
+import com.sapphire.domain.user.service.ProfileImageStorageService;
 import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
 import com.sapphire.global.security.jwt.JwtTokenProvider;
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ProfileImageStorageService profileImageStorageService;
 
     public AuthServiceImpl(
             UserMapper userMapper,
@@ -50,7 +53,8 @@ public class AuthServiceImpl implements AuthService {
             ConsentMapper consentMapper,
             RefreshTokenMapper refreshTokenMapper,
             PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider
+            JwtTokenProvider jwtTokenProvider,
+            ProfileImageStorageService profileImageStorageService
     ) {
         this.userMapper = userMapper;
         this.personalProfileMapper = personalProfileMapper;
@@ -59,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
         this.refreshTokenMapper = refreshTokenMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.profileImageStorageService = profileImageStorageService;
     }
 
     @Override
@@ -164,7 +169,6 @@ public class AuthServiceImpl implements AuthService {
         user.setRole("PERSONAL");
         user.setOauthProvider(request.provider().trim().toUpperCase());
         user.setOauthId(request.oauthId().trim());
-        user.setProfileImageUrl(blankToNull(request.profileImageUrl()));
         user.setLanguage(normalizedLanguage(request.language()));
 
         User existingOAuthUser = userMapper.findByOAuth(user.getOauthProvider(), user.getOauthId());
@@ -178,6 +182,12 @@ public class AuthServiceImpl implements AuthService {
         } else {
             userMapper.insertOAuthUser(user);
             personalProfileMapper.insertDefault(user.getId());
+            FileRecord profileImage = profileImageStorageService.storeRemoteImage(user.getId(), request.profileImageUrl());
+            if (profileImage != null) {
+                user.setProfileImageFileId(profileImage.getId());
+                user.setProfileImageUrl(profileImage.getFileUrl());
+                userMapper.updateOAuthInfo(user);
+            }
 
             consentMapper.findRequiredTermIds().forEach(termId -> {
                 UserConsent consent = new UserConsent();

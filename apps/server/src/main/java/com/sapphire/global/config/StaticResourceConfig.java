@@ -11,7 +11,7 @@ import java.nio.file.Path;
 public class StaticResourceConfig implements WebMvcConfigurer {
     private final Path profileImageRoot;
 
-    public StaticResourceConfig(@Value("${profile-image.upload-dir:../../profileImg}") String profileImageUploadDir) {
+    public StaticResourceConfig(@Value("${profile-image.upload-dir:uploads/profileImg}") String profileImageUploadDir) {
         this.profileImageRoot = Path.of(profileImageUploadDir).toAbsolutePath().normalize();
     }
 

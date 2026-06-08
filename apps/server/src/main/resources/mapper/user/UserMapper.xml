@@ -147,6 +147,7 @@
             role,
             oauth_provider,
             oauth_id,
+            profile_image_file_id,
             profile_image_url,
             language
         )
@@ -156,6 +157,7 @@
             #{role},
             #{oauthProvider},
             #{oauthId},
+            #{profileImageFileId},
             #{profileImageUrl},
             #{language}
         )
@@ -165,6 +167,7 @@
         UPDATE users
         SET oauth_provider = #{oauthProvider},
             oauth_id = #{oauthId},
+            profile_image_file_id = #{profileImageFileId},
             profile_image_url = #{profileImageUrl},
             language = COALESCE(#{language}, language),
             updated_at = NOW()
@@ -176,6 +179,7 @@
         UPDATE users
         SET name = #{name},
             phone = #{phone},
+            profile_image_file_id = #{profileImageFileId},
             profile_image_url = #{profileImageUrl},
             language = COALESCE(#{language}, language, 'KO'),
             updated_at = NOW()
@@ -189,6 +193,7 @@
             role = 'PERSONAL',
             oauth_provider = #{oauthProvider},
             oauth_id = #{oauthId},
+            profile_image_file_id = #{profileImageFileId},
             profile_image_url = #{profileImageUrl},
             language = COALESCE(#{language}, language, 'KO'),
             status = 'ACTIVE',
