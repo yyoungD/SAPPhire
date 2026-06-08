@@ -1,5 +1,6 @@
 package com.sapphire.domain.profile.mapper;
 
+import com.sapphire.domain.profile.dto.CompanyProfile;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -7,10 +8,5 @@ import org.apache.ibatis.annotations.Param;
 public interface CompanyProfileMapper {
     void insertDefault(@Param("userId") Long userId);
 
-    void insertSignupProfile(
-            @Param("userId") Long userId,
-            @Param("companyName") String companyName,
-            @Param("businessNumber") String businessNumber,
-            @Param("verificationStatus") String verificationStatus
-    );
+    CompanyProfile findByUserId(@Param("userId") Long userId);
 }
