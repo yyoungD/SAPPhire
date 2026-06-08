@@ -72,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
             log.warn("회원가입 실패: 허용되지 않은 역할입니다. email={}, role={}", email, role);
             throw new CustomException(ErrorCode.INVALID_ROLE);
         }
+        validateCompanySignup(role, request.companyName(), request.businessNumber(), request.businessNumberVerified());
 
         if (userMapper.existsByEmail(email)) {
             log.warn("회원가입 실패: 이미 가입된 이메일입니다. email={}", email);
@@ -97,7 +98,12 @@ public class AuthServiceImpl implements AuthService {
             personalProfileMapper.insertDefault(user.getId());
             log.debug("개인 기본 프로필 저장 완료. userId={}", user.getId());
         } else {
-            companyProfileMapper.insertDefault(user.getId());
+            companyProfileMapper.insertSignupProfile(
+                    user.getId(),
+                    request.companyName().trim(),
+                    normalizeBusinessNumber(request.businessNumber()),
+                    "APPROVED"
+            );
             log.debug("기업 기본 프로필 저장 완료. userId={}", user.getId());
         }
 
@@ -304,5 +310,24 @@ public class AuthServiceImpl implements AuthService {
             return "KO";
         }
         return language.trim().toUpperCase().replace('-', '_');
+    }
+
+    private void validateCompanySignup(String role, String companyName, String businessNumber, Boolean businessNumberVerified) {
+        if (!"COMPANY".equals(role)) {
+            return;
+        }
+        if (companyName == null || companyName.isBlank()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "회사 이름은 필수입니다.");
+        }
+        if (normalizeBusinessNumber(businessNumber).length() != 10) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 사업자 등록 번호입니다. 사업자 등록 번호는 숫자 10자리여야 합니다.");
+        }
+        if (!Boolean.TRUE.equals(businessNumberVerified)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "사업자 등록 번호 인증이 필요합니다.");
+        }
+    }
+
+    private String normalizeBusinessNumber(String businessNumber) {
+        return businessNumber == null ? "" : businessNumber.replaceAll("[^0-9]", "");
     }
 }

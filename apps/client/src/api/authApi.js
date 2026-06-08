@@ -1,13 +1,36 @@
 import { API_PATHS } from '../constanjs/apiPaths.js';
 import { apiClient, clearTokens, getRefreshToken, setTokens } from './apiClient.js';
 
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const AUTH_BASE_URL =
+  import.meta.env.VITE_AUTH_BASE_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:8080';
 
 export const authApi = {
-  signup: ({ email, password, name, phone = '', role, consents = [] }) =>
+  signup: ({
+    email,
+    password,
+    name,
+    phone = '',
+    role,
+    companyName = '',
+    businessNumber = '',
+    businessNumberVerified = false,
+    consents = [],
+  }) =>
     apiClient(API_PATHS.auth.signup, {
       method: 'POST',
-      body: { email, password, name, phone, role, consents },
+      body: {
+        email,
+        password,
+        name,
+        phone,
+        role,
+        companyName,
+        businessNumber,
+        businessNumberVerified,
+        consents,
+      },
     }),
 
   login: async ({ email, password }) => {
@@ -30,6 +53,7 @@ export const authApi = {
 
   startGoogleLogin: () => {
     sessionStorage.removeItem('sapphire.oauthLinkIntent');
+    sessionStorage.removeItem('sapphire.oauthSignupContext');
     window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
   },
 

@@ -110,12 +110,16 @@ export default function LoginPage() {
               로그인
             </button>
           </form>
-          <div className="divider">
-            <span />또는<span />
-          </div>
-          <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
-            Google 계정으로 계속하기
-          </button>
+          {role === 'PERSONAL' && (
+            <>
+              <div className="divider">
+                <span />또는<span />
+              </div>
+              <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
+                Google 계정으로 계속하기
+              </button>
+            </>
+          )}
           <button type="button" className="link-button" onClick={() => navigate(ROUTES.SIGNUP)}>
             계정이 없으신가요? 계정 만들기
           </button>
