@@ -1,19 +1,11 @@
-export default function AdminDashboardPage({ user, onLogout }) {
+export default function AdminDashboardPage() {
   return (
-    <main className="admin-dashboard-page">
-      <header className="admin-header">
-        <div>
-          <p className="eyebrow">SAPPhire Admin</p>
-          <h1>관리자 대시보드</h1>
-        </div>
-        <button type="button" className="secondary-button" onClick={onLogout}>
-          로그아웃
-        </button>
-      </header>
-      <section className="dashboard-panel">
-        <h2>{user?.name || '관리자'}</h2>
-        <p>관리자 인증이 완료되었습니다.</p>
-      </section>
-    </main>
+    <section>
+      <p className="mb-3 text-[11px] font-bold tracking-[0.08em] text-[#1d59c1]">ADMIN DASHBOARD</p>
+      <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">대시보드</h1>
+      <p className="m-0 max-w-2xl text-sm leading-6 text-[#57657a]">
+        관리자 홈 화면입니다. 주요 운영 지표와 알림 영역을 이곳에 추가할 예정입니다.
+      </p>
+    </section>
   );
 }

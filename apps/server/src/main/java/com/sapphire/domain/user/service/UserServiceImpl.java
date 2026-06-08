@@ -2,6 +2,7 @@ package com.sapphire.domain.user.service;
 
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
 import com.sapphire.domain.auth.dto.LoginResponse;
+import com.sapphire.domain.user.dto.AdminUserResponse;
 import com.sapphire.domain.user.dto.OAuthLinkRequest;
 import com.sapphire.domain.user.dto.User;
 import com.sapphire.domain.user.mapper.UserMapper;
@@ -9,6 +10,8 @@ import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -18,6 +21,12 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserMapper userMapper, RefreshTokenMapper refreshTokenMapper) {
         this.userMapper = userMapper;
         this.refreshTokenMapper = refreshTokenMapper;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> findAdminUsers() {
+        return userMapper.findAdminUsers();
     }
 
     @Override

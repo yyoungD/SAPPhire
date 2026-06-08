@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { adminAuthApi } from '../api/adminAuthApi.js';
 import { readAdminUser } from '../api/apiClient.js';
+import AdminLayout from '../components/layout/AdminLayout.jsx';
 import { ROUTES } from '../constanjs/routes.js';
 import AdminDashboardPage from '../pages/AdminDashboardPage.jsx';
 import AdminLoginPage from '../pages/AdminLoginPage.jsx';
+import AdminUserDetailPage from '../pages/users/AdminUserDetailPage.jsx';
+import AdminUserEditPage from '../pages/users/AdminUserEditPage.jsx';
+import AdminUserManagePage from '../pages/users/AdminUserManagePage.jsx';
 
 function replaceRoute(path) {
   window.history.replaceState(null, '', path);
@@ -44,11 +48,21 @@ export default function AppRouter() {
 
   const routes = useMemo(
     () => ({
-      [ROUTES.ADMIN_LOGIN]: <AdminLoginPage onLogin={login} />,
-      [ROUTES.ADMIN_DASHBOARD]: <AdminDashboardPage user={user} onLogout={logout} />,
+      [ROUTES.ADMIN_DASHBOARD]: <AdminDashboardPage />,
+      [ROUTES.ADMIN_USERS]: <AdminUserManagePage />,
+      [ROUTES.ADMIN_USER_DETAIL]: <AdminUserDetailPage />,
+      [ROUTES.ADMIN_USER_EDIT]: <AdminUserEditPage />,
     }),
-    [user],
+    []
   );
 
-  return routes[path] || routes[ROUTES.ADMIN_DASHBOARD];
+  if (path === ROUTES.ADMIN_LOGIN) {
+    return <AdminLoginPage onLogin={login} />;
+  }
+
+  return (
+    <AdminLayout user={user} onLogout={logout} currentPath={path}>
+      {routes[path] || routes[ROUTES.ADMIN_DASHBOARD]}
+    </AdminLayout>
+  );
 }
