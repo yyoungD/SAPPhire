@@ -7,4 +7,19 @@
         INSERT INTO company_profiles (user_id)
         VALUES (#{userId})
     </insert>
+
+    <insert id="insertSignupProfile">
+        INSERT INTO company_profiles (
+            user_id,
+            company_name,
+            business_number,
+            verification_status
+        )
+        VALUES (
+            #{userId},
+            #{companyName},
+            #{businessNumber},
+            #{verificationStatus}
+        )
+    </insert>
 </mapper>

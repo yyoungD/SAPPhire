@@ -26,6 +26,12 @@ public record SignupRequest(
         @NotBlank(message = "역할은 필수입니다.")
         String role,
 
+        String companyName,
+
+        String businessNumber,
+
+        Boolean businessNumberVerified,
+
         @NotEmpty(message = "약관 동의는 1개 이상 필요합니다.")
         List<@Valid ConsentAgreement> consents
 ) {
