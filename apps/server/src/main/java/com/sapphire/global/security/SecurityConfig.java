@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 "/api/v1/admin/auth/login",
                                 "/api/v1/auth/oauth/signup",
                                 "/api/v1/auth/reissue",
+                                "/api/v1/business-verifications/status",
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()

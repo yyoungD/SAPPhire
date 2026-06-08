@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { authApi } from '../../api/authApi.js';
+import { businessVerificationApi } from '../../api/businessVerificationApi.js';
 import { ROUTES } from '../../constanjs/routes.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { navigate } from '../../utils/authUtils.js';
@@ -24,6 +25,8 @@ export default function SignupPage() {
   const [role, setRole] = useState('PERSONAL');
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
+  const [businessNumberVerified, setBusinessNumberVerified] = useState(false);
+  const [businessVerifying, setBusinessVerifying] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState({
     password: false,
     passwordConfirm: false,
@@ -51,16 +54,49 @@ export default function SignupPage() {
   );
 
   const update = (event) => {
+    if (event.target.name === 'businessNumber') {
+      setBusinessNumberVerified(false);
+    }
     setForm({ ...form, [event.target.name]: event.target.value });
   };
 
   const changeRole = (nextRole) => {
     setRole(nextRole);
     setError('');
+    setBusinessNumberVerified(false);
   };
 
   const togglePassword = (field) => {
     setVisiblePasswords((current) => ({ ...current, [field]: !current[field] }));
+  };
+
+  const verifyBusinessNumber = async () => {
+    const normalizedBusinessNumber = form.businessNumber.replace(/\D/g, '');
+    if (normalizedBusinessNumber.length !== 10) {
+      setBusinessNumberVerified(false);
+      setError('사업자등록번호는 숫자 10자리로 입력해 주세요.');
+      return;
+    }
+
+    setBusinessVerifying(true);
+    setError('');
+
+    try {
+      const result = await businessVerificationApi.verifyStatus(normalizedBusinessNumber);
+      if (!result.verified) {
+        setBusinessNumberVerified(false);
+        setError(result.statusMessage || '사업자등록 상태를 확인할 수 없습니다.');
+        return;
+      }
+
+      setForm((current) => ({ ...current, businessNumber: result.businessNumber || normalizedBusinessNumber }));
+      setBusinessNumberVerified(true);
+    } catch (err) {
+      setBusinessNumberVerified(false);
+      setError(err.message);
+    } finally {
+      setBusinessVerifying(false);
+    }
   };
 
   const onSubmit = async (event) => {
@@ -77,6 +113,11 @@ export default function SignupPage() {
       return;
     }
 
+    if (isCompany && !businessNumberVerified) {
+      setError('사업자등록번호 인증을 완료해 주세요.');
+      return;
+    }
+
     try {
       await signup({
         email: form.email,
@@ -84,6 +125,9 @@ export default function SignupPage() {
         name: form.name,
         phone: form.phone,
         role,
+        companyName: form.companyName,
+        businessNumber: form.businessNumber,
+        businessNumberVerified,
         consents: [{ termId: 1, agreed: true }],
       });
       navigate(ROUTES.LOGIN);
@@ -133,7 +177,9 @@ export default function SignupPage() {
                   사업자 번호
                   <div className="inline-input">
                     <input name="businessNumber" value={form.businessNumber} onChange={update} placeholder="1234567890" inputMode="numeric" required />
-                    <button type="button">인증하기</button>
+                    <button type="button" onClick={verifyBusinessNumber} disabled={businessVerifying}>
+                      {businessVerifying ? '인증중' : businessNumberVerified ? '인증완료' : '인증하기'}
+                    </button>
                   </div>
                 </label>
               </>
@@ -194,12 +240,16 @@ export default function SignupPage() {
               시작하기
             </button>
           </form>
-          <div className="divider">
-            <span />또는<span />
-          </div>
-          <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
-            Google 계정으로 회원가입
-          </button>
+          {!isCompany && (
+            <>
+              <div className="divider">
+                <span />또는<span />
+              </div>
+              <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
+                Google 계정으로 회원가입
+              </button>
+            </>
+          )}
           <button type="button" className="link-button" onClick={() => navigate(ROUTES.LOGIN)}>
             이미 계정이 있으신가요? 로그인
           </button>
