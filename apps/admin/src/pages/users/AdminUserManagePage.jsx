@@ -1,8 +1,8 @@
+import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
   Download,
   Filter,
-  MoreHorizontal,
   Plus,
   Search,
   Settings,
@@ -11,67 +11,77 @@ import {
   UserRoundCheck,
   Users,
 } from 'lucide-react';
+import { adminUserApi } from '../../api/adminUserApi.js';
+import ListTable from '../../components/ListTable.jsx';
 
-const summaryItems = [
-  { label: '전체 회원', value: '12,450', note: '지난달 대비 12%', icon: Users, tone: 'blue' },
-  { label: '오늘 신규 가입', value: '142', note: '어제 대비 5%', icon: TrendingUp, tone: 'blue' },
-  { label: '승인 대기', value: '28', note: '확인이 필요합니다', icon: UserRoundCheck, tone: 'red' },
-  { label: '활성 세션', value: '1,024', note: '현재 접속 중', icon: Settings, tone: 'indigo' },
-];
-
-const members = [
-  {
-    name: '김지수',
-    email: 'jisoo.kim@example.com',
-    type: '개인',
-    joinedAt: '2026.05.28',
-    status: '활성',
-    initial: 'K',
-  },
-  {
-    name: '이민호',
-    email: 'minho.lee@sapphire.co.kr',
-    type: '기업',
-    joinedAt: '2026.05.26',
-    status: '활성',
-    initial: 'L',
-  },
-  {
-    name: '박진우',
-    email: 'jinwoo.park@example.com',
-    type: '개인',
-    joinedAt: '2026.05.24',
-    status: '승인 대기',
-    initial: 'P',
-  },
-  {
-    name: '최영호',
-    email: 'youngho.choi@example.com',
-    type: '개인',
-    joinedAt: '2026.05.20',
-    status: '정지됨',
-    initial: 'C',
-  },
-];
-
-function StatusBadge({ status }) {
-  const styles = {
-    활성: 'bg-[#dce9ff] text-[#003c90]',
-    '승인 대기': 'bg-[#fff3cd] text-[#745500]',
-    정지됨: 'bg-[#ffe1df] text-[#b42318]',
-  };
-
+function SummaryCard({ label, value, note, icon: Icon, tone }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status]}`}
-    >
-      <span className="size-1.5 rounded-full bg-current" />
-      {status}
-    </span>
+    <article className="rounded-lg bg-white p-5 shadow-[0_12px_32px_rgba(11,28,48,0.05)]">
+      <div className="mb-5 flex items-center justify-between">
+        <p className="m-0 text-sm font-semibold text-[#57657a]">{label}</p>
+        <span className="flex size-9 items-center justify-center rounded-md bg-[#eff4ff] text-[#1d59c1]">
+          <Icon size={17} />
+        </span>
+      </div>
+      <strong className="block text-[34px] leading-none font-bold">{value}</strong>
+      <p
+        className={`mt-3 mb-0 text-xs font-semibold ${
+          tone === 'red' ? 'text-[#c91d24]' : tone === 'indigo' ? 'text-[#2724b8]' : 'text-[#0f52ba]'
+        }`}
+      >
+        {note}
+      </p>
+    </article>
   );
 }
 
 export default function AdminUserManagePage() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadUsers() {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data = await adminUserApi.list();
+        if (!ignore) {
+          setUsers(data || []);
+        }
+      } catch (exception) {
+        if (!ignore) {
+          setError(exception.message || '회원 데이터를 불러오지 못했습니다.');
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadUsers();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const summaryItems = useMemo(() => {
+    const activeCount = users.filter((user) => user.status === 'ACTIVE').length;
+    const pendingCount = users.filter((user) => user.status === 'INACTIVE' || user.status === 'BANNED').length;
+
+    return [
+      { label: '전체 회원', value: users.length.toLocaleString(), note: 'DB 기준 회원 수', icon: Users, tone: 'blue' },
+      { label: '활성 회원', value: activeCount.toLocaleString(), note: '현재 이용 가능', icon: TrendingUp, tone: 'blue' },
+      { label: '검토 필요', value: pendingCount.toLocaleString(), note: '비활성 또는 정지', icon: UserRoundCheck, tone: 'red' },
+      { label: '목록 표시', value: users.length.toLocaleString(), note: '현재 테이블', icon: Settings, tone: 'indigo' },
+    ];
+  }, [users]);
+
   return (
     <>
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -81,7 +91,7 @@ export default function AdminUserManagePage() {
           </p>
           <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">회원관리</h1>
           <p className="m-0 max-w-2xl text-sm leading-6 text-[#57657a]">
-            플랫폼에 등록된 개인 및 기업 회원 계정을 확인하고 관리합니다.
+            SAPPhire에 등록된 회원 계정을 실제 DB 데이터 기준으로 확인하고 관리합니다.
           </p>
         </div>
         <button
@@ -94,30 +104,8 @@ export default function AdminUserManagePage() {
       </section>
 
       <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="회원 요약">
-        {summaryItems.map(({ label, value, note, icon: Icon, tone }) => (
-          <article
-            key={label}
-            className="rounded-lg bg-white p-5 shadow-[0_12px_32px_rgba(11,28,48,0.05)]"
-          >
-            <div className="mb-5 flex items-center justify-between">
-              <p className="m-0 text-sm font-semibold text-[#57657a]">{label}</p>
-              <span className="flex size-9 items-center justify-center rounded-md bg-[#eff4ff] text-[#1d59c1]">
-                <Icon size={17} />
-              </span>
-            </div>
-            <strong className="block text-[34px] leading-none font-bold">{value}</strong>
-            <p
-              className={`mt-3 mb-0 text-xs font-semibold ${
-                tone === 'red'
-                  ? 'text-[#c91d24]'
-                  : tone === 'indigo'
-                    ? 'text-[#2724b8]'
-                    : 'text-[#0f52ba]'
-              }`}
-            >
-              {note}
-            </p>
-          </article>
+        {summaryItems.map((item) => (
+          <SummaryCard key={item.label} {...item} />
         ))}
       </section>
 
@@ -130,13 +118,6 @@ export default function AdminUserManagePage() {
             type="search"
           />
         </div>
-        <button
-          type="button"
-          className="flex min-h-11 items-center justify-between gap-5 rounded-md bg-[#eff4ff] px-4 text-sm font-semibold text-[#33445a] xl:min-w-40"
-        >
-          모든 회원 유형
-          <ChevronDown size={16} />
-        </button>
         <button
           type="button"
           className="flex min-h-11 items-center justify-between gap-5 rounded-md bg-[#eff4ff] px-4 text-sm font-semibold text-[#33445a] xl:min-w-36"
@@ -169,81 +150,11 @@ export default function AdminUserManagePage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg bg-white shadow-[0_12px_32px_rgba(11,28,48,0.05)]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-left">
-            <thead className="bg-[#eff4ff] text-xs font-bold tracking-[0.04em] text-[#57657a]">
-              <tr>
-                <th className="w-14 px-5 py-4">
-                  <input type="checkbox" aria-label="전체 선택" />
-                </th>
-                <th className="px-4 py-4">회원</th>
-                <th className="px-4 py-4">이메일</th>
-                <th className="px-4 py-4">유형</th>
-                <th className="px-4 py-4">가입일</th>
-                <th className="px-4 py-4">상태</th>
-                <th className="w-16 px-4 py-4 text-center">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <tr
-                  key={member.email}
-                  className="border-b border-[#eff4ff] text-sm last:border-0 hover:bg-[#f8f9ff]"
-                >
-                  <td className="px-5 py-4">
-                    <input type="checkbox" aria-label={`${member.name} 선택`} />
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-9 items-center justify-center rounded-md bg-[#dce9ff] text-xs font-bold text-[#003c90]">
-                        {member.initial}
-                      </span>
-                      <span className="font-semibold">{member.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-[#57657a]">{member.email}</td>
-                  <td className="px-4 py-4">
-                    <span className="rounded-full bg-[#eff4ff] px-2.5 py-1 text-xs font-semibold text-[#57657a]">
-                      {member.type}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-[#57657a]">{member.joinedAt}</td>
-                  <td className="px-4 py-4">
-                    <StatusBadge status={member.status} />
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <button
-                      type="button"
-                      className="inline-flex size-9 items-center justify-center rounded-md text-[#57657a] hover:bg-[#eff4ff]"
-                      aria-label={`${member.name} 관리`}
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <ListTable rows={users} loading={loading} error={error} emptyMessage="표시할 회원이 없습니다." />
 
-        <footer className="flex flex-col gap-4 px-5 py-4 text-sm text-[#57657a] sm:flex-row sm:items-center sm:justify-between">
-          <p className="m-0">전체 12,450명 중 1-4명 표시</p>
-          <div className="flex items-center gap-1">
-            {['이전', '1', '2', '3', '다음'].map((page) => (
-              <button
-                key={page}
-                type="button"
-                className={`min-h-9 min-w-9 rounded-md px-2 text-sm font-semibold ${
-                  page === '1' ? 'bg-[#003c90] text-white' : 'bg-[#eff4ff] text-[#57657a]'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        </footer>
-      </section>
+      <footer className="flex flex-col gap-4 px-5 py-4 text-sm text-[#57657a] sm:flex-row sm:items-center sm:justify-between">
+        <p className="m-0">전체 {users.length.toLocaleString()}명 표시</p>
+      </footer>
     </>
   );
 }

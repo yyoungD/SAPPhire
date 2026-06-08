@@ -38,14 +38,21 @@ export default function AdminSidebar({ user, onLogout, currentPath }) {
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#eff4ff] px-4 py-6 lg:flex">
-        <div className="px-3 pb-9">
-          <img className="h-auto w-[150px]" src={sapphireLogo} alt="SAPPhire" />
-          <p className="mt-2 text-[11px] font-bold tracking-[0.16em] text-[#57657a]">
-            RECRUITMENT ADMIN
-          </p>
+        <div className="px-3">
+          <button
+            type="button"
+            onClick={() => navigateTo(ROUTES.ADMIN_DASHBOARD)}
+            className="text-left focus:outline-none cursor-pointer"
+            aria-label="대시보드로 이동"
+          >
+            <img className="h-auto w-[150px]" src={sapphireLogo} alt="SAPPhire" />
+            <p className="mt-2 text-[11px] font-bold tracking-[0.16em] text-[#57657a]">
+              RECRUITMENT ADMIN
+            </p>
+          </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1" aria-label="관리자 메뉴">
+        <nav className="flex flex-1 flex-col gap-1 py-9" aria-label="관리자 메뉴">
           {navigationItems.map(({ label, icon: Icon, path }) => {
             const active = isActivePath(currentPath, path);
 
