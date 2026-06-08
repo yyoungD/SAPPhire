@@ -1,39 +1,85 @@
+import { useEffect, useState } from 'react';
 import { ROUTES } from '../../../constanjs/routes.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
 import { userApi } from '../../../api/userApi.js';
 import { authApi } from '../../../api/authApi.js';
+import { personalProfileApi } from '../../../api/personalProfileApi.js';
 import { getAccessToken } from '../../../api/apiClient.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
 
 const emptyText = '등록 전';
+const workTypeLabels = {
+  ONSITE: '상주',
+  REMOTE: '원격',
+  HYBRID: '하이브리드',
+};
 
 function firstLetter(name = '') {
   return name.trim().slice(0, 1).toUpperCase() || 'U';
 }
 
+function splitSkills(skills = '') {
+  return skills
+    .split(',')
+    .map((skill) => skill.trim())
+    .filter(Boolean);
+}
+
 export default function UserMyPage() {
   const { user, clearSession } = useAuth();
+  const [careerProfile, setCareerProfile] = useState(null);
   const displayName = user?.name || emptyText;
   const displayEmail = user?.email || emptyText;
   const displayPhone = user?.phone || emptyText;
   const displayRole = user?.role === 'PERSONAL' ? '개인회원' : user?.role || emptyText;
   const profileImageUrl = user?.profileImageUrl;
   const loginProvider = user?.oauthProvider ? `${user.oauthProvider} 로그인` : '이메일 로그인';
-  const language = user?.language || emptyText;
+
+  useEffect(() => {
+    let ignore = false;
+    personalProfileApi
+      .me()
+      .then((profile) => {
+        if (!ignore) setCareerProfile(profile);
+      })
+      .catch(() => {
+        if (!ignore) setCareerProfile(null);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const navigateCareerEdit = (section) => {
+    navigate(`${ROUTES.CAREER_PROFILE_UPDATE}#${section}`);
+  };
+
+  const handleResumePrint = () => {
+    const previousTitle = document.title;
+    document.title = `${displayName}-이력서`;
+    window.print();
+    window.setTimeout(() => {
+      document.title = previousTitle;
+    }, 1000);
+  };
 
   const handleLogout = () => {
     clearSession();
     navigate(ROUTES.HOME);
   };
 
-  const handleGoogleLink = () => {
+  const handleGoogleLink = async () => {
     if (!getAccessToken()) {
       clearSession();
       navigate(ROUTES.LOGIN);
       return;
     }
-    authApi.startGoogleLink();
+    try {
+      await authApi.startGoogleLink();
+    } catch (error) {
+      window.alert(error.message || 'Google 계정 연결을 시작할 수 없습니다.');
+    }
   };
 
   const handleWithdraw = () => {
@@ -82,44 +128,59 @@ export default function UserMyPage() {
                 <h2>
                   {displayName} <span>({displayRole})</span>
                 </h2>
-                <div className="profile-contact">
-                  <span>{displayEmail}</span>
-                  <span>{displayPhone}</span>
-                  <span>사용자 ID: {user?.id ?? emptyText}</span>
-                  <span>{loginProvider}</span>
-                  <span>언어: {language}</span>
+                <div className="profile-info-grid">
+                  <div>
+                    <span>이메일</span>
+                    <strong>{displayEmail}</strong>
+                  </div>
+                  <div>
+                    <span>전화번호</span>
+                    <strong>{displayPhone}</strong>
+                  </div>
+                  <div>
+                    <span>로그인 방식</span>
+                    <strong>{loginProvider}</strong>
+                  </div>
                 </div>
               </div>
-              <button type="button" className="secondary profile-edit" onClick={() => navigate(ROUTES.USER_UPDATE)}>
-                프로필 수정
-              </button>
-              {!user?.oauthProvider && (
-                <button type="button" className="secondary profile-edit" onClick={handleGoogleLink}>
-                  Google 계정 연결
+              <div className="profile-summary-actions">
+                <button type="button" className="secondary profile-edit" onClick={handleResumePrint}>
+                  PDF 저장
                 </button>
-              )}
+                <button type="button" className="secondary profile-edit" onClick={() => navigate(ROUTES.PROFILE_UPDATE)}>
+                  프로필 수정
+                </button>
+                {!user?.oauthProvider && (
+                  <button type="button" className="secondary profile-edit" onClick={handleGoogleLink}>
+                    Google 계정 연결
+                  </button>
+                )}
+              </div>
             </article>
 
             <article className="profile-card">
-              <div className="section-heading">
+              <div className="section-heading editable-heading">
                 <h2>희망 근무 조건</h2>
+                <button type="button" className="section-edit-button" onClick={() => navigateCareerEdit('work')}>
+                  수정
+                </button>
               </div>
               <dl className="profile-dl">
                 <div>
                   <dt>희망 직무</dt>
-                  <dd>{emptyText}</dd>
+                  <dd>{careerProfile?.professionalTitle || emptyText}</dd>
                 </div>
                 <div>
                   <dt>희망 연봉</dt>
-                  <dd>{emptyText}</dd>
+                  <dd>{careerProfile?.desiredSalary || emptyText}</dd>
                 </div>
                 <div>
                   <dt>근무 형태</dt>
-                  <dd>{emptyText}</dd>
+                  <dd>{workTypeLabels[careerProfile?.workType] || emptyText}</dd>
                 </div>
                 <div>
                   <dt>희망 근무지</dt>
-                  <dd>{emptyText}</dd>
+                  <dd>{careerProfile?.location || emptyText}</dd>
                 </div>
               </dl>
               <div className="toggle-row">
@@ -127,24 +188,33 @@ export default function UserMyPage() {
                   <strong>프로필 공개 설정</strong>
                   <span>헤드헌터 및 채용 담당자에게 프로필을 공개합니다.</span>
                 </div>
-                <button type="button" className="toggle-on" aria-label="프로필 공개 설정 켜짐" />
+                <button type="button" className={careerProfile?.isPublic === false ? 'toggle-off' : 'toggle-on'} aria-label="프로필 공개 설정" />
               </div>
             </article>
 
             <article className="profile-card">
-              <div className="section-heading">
+              <div className="section-heading editable-heading">
                 <h2>SAP 전문성</h2>
+                <button type="button" className="section-edit-button" onClick={() => navigateCareerEdit('sap')}>
+                  수정
+                </button>
               </div>
               <div className="skill-cloud">
-                <p className="empty-copy">등록된 SAP 스킬이 없습니다.</p>
+                {careerProfile?.sapSkills
+                  ? splitSkills(careerProfile.sapSkills).map((skill) => <span key={skill}>{skill}</span>)
+                  : <p className="empty-copy">등록된 SAP 스킬이 없습니다.</p>}
               </div>
+              {careerProfile?.coreCompetencies && <p className="career-copy compact-copy">{careerProfile.coreCompetencies}</p>}
             </article>
 
             <article className="profile-card">
-              <div className="section-heading">
+              <div className="section-heading editable-heading">
                 <h2>경력 요약</h2>
+                <button type="button" className="section-edit-button" onClick={() => navigateCareerEdit('summary')}>
+                  수정
+                </button>
               </div>
-              <p className="career-copy">등록된 경력 요약이 없습니다. 프로필 수정에서 경력과 SAP 전문성을 입력해 주세요.</p>
+              <p className="career-copy">{careerProfile?.summary || '등록된 경력 요약이 없습니다. 커리어 프로필 수정에서 경력과 SAP 전문성을 입력해 주세요.'}</p>
             </article>
           </section>
 
@@ -197,6 +267,66 @@ export default function UserMyPage() {
           </aside>
         </div>
       </div>
+      <section className="resume-print-sheet" aria-hidden="true">
+        <header className="resume-print-header">
+          <div>
+            <p>SAP RESUME</p>
+            <h1>{displayName}</h1>
+            <strong>{careerProfile?.professionalTitle || 'SAP 전문가'}</strong>
+          </div>
+          <dl>
+            <div>
+              <dt>이메일</dt>
+              <dd>{displayEmail}</dd>
+            </div>
+            <div>
+              <dt>전화번호</dt>
+              <dd>{displayPhone}</dd>
+            </div>
+            <div>
+              <dt>희망 근무지</dt>
+              <dd>{careerProfile?.location || emptyText}</dd>
+            </div>
+          </dl>
+        </header>
+
+        <section className="resume-print-section">
+          <h2>희망 조건</h2>
+          <dl>
+            <div>
+              <dt>희망 직무</dt>
+              <dd>{careerProfile?.professionalTitle || emptyText}</dd>
+            </div>
+            <div>
+              <dt>총 경력</dt>
+              <dd>{careerProfile?.careerYears ? `${careerProfile.careerYears}년` : emptyText}</dd>
+            </div>
+            <div>
+              <dt>근무 형태</dt>
+              <dd>{workTypeLabels[careerProfile?.workType] || emptyText}</dd>
+            </div>
+            <div>
+              <dt>희망 연봉</dt>
+              <dd>{careerProfile?.desiredSalary || emptyText}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="resume-print-section">
+          <h2>SAP 전문성</h2>
+          <div className="resume-print-skills">
+            {splitSkills(careerProfile?.sapSkills || '').length > 0
+              ? splitSkills(careerProfile.sapSkills).map((skill) => <span key={skill}>{skill}</span>)
+              : <span>{emptyText}</span>}
+          </div>
+          <p>{careerProfile?.coreCompetencies || '등록된 핵심 역량이 없습니다.'}</p>
+        </section>
+
+        <section className="resume-print-section">
+          <h2>경력 요약</h2>
+          <p>{careerProfile?.summary || '등록된 경력 요약이 없습니다.'}</p>
+        </section>
+      </section>
     </main>
   );
 }

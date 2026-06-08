@@ -6,3 +6,7 @@
 # Logs
 *.log
 logs/
+
+# Uploaded profile images
+profileImg/*
+!profileImg/.gitkeep

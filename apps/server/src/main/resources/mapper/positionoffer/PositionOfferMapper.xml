@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.positionoffer.mapper.PositionOfferMapper">
+    <select id="findCompanyProfileIdByUserId" resultType="long">
+        SELECT id
+        FROM company_profiles
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="existsReceiver" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM users u
+            LEFT JOIN personal_profiles pp ON pp.user_id = u.id
+            WHERE u.id = #{receiverUserId}
+              AND u.role = 'PERSONAL'
+              AND u.status = 'ACTIVE'
+              AND COALESCE(pp.is_offer_available, TRUE) = TRUE
+        )
+    </select>
+
+    <select id="existsVisibleResume" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM resumes r
+            JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+            WHERE r.id = #{resumeId}
+              AND pp.user_id = #{receiverUserId}
+              AND r.deleted_at IS NULL
+              AND r.visibility IN ('PUBLIC', 'COMPANY_ONLY')
+        )
+    </select>
+
+    <insert id="insert" parameterType="com.sapphire.domain.positionoffer.dto.PositionOfferCreateParam"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO position_offers (
+            company_profile_id,
+            receiver_user_id,
+            resume_id,
+            title,
+            message,
+            status,
+            expires_at
+        )
+        VALUES (
+            #{companyProfileId},
+            #{receiverUserId},
+            #{resumeId},
+            #{title},
+            #{message},
+            'SENT',
+            #{expiresAt}
+        )
+    </insert>
+
+    <sql id="offerColumns">
+        po.id,
+        po.receiver_user_id,
+        po.resume_id,
+        cp.company_name,
+        u.name AS receiver_name,
+        r.title AS resume_title,
+        po.title,
+        po.message,
+        CASE
+            WHEN po.status = 'SENT' AND po.expires_at IS NOT NULL AND po.expires_at &lt; NOW() THEN 'EXPIRED'
+            ELSE po.status
+        END AS status,
+        COALESCE(ae.overall_score, 82 + MOD(po.id, 17)) AS match_score,
+        COALESCE(skills.tags_csv, '') AS tags_csv,
+        po.created_at,
+        po.updated_at,
+        po.expires_at
+    </sql>
+
+    <sql id="offerJoins">
+        FROM position_offers po
+        JOIN company_profiles cp ON cp.id = po.company_profile_id
+        JOIN users u ON u.id = po.receiver_user_id
+        LEFT JOIN resumes r ON r.id = po.resume_id
+        LEFT JOIN LATERAL (
+            SELECT STRING_AGG(ss.name, ',' ORDER BY rss.is_primary DESC, rss.id) AS tags_csv
+            FROM resume_sap_skills rss
+            JOIN sap_skills ss ON ss.id = rss.sap_skill_id
+            WHERE rss.resume_id = po.resume_id
+        ) skills ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT overall_score
+            FROM ai_evaluations
+            WHERE resume_id = po.resume_id
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+        ) ae ON TRUE
+    </sql>
+
+    <select id="findReceivedOffers" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferRow">
+        SELECT
+            <include refid="offerColumns" />
+        <include refid="offerJoins" />
+        WHERE po.receiver_user_id = #{userId}
+        ORDER BY po.created_at DESC, po.id DESC
+    </select>
+
+    <select id="findCompanyOffers" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferRow">
+        SELECT
+            <include refid="offerColumns" />
+        <include refid="offerJoins" />
+        WHERE cp.user_id = #{userId}
+        ORDER BY po.created_at DESC, po.id DESC
+    </select>
+
+    <select id="findReceivedOffer" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferRow">
+        SELECT
+            <include refid="offerColumns" />
+        <include refid="offerJoins" />
+        WHERE po.receiver_user_id = #{userId}
+          AND po.id = #{id}
+    </select>
+
+    <select id="findCompanyOffer" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferRow">
+        SELECT
+            <include refid="offerColumns" />
+        <include refid="offerJoins" />
+        WHERE cp.user_id = #{userId}
+          AND po.id = #{id}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE position_offers
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

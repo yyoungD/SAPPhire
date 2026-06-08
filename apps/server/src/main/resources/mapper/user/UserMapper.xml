@@ -151,6 +151,17 @@
           AND deleted_at IS NULL
     </update>
 
+    <update id="updateProfile" parameterType="com.sapphire.domain.user.dto.User">
+        UPDATE users
+        SET name = #{name},
+            phone = #{phone},
+            profile_image_url = #{profileImageUrl},
+            language = COALESCE(#{language}, language, 'KO'),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
+
     <update id="restoreOAuthUser" parameterType="com.sapphire.domain.user.dto.User">
         UPDATE users
         SET name = #{name},

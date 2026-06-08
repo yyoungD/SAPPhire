@@ -8,5 +8,14 @@ export const userApi = {
       method: 'POST',
       body: { provider, oauthId, email, profileImageUrl, language },
     }),
+  updateMe: ({ name, phone, language, profileImage, removeProfileImage = false }) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('phone', phone);
+    formData.append('language', language || '');
+    formData.append('removeProfileImage', String(removeProfileImage));
+    if (profileImage) formData.append('profileImage', profileImage);
+    return apiClient(`${API_PATHS.users}/me`, { method: 'PUT', body: formData });
+  },
   withdrawMe: () => apiClient(`${API_PATHS.users}/me`, { method: 'DELETE' }),
 };

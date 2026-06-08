@@ -1,0 +1,12 @@
+name: SAPPhire Local
+values:
+  - key: baseUrl
+    value: ''
+  - key: accessToken
+    value: ''
+  - key: resumeFileId
+    value: ''
+  - key: resumeId
+    value: ''
+  - key: jobPostId
+    value: ''

@@ -1,4 +1,4 @@
-import { API_BASE_URL, API_PATHS } from '../constanjs/apiPaths.js';
+import { API_PATHS } from '../constanjs/apiPaths.js';
 import { apiClient, clearTokens, getRefreshToken, setTokens } from './apiClient.js';
 
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -33,9 +33,10 @@ export const authApi = {
     window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
   },
 
-  startGoogleLink: () => {
+  startGoogleLink: async () => {
     sessionStorage.setItem('sapphire.oauthLinkIntent', 'true');
-    window.location.href = `${AUTH_BASE_URL}${API_PATHS.auth.googleOAuth}`;
+    const data = await apiClient(`${API_PATHS.users}/me/oauth-link/prepare`, { method: 'POST' });
+    window.location.href = `${AUTH_BASE_URL}${data.authorizationUrl || API_PATHS.auth.googleOAuth}`;
   },
 
   completeOAuthLogin: (data) => {

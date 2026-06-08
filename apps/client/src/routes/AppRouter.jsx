@@ -11,6 +11,7 @@ import UserMyPage from '../pages/personal/mypage/UserMyPage.jsx';
 import UserUpdatePage from '../pages/personal/mypage/UserUpdatePage.jsx';
 import ProfilePage from '../pages/personal/profile/ProfilePage.jsx';
 import ProfileUpdatePage from '../pages/personal/profile/ProfileUpdatePage.jsx';
+import CareerProfileUpdatePage from '../pages/personal/profile/CareerProfileUpdatePage.jsx';
 import AiEvaluationPage from '../pages/personal/profile/AiEvaluationPage.jsx';
 import ResumeListPage from '../pages/personal/resumes/ResumeListPage.jsx';
 import ResumeCreatePage from '../pages/personal/resumes/ResumeCreatePage.jsx';
@@ -80,6 +81,7 @@ export default function AppRouter() {
       [ROUTES.USER_UPDATE]: guarded(UserUpdatePage, ['PERSONAL']),
       [ROUTES.PROFILE]: guarded(ProfilePage, ['PERSONAL']),
       [ROUTES.PROFILE_UPDATE]: guarded(ProfileUpdatePage, ['PERSONAL']),
+      [ROUTES.CAREER_PROFILE_UPDATE]: guarded(CareerProfileUpdatePage, ['PERSONAL']),
       [ROUTES.AI_EVALUATION]: guarded(AiEvaluationPage, ['PERSONAL']),
       [ROUTES.RESUMES]: guarded(ResumeListPage, ['PERSONAL']),
       [ROUTES.RESUME_CREATE]: guarded(ResumeCreatePage, ['PERSONAL']),

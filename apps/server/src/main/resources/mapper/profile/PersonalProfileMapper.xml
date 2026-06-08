@@ -7,4 +7,38 @@
         INSERT INTO personal_profiles (user_id)
         VALUES (#{userId})
     </insert>
+
+    <select id="findByUserId" resultType="com.sapphire.domain.profile.dto.PersonalProfile">
+        SELECT
+            id,
+            user_id,
+            professional_title,
+            desired_salary,
+            work_type,
+            location,
+            career_years,
+            sap_skills,
+            core_competencies,
+            summary,
+            is_public,
+            is_offer_available
+        FROM personal_profiles
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateByUserId" parameterType="com.sapphire.domain.profile.dto.PersonalProfile">
+        UPDATE personal_profiles
+        SET professional_title = #{professionalTitle},
+            desired_salary = #{desiredSalary},
+            work_type = #{workType},
+            location = #{location},
+            career_years = COALESCE(#{careerYears}, 0),
+            sap_skills = #{sapSkills},
+            core_competencies = #{coreCompetencies},
+            summary = #{summary},
+            is_public = COALESCE(#{isPublic}, TRUE),
+            is_offer_available = COALESCE(#{isOfferAvailable}, TRUE),
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

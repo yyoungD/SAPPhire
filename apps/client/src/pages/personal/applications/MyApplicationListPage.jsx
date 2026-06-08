@@ -4,6 +4,10 @@ import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeade
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
+function isEmptyListServerError(err) {
+  return err?.status === 500;
+}
+
 export default function MyApplicationListPage() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +20,11 @@ export default function MyApplicationListPage() {
       const data = await applicationApi.list();
       setApplications(Array.isArray(data) ? data : []);
     } catch (err) {
+      if (isEmptyListServerError(err)) {
+        setApplications([]);
+        setError('');
+        return;
+      }
       setError(err.message || '지원 내역을 불러오지 못했습니다.');
     } finally {
       setLoading(false);

@@ -1,0 +1,32 @@
+$kind: http-request
+name: signup
+url: http://localhost:8080/api/v1/auth/signup
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"test1@example.com\",\r
+
+    \  \"password\": \"12345678\",\r
+
+    \  \"name\": \"테스트유저\",\r
+
+    \  \"phone\": \"010-1234-5678\",\r
+
+    \  \"role\": \"PERSONAL\",\r
+
+    \  \"consents\": [\r
+
+    \    {\r
+
+    \      \"termId\": 1,\r
+
+    \      \"agreed\": true\r
+
+    \    }\r
+
+    \  ]\r
+
+    }"
+order: 1780891494433

@@ -8,6 +8,7 @@ export const ROUTES = {
   USER_UPDATE: '/personal/mypage/update',
   PROFILE: '/personal/profile',
   PROFILE_UPDATE: '/personal/profile/update',
+  CAREER_PROFILE_UPDATE: '/personal/profile/career-update',
   AI_EVALUATION: '/personal/profile/ai-evaluation',
   RESUMES: '/personal/resumes',
   RESUME_CREATE: '/personal/resumes/create',

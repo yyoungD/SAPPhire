@@ -2,6 +2,7 @@ package com.sapphire.global.security.jwt;
 
 import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
+import com.sapphire.global.security.auth.CustomUserDetails;
 import com.sapphire.global.security.auth.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -45,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             String token = resolveToken(request);
-            if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (token != null && shouldAuthenticateWithJwt()) {
                 log.debug("JWT 인증 시작. method={}, uri={}", request.getMethod(), request.getRequestURI());
                 Claims claims = jwtTokenProvider.parseClaims(token);
                 String email = claims.get("email", String.class);
@@ -72,6 +73,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean shouldAuthenticateWithJwt() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails);
     }
 
     private String resolveToken(HttpServletRequest request) {

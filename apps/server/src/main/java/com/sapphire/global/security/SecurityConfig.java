@@ -3,7 +3,9 @@ package com.sapphire.global.security;
 import com.sapphire.global.security.jwt.JwtAccessDeniedHandler;
 import com.sapphire.global.security.jwt.JwtAuthenticationEntryPoint;
 import com.sapphire.global.security.jwt.JwtAuthenticationFilter;
+import com.sapphire.global.security.oauth.OAuth2LinkAuthorizationRequestResolver;
 import com.sapphire.global.security.oauth.OAuth2LoginSuccessHandler;
+import com.sapphire.global.security.oauth.OAuthLinkStateStore;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,17 +29,20 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final OAuthLinkStateStore oauthLinkStateStore;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
             JwtAccessDeniedHandler jwtAccessDeniedHandler,
-            OAuth2LoginSuccessHandler oauth2LoginSuccessHandler
+            OAuth2LoginSuccessHandler oauth2LoginSuccessHandler,
+            OAuthLinkStateStore oauthLinkStateStore
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
+        this.oauthLinkStateStore = oauthLinkStateStore;
     }
 
     @Bean
@@ -59,7 +64,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/profileImg/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/jobs", "/api/v1/jobs/*").permitAll()
                         .requestMatchers(
@@ -76,8 +82,16 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        if (clientRegistrationRepository.getIfAvailable() != null) {
-            http.oauth2Login(oauth2 -> oauth2.successHandler(oauth2LoginSuccessHandler));
+        ClientRegistrationRepository registrations = clientRegistrationRepository.getIfAvailable();
+        if (registrations != null) {
+            http.oauth2Login(oauth2 -> oauth2
+                    .authorizationEndpoint(authorization -> authorization
+                            .authorizationRequestResolver(
+                                    new OAuth2LinkAuthorizationRequestResolver(registrations, oauthLinkStateStore)
+                            )
+                    )
+                    .successHandler(oauth2LoginSuccessHandler)
+            );
         }
 
         return http.build();

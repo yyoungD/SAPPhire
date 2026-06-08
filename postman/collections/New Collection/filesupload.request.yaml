@@ -1,0 +1,23 @@
+$kind: http-request
+name: filesupload
+url: "{{baseUrl}}/api/v1/files"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: file
+      key: file
+      src:
+        - /C:/Users/natur/Downloads/resume.pdf
+      description: ""
+      disabled: false
+    - type: text
+      key: category
+      value: RESUME
+      description: ""
+      disabled: false
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+order: 3033287153540095

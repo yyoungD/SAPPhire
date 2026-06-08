@@ -26,17 +26,20 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final UserMapper userMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final JwtTokenProvider jwtTokenProvider;
+    private final OAuthLinkStateStore oauthLinkStateStore;
     private final String frontendOAuthCallbackUrl;
 
     public OAuth2LoginSuccessHandler(
             UserMapper userMapper,
             RefreshTokenMapper refreshTokenMapper,
             JwtTokenProvider jwtTokenProvider,
+            OAuthLinkStateStore oauthLinkStateStore,
             @Value("${app.oauth2.frontend-callback-url:http://localhost:5173/oauth/callback}") String frontendOAuthCallbackUrl
     ) {
         this.userMapper = userMapper;
         this.refreshTokenMapper = refreshTokenMapper;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.oauthLinkStateStore = oauthLinkStateStore;
         this.frontendOAuthCallbackUrl = frontendOAuthCallbackUrl;
     }
 
@@ -68,6 +71,17 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String normalizedEmail = email.trim().toLowerCase();
         String normalizedLocale = normalizedLocale(locale);
 
+        Long linkUserId = oauthLinkStateStore.consumeUserId(request.getParameter("state"));
+        if (linkUserId != null) {
+            User linkedUser = linkOAuthAccount(linkUserId, provider, oauthId, normalizedEmail, picture, normalizedLocale);
+            if (linkedUser == null) {
+                redirectWithError(response, "oauth_link_failed");
+                return;
+            }
+            redirectWithTokens(request, response, linkedUser);
+            return;
+        }
+
         User connectedAccount = userMapper.findByOAuth(provider, oauthId);
         User user = connectedAccount == null ? null : userMapper.findById(connectedAccount.getId());
         if (user == null) {
@@ -85,10 +99,13 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         user = updateOAuthProfile(user, picture, normalizedLocale);
 
+        redirectWithTokens(request, response, user);
+    }
+
+    private void redirectWithTokens(HttpServletRequest request, HttpServletResponse response, User user) throws IOException {
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user);
         saveRefreshToken(user.getId(), refreshToken);
-
         LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo(
                 user.getId(),
                 user.getEmail(),
@@ -117,6 +134,39 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                 .toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private User linkOAuthAccount(
+            Long userId,
+            String provider,
+            String oauthId,
+            String email,
+            String picture,
+            String locale
+    ) {
+        User user = userMapper.findById(userId);
+        if (user == null || !"ACTIVE".equals(user.getStatus()) || !email.equals(user.getEmail())) {
+            return null;
+        }
+
+        User connectedAccount = userMapper.findByOAuth(provider, oauthId);
+        if (connectedAccount != null && !connectedAccount.getId().equals(userId)) {
+            return null;
+        }
+
+        if (!isBlank(user.getOauthProvider()) || !isBlank(user.getOauthId())) {
+            boolean sameOAuthAccount = provider.equals(user.getOauthProvider()) && oauthId.equals(user.getOauthId());
+            if (!sameOAuthAccount) {
+                return null;
+            }
+        }
+
+        user.setOauthProvider(provider);
+        user.setOauthId(oauthId);
+        user.setProfileImageUrl(keepExistingWhenBlank(picture, user.getProfileImageUrl()));
+        user.setLanguage(keepExistingWhenBlank(locale, user.getLanguage()));
+        userMapper.updateOAuthInfo(user);
+        return userMapper.findById(userId);
     }
 
     private User updateOAuthProfile(User user, String picture, String locale) {

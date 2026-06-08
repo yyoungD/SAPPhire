@@ -22,6 +22,8 @@ public interface UserMapper {
 
     void updateOAuthInfo(User user);
 
+    void updateProfile(User user);
+
     void restoreOAuthUser(User user);
 
     int withdrawById(@Param("id") Long id);

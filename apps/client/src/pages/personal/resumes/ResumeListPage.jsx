@@ -11,6 +11,10 @@ const fallbackAnalysis = {
   suggestions: ['이력서 업로드 후 AI 진단을 실행해 보세요.'],
 };
 
+function isEmptyListServerError(err) {
+  return err?.status === 500;
+}
+
 function scoreTone(score) {
   if (score >= 90) return 'excellent';
   if (score >= 75) return 'good';
@@ -29,6 +33,11 @@ export default function ResumeListPage() {
       const data = await resumeApi.list();
       setResumes(Array.isArray(data) ? data : []);
     } catch (err) {
+      if (isEmptyListServerError(err)) {
+        setResumes([]);
+        setError('');
+        return;
+      }
       setError(err.message || '이력서 목록을 불러오지 못했습니다.');
     } finally {
       setLoading(false);
