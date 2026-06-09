@@ -3,6 +3,64 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sapphire.domain.job.mapper.JobPostMapper">
+    <select id="findCompanyProfileIdByUserId" resultType="long">
+        SELECT id
+        FROM company_profiles
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertJob" parameterType="com.sapphire.domain.job.dto.JobCreateParam"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO job_posts (
+            company_profile_id,
+            title,
+            description,
+            responsibilities,
+            qualifications,
+            preferred_qualifications,
+            employment_type,
+            experience_level,
+            min_career_years,
+            max_career_years,
+            location,
+            work_type,
+            salary_min,
+            salary_max,
+            salary_negotiable,
+            deadline,
+            status
+        )
+        VALUES (
+            #{companyProfileId},
+            #{title},
+            #{description},
+            #{responsibilities},
+            #{qualifications},
+            #{preferredQualifications},
+            #{employmentType},
+            #{experienceLevel},
+            #{minCareerYears},
+            #{maxCareerYears},
+            #{location},
+            #{workType},
+            #{salaryMin},
+            #{salaryMax},
+            #{salaryNegotiable},
+            #{deadline},
+            #{status}
+        )
+    </insert>
+
+    <insert id="insertJobTag">
+        INSERT INTO job_tags (job_post_id, tag_name)
+        VALUES (#{jobPostId}, #{tagName})
+    </insert>
+
+    <insert id="insertJobSapSkill">
+        INSERT INTO job_post_sap_skills (job_post_id, sap_skill_id, is_required)
+        VALUES (#{jobPostId}, #{sapSkillId}, TRUE)
+    </insert>
+
     <select id="findOpenJobs" resultType="com.sapphire.domain.job.dto.JobPostRow">
         SELECT
             jp.id,
