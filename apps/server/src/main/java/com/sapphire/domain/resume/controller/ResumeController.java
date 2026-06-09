@@ -3,6 +3,7 @@ package com.sapphire.domain.resume.controller;
 import com.sapphire.domain.resume.dto.ResumeCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeDetail;
 import com.sapphire.domain.resume.dto.ResumeListItem;
+import com.sapphire.domain.resume.dto.ResumeUpdateRequest;
 import com.sapphire.domain.resume.service.ResumeService;
 import com.sapphire.global.response.ApiResponse;
 import com.sapphire.global.security.auth.CustomUserDetails;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,5 +50,14 @@ public class ResumeController {
             @Valid @RequestBody ResumeCreateRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(resumeService.createResume(userDetails.getId(), request)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ResumeDetail>> updateResume(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
+            @Valid @RequestBody ResumeUpdateRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(resumeService.updateResume(userDetails.getId(), id, request)));
     }
 }

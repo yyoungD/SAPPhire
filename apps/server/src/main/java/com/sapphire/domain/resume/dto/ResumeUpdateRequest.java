@@ -1,12 +1,11 @@
 package com.sapphire.domain.resume.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-public record ResumeCreateRequest(
+public record ResumeUpdateRequest(
         @NotBlank
         @Size(max = 100)
         String title,
@@ -17,9 +16,6 @@ public record ResumeCreateRequest(
         String visibility,
 
         boolean isPrimary,
-
-        @NotNull
-        Long resumeFileId,
 
         List<ResumeSkillCreateRequest> skills
 ) {

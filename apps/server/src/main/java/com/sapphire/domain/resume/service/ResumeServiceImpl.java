@@ -9,18 +9,23 @@ import com.sapphire.domain.resume.dto.ResumeExperienceItem;
 import com.sapphire.domain.resume.dto.ResumeExperienceRow;
 import com.sapphire.domain.resume.dto.ResumeListItem;
 import com.sapphire.domain.resume.dto.ResumeListRow;
+import com.sapphire.domain.resume.dto.ResumeSkillCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeSkillItem;
 import com.sapphire.domain.resume.dto.ResumeSkillRow;
+import com.sapphire.domain.resume.dto.ResumeUpdateRequest;
 import com.sapphire.domain.resume.mapper.ResumeMapper;
 import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ResumeServiceImpl implements ResumeService {
@@ -85,6 +90,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
+    @Transactional
     public ResumeListItem createResume(Long userId, ResumeCreateRequest request) {
         Long personalProfileId = resumeMapper.findPersonalProfileIdByUserId(userId);
         if (personalProfileId == null) {
@@ -104,11 +110,69 @@ public class ResumeServiceImpl implements ResumeService {
         param.setResumeFileId(request.resumeFileId());
         resumeMapper.insert(param);
 
+        List<ResumeSkillCreateRequest> skills = normalizeSkills(request.skills());
+        if (!skills.isEmpty()) {
+            resumeMapper.insertSkills(param.getId(), skills);
+        }
+
         return findMyResumes(userId)
                 .stream()
                 .filter(resume -> resume.id().equals(param.getId()))
                 .findFirst()
                 .orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "생성된 이력서를 불러오지 못했습니다."));
+    }
+
+    @Override
+    @Transactional
+    public ResumeDetail updateResume(Long userId, Long resumeId, ResumeUpdateRequest request) {
+        Long personalProfileId = resumeMapper.findResumePersonalProfileId(userId, resumeId);
+        if (personalProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "수정할 이력서를 찾을 수 없습니다.");
+        }
+
+        if (request.isPrimary()) {
+            resumeMapper.clearPrimary(personalProfileId);
+        }
+
+        int updatedCount = resumeMapper.update(userId, resumeId, request, normalizeVisibility(request.visibility()));
+        if (updatedCount == 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "이력서 수정에 실패했습니다.");
+        }
+
+        resumeMapper.deleteSkills(resumeId);
+        List<ResumeSkillCreateRequest> skills = normalizeSkills(request.skills());
+        if (!skills.isEmpty()) {
+            resumeMapper.insertSkills(resumeId, skills);
+        }
+
+        return findMyResume(userId, resumeId);
+    }
+
+    private List<ResumeSkillCreateRequest> normalizeSkills(List<ResumeSkillCreateRequest> skills) {
+        if (skills == null || skills.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, ResumeSkillCreateRequest> uniqueSkills = new LinkedHashMap<>();
+        for (ResumeSkillCreateRequest skill : skills) {
+            if (skill == null || skill.sapSkillId() == null) {
+                continue;
+            }
+            uniqueSkills.put(skill.sapSkillId(), new ResumeSkillCreateRequest(
+                    skill.sapSkillId(),
+                    normalizeProficiency(skill.proficiencyLevel()),
+                    skill.yearsOfExperience() == null ? 0 : Math.max(0, Math.min(50, skill.yearsOfExperience())),
+                    skill.isPrimary()
+            ));
+        }
+        return uniqueSkills.values().stream().toList();
+    }
+
+    private String normalizeProficiency(String level) {
+        if ("EXPERT".equals(level) || "ADVANCED".equals(level) || "INTERMEDIATE".equals(level) || "BEGINNER".equals(level)) {
+            return level;
+        }
+        return "INTERMEDIATE";
     }
 
     private ResumeListItem toListItem(ResumeListRow row) {

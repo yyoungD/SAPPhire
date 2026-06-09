@@ -3,6 +3,7 @@ package com.sapphire.domain.resume.service;
 import com.sapphire.domain.resume.dto.ResumeCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeDetail;
 import com.sapphire.domain.resume.dto.ResumeListItem;
+import com.sapphire.domain.resume.dto.ResumeUpdateRequest;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface ResumeService {
     ResumeDetail findMyResume(Long userId, Long resumeId);
 
     ResumeListItem createResume(Long userId, ResumeCreateRequest request);
+
+    ResumeDetail updateResume(Long userId, Long resumeId, ResumeUpdateRequest request);
 }

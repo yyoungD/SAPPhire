@@ -4,7 +4,9 @@ import com.sapphire.domain.resume.dto.ResumeCreateParam;
 import com.sapphire.domain.resume.dto.ResumeDetailRow;
 import com.sapphire.domain.resume.dto.ResumeExperienceRow;
 import com.sapphire.domain.resume.dto.ResumeListRow;
+import com.sapphire.domain.resume.dto.ResumeSkillCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeSkillRow;
+import com.sapphire.domain.resume.dto.ResumeUpdateRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,7 +24,20 @@ public interface ResumeMapper {
 
     Long findPersonalProfileIdByUserId(@Param("userId") Long userId);
 
+    Long findResumePersonalProfileId(@Param("userId") Long userId, @Param("resumeId") Long resumeId);
+
     void clearPrimary(@Param("personalProfileId") Long personalProfileId);
 
     void insert(ResumeCreateParam param);
+
+    void insertSkills(@Param("resumeId") Long resumeId, @Param("skills") List<ResumeSkillCreateRequest> skills);
+
+    int update(
+            @Param("userId") Long userId,
+            @Param("resumeId") Long resumeId,
+            @Param("request") ResumeUpdateRequest request,
+            @Param("visibility") String visibility
+    );
+
+    void deleteSkills(@Param("resumeId") Long resumeId);
 }

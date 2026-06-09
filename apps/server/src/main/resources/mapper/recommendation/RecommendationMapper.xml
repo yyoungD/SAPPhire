@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sapphire.domain.recommendation.mapper.RecommendationMapper">
+    <select id="findDefaultResumeId" resultType="long">
+        SELECT r.id
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        WHERE pp.user_id = #{userId}
+          AND r.deleted_at IS NULL
+        ORDER BY r.is_primary DESC, r.updated_at DESC, r.id DESC
+        LIMIT 1
+    </select>
+
+    <select id="existsMyResume" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM resumes r
+            JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+            WHERE pp.user_id = #{userId}
+              AND r.id = #{resumeId}
+              AND r.deleted_at IS NULL
+        )
+    </select>
+
+    <select id="existsCompanyJob" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM job_posts jp
+            JOIN company_profiles cp ON cp.id = jp.company_profile_id
+            WHERE cp.user_id = #{userId}
+              AND jp.id = #{jobPostId}
+              AND jp.deleted_at IS NULL
+        )
+    </select>
+
+    <select id="findRecommendedJobs" resultType="com.sapphire.domain.recommendation.dto.JobRecommendationRow">
+        WITH target_resume AS (
+            SELECT
+                r.id,
+                pp.career_years,
+                pp.location,
+                COALESCE(latest_eval.overall_score, 0) AS ai_score
+            FROM resumes r
+            JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+            LEFT JOIN LATERAL (
+                SELECT ae.overall_score
+                FROM ai_evaluations ae
+                WHERE ae.resume_id = r.id
+                ORDER BY ae.created_at DESC, ae.id DESC
+                LIMIT 1
+            ) latest_eval ON TRUE
+            WHERE r.id = #{resumeId}
+        ),
+        job_skill_match AS (
+            SELECT
+                jp.id AS job_post_id,
+                COUNT(jps.id) AS required_skill_count,
+                COUNT(rss.id) AS matched_skill_count,
+                COUNT(rss.id) FILTER (WHERE jps.is_required = TRUE) AS matched_required_count,
+                STRING_AGG(DISTINCT ss.name, ',' ORDER BY ss.name) FILTER (WHERE rss.id IS NOT NULL) AS matched_skills_csv
+            FROM job_posts jp
+            LEFT JOIN job_post_sap_skills jps ON jps.job_post_id = jp.id
+            LEFT JOIN sap_skills ss ON ss.id = jps.sap_skill_id
+            LEFT JOIN resume_sap_skills rss
+                ON rss.sap_skill_id = jps.sap_skill_id
+               AND rss.resume_id = #{resumeId}
+            WHERE jp.status = 'OPEN'
+              AND jp.deleted_at IS NULL
+            GROUP BY jp.id
+        )
+        SELECT
+            jp.id,
+            cp.company_name AS company,
+            jp.location,
+            jp.title,
+            COALESCE(tags.tags_csv, '') AS tags_csv,
+            COALESCE(jsm.matched_skills_csv, '') AS matched_skills_csv,
+            jp.deadline,
+            jp.salary_min,
+            jp.salary_max,
+            jp.salary_negotiable,
+            LEAST(100, ROUND(
+                CASE
+                    WHEN jsm.required_skill_count = 0 THEN 25
+                    ELSE (jsm.matched_skill_count::DECIMAL / jsm.required_skill_count) * 55
+                END
+                + CASE
+                    WHEN jp.min_career_years IS NULL AND jp.max_career_years IS NULL THEN 15
+                    WHEN jp.min_career_years IS NULL AND tr.career_years &lt;= jp.max_career_years THEN 15
+                    WHEN jp.max_career_years IS NULL AND tr.career_years &gt;= jp.min_career_years THEN 15
+                    WHEN tr.career_years BETWEEN jp.min_career_years AND jp.max_career_years THEN 15
+                    ELSE 4
+                END
+                + CASE
+                    WHEN jp.location IS NULL OR tr.location IS NULL THEN 8
+                    WHEN jp.location = tr.location THEN 10
+                    ELSE 3
+                END
+                + CASE
+                    WHEN jp.deadline IS NULL OR jp.deadline &gt;= CURRENT_DATE THEN 5
+                    ELSE 0
+                END
+                + LEAST(10, tr.ai_score / 10)
+                + LEAST(10, jsm.matched_required_count * 5)
+            )) AS score
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        CROSS JOIN target_resume tr
+        JOIN job_skill_match jsm ON jsm.job_post_id = jp.id
+        LEFT JOIN (
+            SELECT job_post_id, STRING_AGG(tag_name, ',' ORDER BY id) AS tags_csv
+            FROM job_tags
+            GROUP BY job_post_id
+        ) tags ON tags.job_post_id = jp.id
+        WHERE jp.status = 'OPEN'
+          AND jp.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+              FROM job_applications ja
+              WHERE ja.user_id = #{userId}
+                AND ja.job_post_id = jp.id
+                AND ja.status != 'WITHDRAWN'
+          )
+        ORDER BY score DESC, jsm.matched_required_count DESC, jp.created_at DESC, jp.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findRecommendedCandidates" resultType="com.sapphire.domain.recommendation.dto.CandidateRecommendationRow">
+        WITH target_job AS (
+            SELECT
+                jp.id,
+                jp.min_career_years,
+                jp.max_career_years,
+                jp.location
+            FROM job_posts jp
+            WHERE jp.id = #{jobPostId}
+              AND jp.deleted_at IS NULL
+        ),
+        resume_skill_match AS (
+            SELECT
+                r.id AS resume_id,
+                COUNT(jps.id) AS required_skill_count,
+                COUNT(rss.id) AS matched_skill_count,
+                COUNT(rss.id) FILTER (WHERE jps.is_required = TRUE) AS matched_required_count,
+                STRING_AGG(DISTINCT ss.name, ',' ORDER BY ss.name) FILTER (WHERE rss.id IS NOT NULL) AS matched_skills_csv
+            FROM resumes r
+            CROSS JOIN target_job tj
+            LEFT JOIN job_post_sap_skills jps ON jps.job_post_id = tj.id
+            LEFT JOIN sap_skills ss ON ss.id = jps.sap_skill_id
+            LEFT JOIN resume_sap_skills rss
+                ON rss.resume_id = r.id
+               AND rss.sap_skill_id = jps.sap_skill_id
+            WHERE r.deleted_at IS NULL
+              AND r.visibility IN ('PUBLIC', 'COMPANY_ONLY')
+            GROUP BY r.id
+        )
+        SELECT
+            pp.user_id,
+            r.id AS resume_id,
+            u.name,
+            pp.professional_title,
+            pp.location,
+            pp.career_years,
+            r.title AS resume_title,
+            COALESCE(rsm.matched_skills_csv, '') AS matched_skills_csv,
+            LEAST(100, ROUND(
+                CASE
+                    WHEN rsm.required_skill_count = 0 THEN 25
+                    ELSE (rsm.matched_skill_count::DECIMAL / rsm.required_skill_count) * 60
+                END
+                + CASE
+                    WHEN tj.min_career_years IS NULL AND tj.max_career_years IS NULL THEN 15
+                    WHEN tj.min_career_years IS NULL AND pp.career_years &lt;= tj.max_career_years THEN 15
+                    WHEN tj.max_career_years IS NULL AND pp.career_years &gt;= tj.min_career_years THEN 15
+                    WHEN pp.career_years BETWEEN tj.min_career_years AND tj.max_career_years THEN 15
+                    ELSE 4
+                END
+                + CASE
+                    WHEN tj.location IS NULL OR pp.location IS NULL THEN 8
+                    WHEN tj.location = pp.location THEN 10
+                    ELSE 3
+                END
+                + CASE WHEN pp.is_offer_available = TRUE THEN 5 ELSE 0 END
+                + LEAST(10, COALESCE(latest_eval.overall_score, 0) / 10)
+                + LEAST(10, rsm.matched_required_count * 5)
+            )) AS score
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        JOIN users u ON u.id = pp.user_id
+        CROSS JOIN target_job tj
+        JOIN resume_skill_match rsm ON rsm.resume_id = r.id
+        LEFT JOIN LATERAL (
+            SELECT ae.overall_score
+            FROM ai_evaluations ae
+            WHERE ae.resume_id = r.id
+            ORDER BY ae.created_at DESC, ae.id DESC
+            LIMIT 1
+        ) latest_eval ON TRUE
+        WHERE r.deleted_at IS NULL
+          AND r.visibility IN ('PUBLIC', 'COMPANY_ONLY')
+          AND pp.is_public = TRUE
+          AND u.status = 'ACTIVE'
+        ORDER BY score DESC, rsm.matched_required_count DESC, r.updated_at DESC, r.id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

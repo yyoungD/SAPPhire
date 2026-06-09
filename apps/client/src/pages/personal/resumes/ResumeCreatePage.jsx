@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fileApi } from '../../../api/fileApi.js';
 import { resumeApi } from '../../../api/resumeApi.js';
+import { sapSkillApi } from '../../../api/sapSkillApi.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { formatFileSize } from '../../../utils/fileUtils.js';
@@ -8,6 +9,12 @@ import { navigate } from '../../../utils/authUtils.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const allowedExtensions = ['pdf', 'docx'];
+const proficiencyOptions = [
+  { value: 'BEGINNER', label: '초급' },
+  { value: 'INTERMEDIATE', label: '중급' },
+  { value: 'ADVANCED', label: '고급' },
+  { value: 'EXPERT', label: '전문가' },
+];
 
 function getExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
@@ -30,6 +37,8 @@ export default function ResumeCreatePage() {
   const [visibility, setVisibility] = useState('PRIVATE');
   const [isPrimary, setIsPrimary] = useState(false);
   const [recentFiles, setRecentFiles] = useState([]);
+  const [sapSkills, setSapSkills] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -48,9 +57,24 @@ export default function ResumeCreatePage() {
     }
   };
 
+  const loadSapSkills = async () => {
+    try {
+      const data = await sapSkillApi.list();
+      setSapSkills(Array.isArray(data) ? data : []);
+    } catch {
+      setSapSkills([]);
+    }
+  };
+
   useEffect(() => {
     loadRecentFiles();
+    loadSapSkills();
   }, []);
+
+  const availableSkills = useMemo(
+    () => sapSkills.filter((skill) => !selectedSkills.some((selected) => String(selected.sapSkillId) === String(skill.id))),
+    [sapSkills, selectedSkills],
+  );
 
   const validateFile = (file) => {
     if (!file) return '업로드할 파일을 선택해 주세요.';
@@ -94,6 +118,12 @@ export default function ResumeCreatePage() {
         visibility,
         isPrimary,
         resumeFileId: uploadedFile.id,
+        skills: selectedSkills.map((skill) => ({
+          sapSkillId: Number(skill.sapSkillId),
+          proficiencyLevel: skill.proficiencyLevel,
+          yearsOfExperience: Number(skill.yearsOfExperience || 0),
+          isPrimary: skill.isPrimary,
+        })),
       });
       navigate(ROUTES.RESUMES);
     } catch (err) {
@@ -102,6 +132,39 @@ export default function ResumeCreatePage() {
       setSubmitting(false);
     }
   };
+
+  const addSkill = () => {
+    const skill = availableSkills[0];
+    if (!skill) return;
+
+    setSelectedSkills((current) => [
+      ...current,
+      {
+        sapSkillId: skill.id,
+        proficiencyLevel: 'INTERMEDIATE',
+        yearsOfExperience: 1,
+        isPrimary: current.length === 0,
+      },
+    ]);
+  };
+
+  const updateSkill = (sapSkillId, key, value) => {
+    setSelectedSkills((current) =>
+      current.map((skill) => (String(skill.sapSkillId) === String(sapSkillId) ? { ...skill, [key]: value } : skill)),
+    );
+  };
+
+  const changeSkill = (previousSkillId, nextSkillId) => {
+    setSelectedSkills((current) =>
+      current.map((skill) => (String(skill.sapSkillId) === String(previousSkillId) ? { ...skill, sapSkillId: Number(nextSkillId) } : skill)),
+    );
+  };
+
+  const removeSkill = (sapSkillId) => {
+    setSelectedSkills((current) => current.filter((skill) => String(skill.sapSkillId) !== String(sapSkillId)));
+  };
+
+  const findSkill = (sapSkillId) => sapSkills.find((skill) => String(skill.id) === String(sapSkillId));
 
   return (
     <main className="member-page">
@@ -168,6 +231,71 @@ export default function ResumeCreatePage() {
                   <span>대표 이력서로 설정</span>
                 </label>
               </div>
+              <section className="resume-skill-card" aria-label="SAP 스킬 선택">
+                <div className="resume-skill-head">
+                  <div>
+                    <strong>SAP 스킬</strong>
+                    <span>추천 점수 계산에 직접 반영됩니다.</span>
+                  </div>
+                  <button type="button" className="secondary" onClick={addSkill} disabled={availableSkills.length === 0}>
+                    스킬 추가
+                  </button>
+                </div>
+
+                {selectedSkills.length === 0 && <p className="empty-copy">FI, CO, S/4HANA처럼 이 이력서에서 강조할 SAP 역량을 추가하세요.</p>}
+
+                {selectedSkills.map((skill) => {
+                  const currentSkill = findSkill(skill.sapSkillId);
+                  const selectableSkills = [currentSkill, ...availableSkills].filter(Boolean);
+
+                  return (
+                    <div className="resume-skill-row" key={skill.sapSkillId}>
+                      <label>
+                        <span>스킬</span>
+                        <select value={skill.sapSkillId} onChange={(event) => changeSkill(skill.sapSkillId, event.target.value)}>
+                          {selectableSkills.map((option) => (
+                            <option key={option.id} value={option.id}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>숙련도</span>
+                        <select value={skill.proficiencyLevel} onChange={(event) => updateSkill(skill.sapSkillId, 'proficiencyLevel', event.target.value)}>
+                          {proficiencyOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>경력</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={skill.yearsOfExperience}
+                          onChange={(event) => updateSkill(skill.sapSkillId, 'yearsOfExperience', event.target.value)}
+                        />
+                      </label>
+                      <label className="resume-checkbox resume-skill-primary">
+                        <input
+                          type="checkbox"
+                          checked={skill.isPrimary}
+                          onChange={(event) => updateSkill(skill.sapSkillId, 'isPrimary', event.target.checked)}
+                        />
+                        <span>대표</span>
+                      </label>
+                      <button type="button" className="resume-skill-remove" onClick={() => removeSkill(skill.sapSkillId)}>
+                        삭제
+                      </button>
+                    </div>
+                  );
+                })}
+              </section>
+
               {error && <p className="form-error">{error}</p>}
             </section>
 

@@ -9,6 +9,15 @@
         WHERE user_id = #{userId}
     </select>
 
+    <select id="findResumePersonalProfileId" resultType="long">
+        SELECT r.personal_profile_id
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        WHERE pp.user_id = #{userId}
+          AND r.id = #{resumeId}
+          AND r.deleted_at IS NULL
+    </select>
+
     <update id="clearPrimary">
         UPDATE resumes
         SET is_primary = FALSE,
@@ -36,6 +45,51 @@
             #{resumeFileId}
         )
     </insert>
+
+    <insert id="insertSkills">
+        INSERT INTO resume_sap_skills (
+            resume_id,
+            sap_skill_id,
+            proficiency_level,
+            years_of_experience,
+            is_primary
+        )
+        VALUES
+        <foreach collection="skills" item="skill" separator=",">
+            (
+                #{resumeId},
+                #{skill.sapSkillId},
+                #{skill.proficiencyLevel},
+                #{skill.yearsOfExperience},
+                #{skill.isPrimary}
+            )
+        </foreach>
+        ON CONFLICT (resume_id, sap_skill_id) DO UPDATE
+        SET
+            proficiency_level = EXCLUDED.proficiency_level,
+            years_of_experience = EXCLUDED.years_of_experience,
+            is_primary = EXCLUDED.is_primary
+    </insert>
+
+    <update id="update">
+        UPDATE resumes r
+        SET
+            title = #{request.title},
+            summary = #{request.summary},
+            visibility = #{visibility},
+            is_primary = #{request.isPrimary},
+            updated_at = NOW()
+        FROM personal_profiles pp
+        WHERE pp.id = r.personal_profile_id
+          AND pp.user_id = #{userId}
+          AND r.id = #{resumeId}
+          AND r.deleted_at IS NULL
+    </update>
+
+    <delete id="deleteSkills">
+        DELETE FROM resume_sap_skills
+        WHERE resume_id = #{resumeId}
+    </delete>
 
     <select id="findMyResumes" resultType="com.sapphire.domain.resume.dto.ResumeListRow">
         SELECT

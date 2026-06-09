@@ -1613,6 +1613,68 @@ p {
   accent-color: #1d4ed8;
 }
 
+.resume-skill-card {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.resume-skill-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.resume-skill-head div {
+  display: grid;
+  gap: 3px;
+}
+
+.resume-skill-head strong {
+  color: #0b1c30;
+  font-size: 16px;
+}
+
+.resume-skill-head span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.resume-skill-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 128px 96px 88px 64px;
+  gap: 10px;
+  align-items: end;
+}
+
+.resume-skill-row label {
+  min-width: 0;
+}
+
+.resume-skill-primary {
+  min-height: 44px;
+  padding: 0 10px;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.resume-skill-remove {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #991b1b;
+  background: #fff1f2;
+  font-weight: 800;
+}
+
 .resume-recent-card {
   padding: 24px;
 }
@@ -2239,6 +2301,197 @@ p {
   padding: 32px 0 80px;
   display: grid;
   gap: 20px;
+}
+
+.ai-recommend-shell {
+  width: min(1280px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 48px 0 84px;
+}
+
+.ai-recommend-hero,
+.ai-recommend-toolbar,
+.ai-recommend-card {
+  display: flex;
+  gap: 24px;
+}
+
+.ai-recommend-hero {
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.ai-recommend-hero h1 {
+  margin: 0;
+  color: #0b1c30;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.ai-recommend-hero p {
+  max-width: 700px;
+  color: #475569;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.ai-recommend-summary,
+.ai-recommend-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.ai-recommend-summary {
+  margin-top: 28px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ai-recommend-layout {
+  margin-top: 24px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+}
+
+.ai-recommend-summary article,
+.ai-recommend-toolbar,
+.ai-recommend-card,
+.ai-recommend-empty {
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 14px 36px -26px rgba(0, 39, 100, 0.38);
+}
+
+.ai-recommend-summary article {
+  min-height: 132px;
+  padding: 22px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.ai-recommend-summary span,
+.ai-recommend-toolbar span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ai-recommend-summary strong {
+  color: #0b1c30;
+  font-size: 24px;
+}
+
+.ai-recommend-summary small,
+.ai-recommend-card-main p,
+.ai-recommend-empty p,
+.ai-tip-list {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.ai-recommend-toolbar {
+  margin-top: 18px;
+  padding: 18px;
+  align-items: end;
+  background: #eef6ff;
+}
+
+.ai-recommend-toolbar label {
+  min-width: 280px;
+  display: grid;
+  gap: 8px;
+}
+
+.ai-recommend-toolbar select {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  color: #0b1c30;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.ai-recommend-list,
+.ai-recommend-side,
+.ai-tip-list {
+  display: grid;
+  gap: 18px;
+}
+
+.ai-recommend-card {
+  min-height: 184px;
+  padding: 24px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ai-match-score {
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-radius: 8px;
+  color: #334155;
+  background: #f1f5f9;
+}
+
+.ai-match-score strong {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ai-match-score.excellent {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.ai-match-score.good {
+  color: #1e3a8a;
+  background: #dbeafe;
+}
+
+.ai-recommend-card-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-recommend-card-main h2 {
+  margin: 8px 0;
+  color: #0b1c30;
+  font-size: 21px;
+}
+
+.ai-apply-button {
+  width: 116px;
+  flex: 0 0 116px;
+}
+
+.ai-recommend-empty {
+  padding: 36px;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.ai-recommend-empty strong {
+  color: #0b1c30;
+  font-size: 22px;
+}
+
+.ai-recommend-side {
+  position: sticky;
+  top: 104px;
+}
+
+.ai-tip-list {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .job-card {
@@ -4670,6 +4923,7 @@ dd {
 @media (max-width: 980px) {
   .member-header,
   .member-brand,
+  .ai-recommend-hero,
   .jobs-hero,
   .offer-hero,
   .detail-hero-top,
@@ -4693,6 +4947,8 @@ dd {
   }
 
   .filter-row,
+  .ai-recommend-summary,
+  .ai-recommend-layout,
   .detail-layout,
   .offer-workspace,
   .offer-detail-layout,
@@ -4724,6 +4980,7 @@ dd {
 
   .apply-panel,
   .apply-submit-panel,
+  .ai-recommend-side,
   .offer-ai-column,
   .offer-detail-side,
   .resume-ai-panel,
@@ -4736,6 +4993,7 @@ dd {
 
   .apply-resume-grid,
   .apply-analysis-content,
+  .resume-skill-row,
   .apply-insight-grid {
     grid-template-columns: 1fr;
   }
@@ -4751,6 +5009,7 @@ dd {
 
 @media (max-width: 620px) {
   .jobs-hero,
+  .ai-recommend-shell,
   .job-create-shell,
   .offer-shell,
   .offer-detail-shell,
@@ -4767,6 +5026,19 @@ dd {
 
   .job-card {
     grid-template-columns: 1fr;
+  }
+
+  .ai-recommend-toolbar,
+  .ai-recommend-card,
+  .resume-skill-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ai-recommend-toolbar label,
+  .ai-apply-button {
+    width: 100%;
+    min-width: 0;
   }
 
   .offer-card {
