@@ -92,7 +92,6 @@ export default function CompanyMyPage() {
                   </div>
                 </div>
                 <div>
-                  <span>기업 설명</span>
                   <p className="career-copy">
                     {profile?.description || '등록된 기업 설명이 없습니다.'}
                   </p>

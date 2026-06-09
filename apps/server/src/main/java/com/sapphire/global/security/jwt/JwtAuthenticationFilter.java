@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             String token = resolveToken(request);
-            if (token != null && shouldAuthenticateWithJwt()) {
+            if (token != null) {
                 log.debug("JWT 인증 시작. method={}, uri={}", request.getMethod(), request.getRequestURI());
                 Claims claims = jwtTokenProvider.parseClaims(token);
                 String email = claims.get("email", String.class);
@@ -73,11 +73,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private boolean shouldAuthenticateWithJwt() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails);
     }
 
     private String resolveToken(HttpServletRequest request) {
