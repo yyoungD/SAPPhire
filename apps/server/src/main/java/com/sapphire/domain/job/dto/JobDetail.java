@@ -7,6 +7,10 @@ public record JobDetail(
         String company,
         String title,
         String location,
+        String status,
+        String statusLabel,
+        String position,
+        String projectType,
         String employmentType,
         String experienceLevel,
         String career,
@@ -20,6 +24,7 @@ public record JobDetail(
         String description,
         String responsibilities,
         String qualifications,
-        String preferredQualifications
+        String preferredQualifications,
+        List<JobAttachmentResponse> attachments
 ) {
 }

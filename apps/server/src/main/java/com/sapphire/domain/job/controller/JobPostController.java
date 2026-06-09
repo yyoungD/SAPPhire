@@ -2,6 +2,7 @@ package com.sapphire.domain.job.controller;
 
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
+import com.sapphire.domain.job.dto.CompanyJobListItem;
 import com.sapphire.domain.job.dto.JobListItem;
 import com.sapphire.domain.job.dto.JobDetail;
 import com.sapphire.domain.job.service.JobPostService;
@@ -50,6 +51,23 @@ public class JobPostController {
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findOpenJobs(limit)));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<CompanyJobListItem>>> findMyCompanyJobs(
+            Authentication authentication
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJobs(userDetails.getId())));
+    }
+
+    @GetMapping("/me/{id}")
+    public ResponseEntity<ApiResponse<JobDetail>> findMyCompanyJob(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJob(userDetails.getId(), id)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<JobDetail>> findOpenJob(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findOpenJob(id)));
@@ -58,6 +76,14 @@ public class JobPostController {
     private CustomUserDetails requireUser(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        return userDetails;
+    }
+
+    private CustomUserDetails requireCompany(Authentication authentication) {
+        CustomUserDetails userDetails = requireUser(authentication);
+        if (!"COMPANY".equals(userDetails.getRole())) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
         return userDetails;
     }

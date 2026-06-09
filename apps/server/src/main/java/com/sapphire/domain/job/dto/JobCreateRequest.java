@@ -24,6 +24,7 @@ public record JobCreateRequest(
         LocalDate deadline,
         String status,
         List<String> tags,
-        List<Long> sapSkillIds
+        List<Long> sapSkillIds,
+        List<Long> attachmentFileIds
 ) {
 }

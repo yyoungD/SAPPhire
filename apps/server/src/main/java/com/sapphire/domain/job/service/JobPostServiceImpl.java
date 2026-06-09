@@ -1,5 +1,7 @@
 package com.sapphire.domain.job.service;
 
+import com.sapphire.domain.job.dto.CompanyJobListItem;
+import com.sapphire.domain.job.dto.CompanyJobPostRow;
 import com.sapphire.domain.job.dto.JobCreateParam;
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.List;
 public class JobPostServiceImpl implements JobPostService {
     private static final int DEFAULT_LIMIT = 200;
     private static final int MAX_LIMIT = 200;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd");
 
     private final JobPostMapper jobPostMapper;
 
@@ -74,6 +78,16 @@ public class JobPostServiceImpl implements JobPostService {
                     .forEach(id -> jobPostMapper.insertJobSapSkill(param.getId(), id));
         }
 
+        if (request.attachmentFileIds() != null && !request.attachmentFileIds().isEmpty()) {
+            List<Long> fileIds = request.attachmentFileIds().stream()
+                    .filter(id -> id != null && id > 0)
+                    .distinct()
+                    .toList();
+            if (!fileIds.isEmpty()) {
+                jobPostMapper.insertJobAttachments(param.getId(), userId, fileIds);
+            }
+        }
+
         return new JobCreateResponse(param.getId(), param.getStatus());
     }
 
@@ -89,16 +103,52 @@ public class JobPostServiceImpl implements JobPostService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<CompanyJobListItem> findCompanyJobs(Long userId) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
+        }
+        return jobPostMapper.findCompanyJobs(companyProfileId)
+                .stream()
+                .map(this::toCompanyListItem)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public JobDetail findOpenJob(Long id) {
         JobDetailRow row = jobPostMapper.findOpenJobById(id);
         if (row == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
         }
+        return toDetail(row);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobDetail findCompanyJob(Long userId, Long id) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
+        }
+        JobDetailRow row = jobPostMapper.findCompanyJobById(companyProfileId, id);
+        if (row == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
+        }
+        return toDetail(row);
+    }
+
+    private JobDetail toDetail(JobDetailRow row) {
+        List<String> tags = parseCsv(row.getTagsCsv());
         return new JobDetail(
                 row.getId(),
                 row.getCompany(),
                 row.getTitle(),
                 row.getLocation(),
+                row.getStatus(),
+                formatStatus(row.getStatus()),
+                row.getExperienceLevel(),
+                extractProjectType(tags),
                 formatEmploymentType(row.getEmploymentType()),
                 row.getExperienceLevel(),
                 formatCareer(row.getMinCareerYears(), row.getMaxCareerYears()),
@@ -107,12 +157,13 @@ public class JobPostServiceImpl implements JobPostService {
                 formatDeadline(row.getDeadline()),
                 formatBadge(row.getDeadline()),
                 row.getViewCount(),
-                parseCsv(row.getTagsCsv()),
+                tags,
                 parseCsv(row.getSkillsCsv()),
                 row.getDescription(),
                 row.getResponsibilities(),
                 row.getQualifications(),
-                row.getPreferredQualifications()
+                row.getPreferredQualifications(),
+                jobPostMapper.findJobAttachments(row.getId())
         );
     }
 
@@ -126,6 +177,25 @@ public class JobPostServiceImpl implements JobPostService {
                 formatPosted(row.getCreatedAt()),
                 formatSalary(row.getSalaryMin(), row.getSalaryMax(), row.getSalaryNegotiable()),
                 formatBadge(row.getDeadline())
+        );
+    }
+
+    private CompanyJobListItem toCompanyListItem(CompanyJobPostRow row) {
+        List<String> tags = parseCsv(row.getSkillsCsv());
+        if (tags.isEmpty()) {
+            tags = parseCsv(row.getTagsCsv());
+        }
+        return new CompanyJobListItem(
+                row.getId(),
+                row.getCompany(),
+                row.getTitle(),
+                row.getLocation(),
+                row.getExperienceLevel(),
+                row.getStatus(),
+                formatStatus(row.getStatus()),
+                row.getCreatedAt() == null ? "-" : row.getCreatedAt().format(DATE_FORMATTER),
+                row.getViewCount(),
+                tags
         );
     }
 
@@ -198,14 +268,40 @@ public class JobPostServiceImpl implements JobPostService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
+    private String extractProjectType(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        return tags.stream()
+                .filter(tag -> List.of("구축", "운영", "고도화", "전환").contains(tag))
+                .findFirst()
+                .orElse(null);
+    }
+
     private String normalizeStatus(String status) {
         if (status == null || status.isBlank()) {
             return "DRAFT";
         }
         String normalized = status.trim().toUpperCase();
-        if (!List.of("DRAFT", "OPEN", "CLOSED").contains(normalized)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 상태입니다. 허용되는 값: DRAFT, OPEN, CLOSED");
+        if (!List.of("DRAFT", "OPEN", "CLOSED", "DELETED").contains(normalized)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Invalid job status. Allowed values are DRAFT, OPEN, CLOSED, DELETED.");
         }
         return normalized;
+    }
+
+    private String formatStatus(String status) {
+        if ("OPEN".equals(status)) {
+            return "모집 중";
+        }
+        if ("DRAFT".equals(status)) {
+            return "임시저장";
+        }
+        if ("CLOSED".equals(status)) {
+            return "마감";
+        }
+        if ("DELETED".equals(status)) {
+            return "숨김";
+        }
+        return status == null ? "-" : status;
     }
 }
