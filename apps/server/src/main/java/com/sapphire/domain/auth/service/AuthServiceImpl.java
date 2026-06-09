@@ -103,12 +103,7 @@ public class AuthServiceImpl implements AuthService {
             personalProfileMapper.insertDefault(user.getId());
             log.debug("개인 기본 프로필 저장 완료. userId={}", user.getId());
         } else {
-            companyProfileMapper.insertSignupProfile(
-                    user.getId(),
-                    request.companyName().trim(),
-                    normalizeBusinessNumber(request.businessNumber()),
-                    "APPROVED"
-            );
+            companyProfileMapper.insertDefault(user.getId());
             log.debug("기업 기본 프로필 저장 완료. userId={}", user.getId());
         }
 
