@@ -67,7 +67,7 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/profileImg/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs", "/api/v1/jobs/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs", "/api/v1/jobs/*", "/api/v1/sap-skills").permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/signup",
                                 "/api/v1/auth/login",
