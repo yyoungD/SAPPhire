@@ -7,8 +7,10 @@
 *.log
 logs/
 
-# Uploaded profile images
-apps/server/uploads/profileImg/*
+# Uploaded files
+apps/server/uploads/**
+!apps/server/uploads/
+!apps/server/uploads/profileImg/
 !apps/server/uploads/profileImg/.gitkeep
 
 # Postman local workspace files
