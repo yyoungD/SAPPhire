@@ -309,6 +309,7 @@ p {
 .signup-layout > .login-card {
   align-self: center;
   justify-self: center;
+  min-height: 590px;
 }
 
 .signup-card h2,
@@ -533,6 +534,11 @@ p {
   border: 1px solid rgba(195, 198, 211, 0.7);
   background: #f8f9ff;
   color: #0b1c30;
+}
+
+.login-social-area.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .link-button {
@@ -3492,6 +3498,57 @@ dd {
   min-width: 136px;
 }
 
+.mypage-job-list {
+  max-height: 232px;
+  margin-top: 18px;
+  padding-right: 6px;
+  display: grid;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.mypage-job-item {
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 0.8fr) 110px;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0b1c30;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mypage-job-item:hover {
+  border-color: #b7d1ff;
+  background: #eff6ff;
+}
+
+.mypage-job-item strong,
+.mypage-job-item span,
+.mypage-job-item time {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mypage-job-item strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mypage-job-item span,
+.mypage-job-item time {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .resume-print-sheet {
   display: none;
 }
@@ -4626,6 +4683,7 @@ dd {
 }
 
 .company-job-card {
+  position: relative;
   min-height: 142px;
   padding: 28px;
   display: grid;
@@ -4636,6 +4694,12 @@ dd {
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 18px 44px -32px rgba(0, 39, 100, 0.34);
+  cursor: pointer;
+}
+
+.company-job-card:focus-visible {
+  outline: 3px solid rgba(15, 82, 186, 0.28);
+  outline-offset: 3px;
 }
 
 .company-job-icon {
@@ -4654,6 +4718,10 @@ dd {
 
 .company-job-card-main p {
   margin: 0 0 7px;
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: #64748b;
   font-size: 14px;
 }
@@ -4661,6 +4729,65 @@ dd {
 .company-job-card-main strong {
   color: #003c90;
   font-weight: 900;
+}
+
+.company-job-card-menu {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.company-job-card-menu-trigger {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+}
+
+.company-job-card-menu-trigger:hover {
+  color: #003c90;
+  background: #eff4ff;
+}
+
+.company-job-card-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  min-width: 92px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 32px -24px rgba(0, 39, 100, 0.42);
+}
+
+.company-job-card-menu-list button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #1f3248;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.company-job-card-menu-list button:hover {
+  color: #003c90;
+  background: #eff4ff;
 }
 
 .company-job-card-main h2 {
@@ -4699,9 +4826,11 @@ dd {
 
 .company-job-card-side {
   min-height: 90px;
+  padding-top: 34px;
   display: grid;
   justify-items: end;
   align-content: space-between;
+  gap: 18px;
 }
 
 .company-job-status {
@@ -4886,9 +5015,9 @@ dd {
 }
 
 .company-job-detail-stats {
-  display: grid;
-  align-content: start;
-  gap: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
   color: #64748b;
   font-size: 12px;
   font-weight: 800;
@@ -5024,19 +5153,26 @@ dd {
   gap: 8px;
 }
 
-.company-job-attachment-list span {
+.company-job-attachment-list button {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #dbeafe;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #0050b8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .company-job-body-content {
-  width: min(760px, 100%);
-  margin: 0 auto;
+  width: 100%;
+  min-height: 260px;
+  margin: 0;
   color: #0b1c30;
   line-height: 1.8;
 }

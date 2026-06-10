@@ -42,51 +42,34 @@ public class JobPostServiceImpl implements JobPostService {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
         }
 
-        JobCreateParam param = new JobCreateParam();
-        param.setCompanyProfileId(companyProfileId);
-        param.setTitle(request.title().trim());
-        param.setDescription(blankToNull(request.description()));
-        param.setResponsibilities(blankToNull(request.responsibilities()));
-        param.setQualifications(blankToNull(request.qualifications()));
-        param.setPreferredQualifications(blankToNull(request.preferredQualifications()));
-        param.setEmploymentType(blankToNull(request.employmentType()));
-        param.setExperienceLevel(blankToNull(request.experienceLevel()));
-        param.setMinCareerYears(request.minCareerYears());
-        param.setMaxCareerYears(request.maxCareerYears());
-        param.setLocation(blankToNull(request.location()));
-        param.setWorkType(blankToNull(request.workType()));
-        param.setSalaryMin(request.salaryMin());
-        param.setSalaryMax(request.salaryMax());
-        param.setSalaryNegotiable(request.salaryNegotiable() == null ? Boolean.TRUE : request.salaryNegotiable());
-        param.setDeadline(request.deadline());
-        param.setStatus(normalizeStatus(request.status()));
+        JobCreateParam param = toParam(companyProfileId, request);
 
         jobPostMapper.insertJob(param);
 
-        if (request.tags() != null) {
-            request.tags().stream()
-                    .map(this::blankToNull)
-                    .filter(tag -> tag != null && tag.length() <= 50)
-                    .distinct()
-                    .forEach(tag -> jobPostMapper.insertJobTag(param.getId(), tag));
+        syncJobRelations(userId, param.getId(), request);
+
+        return new JobCreateResponse(param.getId(), param.getStatus());
+    }
+
+    @Override
+    @Transactional
+    public JobCreateResponse updateJob(Long userId, Long id, JobCreateRequest request) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
         }
 
-        if (request.sapSkillIds() != null) {
-            request.sapSkillIds().stream()
-                    .filter(id -> id != null && id > 0)
-                    .distinct()
-                    .forEach(id -> jobPostMapper.insertJobSapSkill(param.getId(), id));
+        JobCreateParam param = toParam(companyProfileId, request);
+        param.setId(id);
+        int updated = jobPostMapper.updateJob(companyProfileId, param);
+        if (updated == 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
         }
 
-        if (request.attachmentFileIds() != null && !request.attachmentFileIds().isEmpty()) {
-            List<Long> fileIds = request.attachmentFileIds().stream()
-                    .filter(id -> id != null && id > 0)
-                    .distinct()
-                    .toList();
-            if (!fileIds.isEmpty()) {
-                jobPostMapper.insertJobAttachments(param.getId(), userId, fileIds);
-            }
-        }
+        jobPostMapper.deleteJobTags(id);
+        jobPostMapper.deleteJobSapSkills(id);
+        jobPostMapper.deleteJobAttachments(id);
+        syncJobRelations(userId, id, request);
 
         return new JobCreateResponse(param.getId(), param.getStatus());
     }
@@ -154,7 +137,12 @@ public class JobPostServiceImpl implements JobPostService {
                 formatCareer(row.getMinCareerYears(), row.getMaxCareerYears()),
                 formatWorkType(row.getWorkType()),
                 formatSalary(row.getSalaryMin(), row.getSalaryMax(), row.getSalaryNegotiable()),
+                row.getSalaryMin(),
+                row.getSalaryMax(),
+                row.getSalaryNegotiable(),
                 formatDeadline(row.getDeadline()),
+                row.getMinCareerYears(),
+                row.getMaxCareerYears(),
                 formatBadge(row.getDeadline()),
                 row.getViewCount(),
                 tags,
@@ -266,6 +254,55 @@ public class JobPostServiceImpl implements JobPostService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private JobCreateParam toParam(Long companyProfileId, JobCreateRequest request) {
+        JobCreateParam param = new JobCreateParam();
+        param.setCompanyProfileId(companyProfileId);
+        param.setTitle(request.title().trim());
+        param.setDescription(blankToNull(request.description()));
+        param.setResponsibilities(blankToNull(request.responsibilities()));
+        param.setQualifications(blankToNull(request.qualifications()));
+        param.setPreferredQualifications(blankToNull(request.preferredQualifications()));
+        param.setEmploymentType(blankToNull(request.employmentType()));
+        param.setExperienceLevel(blankToNull(request.experienceLevel()));
+        param.setMinCareerYears(request.minCareerYears());
+        param.setMaxCareerYears(request.maxCareerYears());
+        param.setLocation(blankToNull(request.location()));
+        param.setWorkType(blankToNull(request.workType()));
+        param.setSalaryMin(request.salaryMin());
+        param.setSalaryMax(request.salaryMax());
+        param.setSalaryNegotiable(request.salaryNegotiable() == null ? Boolean.TRUE : request.salaryNegotiable());
+        param.setDeadline(request.deadline());
+        param.setStatus(normalizeStatus(request.status()));
+        return param;
+    }
+
+    private void syncJobRelations(Long userId, Long jobPostId, JobCreateRequest request) {
+        if (request.tags() != null) {
+            request.tags().stream()
+                    .map(this::blankToNull)
+                    .filter(tag -> tag != null && tag.length() <= 50)
+                    .distinct()
+                    .forEach(tag -> jobPostMapper.insertJobTag(jobPostId, tag));
+        }
+
+        if (request.sapSkillIds() != null) {
+            request.sapSkillIds().stream()
+                    .filter(id -> id != null && id > 0)
+                    .distinct()
+                    .forEach(id -> jobPostMapper.insertJobSapSkill(jobPostId, id));
+        }
+
+        if (request.attachmentFileIds() != null && !request.attachmentFileIds().isEmpty()) {
+            List<Long> fileIds = request.attachmentFileIds().stream()
+                    .filter(id -> id != null && id > 0)
+                    .distinct()
+                    .toList();
+            if (!fileIds.isEmpty()) {
+                jobPostMapper.insertJobAttachments(jobPostId, userId, fileIds);
+            }
+        }
     }
 
     private String extractProjectType(List<String> tags) {

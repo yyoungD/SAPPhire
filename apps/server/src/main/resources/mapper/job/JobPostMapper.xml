@@ -51,15 +51,50 @@
         )
     </insert>
 
+    <update id="updateJob">
+        UPDATE job_posts
+        SET
+            title = #{param.title},
+            description = #{param.description},
+            responsibilities = #{param.responsibilities},
+            qualifications = #{param.qualifications},
+            preferred_qualifications = #{param.preferredQualifications},
+            employment_type = #{param.employmentType},
+            experience_level = #{param.experienceLevel},
+            min_career_years = #{param.minCareerYears},
+            max_career_years = #{param.maxCareerYears},
+            location = #{param.location},
+            work_type = #{param.workType},
+            salary_min = #{param.salaryMin},
+            salary_max = #{param.salaryMax},
+            salary_negotiable = #{param.salaryNegotiable},
+            deadline = #{param.deadline},
+            status = #{param.status},
+            updated_at = NOW()
+        WHERE id = #{param.id}
+          AND company_profile_id = #{companyProfileId}
+          AND deleted_at IS NULL
+    </update>
+
     <insert id="insertJobTag">
         INSERT INTO job_tags (job_post_id, tag_name)
         VALUES (#{jobPostId}, #{tagName})
     </insert>
 
+    <delete id="deleteJobTags">
+        DELETE FROM job_tags
+        WHERE job_post_id = #{jobPostId}
+    </delete>
+
     <insert id="insertJobSapSkill">
         INSERT INTO job_post_sap_skills (job_post_id, sap_skill_id, is_required)
         VALUES (#{jobPostId}, #{sapSkillId}, TRUE)
     </insert>
+
+    <delete id="deleteJobSapSkills">
+        DELETE FROM job_post_sap_skills
+        WHERE job_post_id = #{jobPostId}
+    </delete>
 
     <insert id="insertJobAttachments">
         INSERT INTO job_post_attachments (job_post_id, file_id)
@@ -72,6 +107,11 @@
         </foreach>
         ON CONFLICT (job_post_id, file_id) DO NOTHING
     </insert>
+
+    <delete id="deleteJobAttachments">
+        DELETE FROM job_post_attachments
+        WHERE job_post_id = #{jobPostId}
+    </delete>
 
     <select id="findJobAttachments" resultType="com.sapphire.domain.job.dto.JobAttachmentResponse">
         SELECT

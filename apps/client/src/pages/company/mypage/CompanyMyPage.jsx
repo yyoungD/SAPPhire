@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { companyProfileApi } from '../../../api/companyProfileApi.js';
+import { jobApi } from '../../../api/jobApi.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { useAuth } from '../../../hooks/useAuth.js';
@@ -15,8 +16,11 @@ function websiteHref(url) {
 export default function CompanyMyPage() {
   const { clearSession } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [jobsLoading, setJobsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [jobsError, setJobsError] = useState('');
 
   useEffect(() => {
     let ignore = false;
@@ -27,21 +31,39 @@ export default function CompanyMyPage() {
 
       try {
         const data = await companyProfileApi.detail('me');
-        if (!ignore) {
-          setProfile(data);
-        }
+        if (!ignore) setProfile(data);
       } catch (err) {
-        if (!ignore) {
-          setError(err.message || '기업 정보를 불러오지 못했습니다.');
-        }
+        if (!ignore) setError(err.message || '기업 정보를 불러오지 못했습니다.');
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        if (!ignore) setLoading(false);
       }
     }
 
     loadProfile();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadJobs() {
+      setJobsLoading(true);
+      setJobsError('');
+
+      try {
+        const data = await jobApi.myCompanyJobs();
+        if (!ignore) setJobs(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (!ignore) setJobsError(err.message || '공고 목록을 불러오지 못했습니다.');
+      } finally {
+        if (!ignore) setJobsLoading(false);
+      }
+    }
+
+    loadJobs();
 
     return () => {
       ignore = true;
@@ -60,14 +82,20 @@ export default function CompanyMyPage() {
       <PersonalMemberHeader active="company" />
       <div className="mypage-shell">
         <section className="mypage-title">
-          <h2>내 프로필</h2>
+          <h2>기업 프로필</h2>
           <p>기업 정보를 관리하고 SAP 채용 공고와 지원자 현황을 확인하세요.</p>
         </section>
 
         <div className="mypage-grid">
           <section className="profile-column">
             <article className="profile-card profile-summary-card">
-              <div className="profile-avatar"></div>
+              <div className="profile-avatar">
+                {profile?.logoUrl ? (
+                  <img src={profile.logoUrl} alt="" />
+                ) : (
+                  (profile?.companyName || 'C').slice(0, 1)
+                )}
+              </div>
               <div>
                 <h2>{loading ? '불러오는 중' : profile?.companyName || '기업명 미등록'}</h2>
                 {error && <p className="form-error">{error}</p>}
@@ -119,6 +147,27 @@ export default function CompanyMyPage() {
                   더보기
                 </button>
               </div>
+              <div className="mypage-job-list" aria-label="기업 공고 목록">
+                {jobsLoading && <p className="career-copy">공고 목록을 불러오는 중입니다.</p>}
+                {!jobsLoading && jobsError && <p className="form-error">{jobsError}</p>}
+                {!jobsLoading && !jobsError && jobs.length === 0 && (
+                  <p className="career-copy">등록된 공고가 없습니다.</p>
+                )}
+                {!jobsLoading &&
+                  !jobsError &&
+                  jobs.map((job) => (
+                    <button
+                      type="button"
+                      className="mypage-job-item"
+                      key={job.id}
+                      onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${job.id}`)}
+                    >
+                      <strong>{job.title || '-'}</strong>
+                      <span>{job.position || job.experienceLevel || '-'}</span>
+                      <time>{job.createdAt || '-'}</time>
+                    </button>
+                  ))}
+              </div>
             </article>
 
             <article className="profile-card">
@@ -132,7 +181,7 @@ export default function CompanyMyPage() {
                   더보기
                 </button>
               </div>
-              <div className="skill-cloud"></div>
+              <div className="skill-cloud" />
             </article>
           </section>
 
@@ -163,7 +212,7 @@ export default function CompanyMyPage() {
                 지원자 현황
               </button>
               <button type="button" onClick={() => navigate(ROUTES.POSITION_OFFERS)}>
-                포지션 제안
+                인재 제안
               </button>
             </section>
             <section className="profile-card compact-card logout-card">

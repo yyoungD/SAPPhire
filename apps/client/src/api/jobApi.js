@@ -5,4 +5,5 @@ export const jobApi = {
   ...createResourceApi(API_PATHS.jobs),
   myCompanyJobs: () => apiClient(`${API_PATHS.jobs}/me`),
   myCompanyJobDetail: (id) => apiClient(`${API_PATHS.jobs}/me/${id}`),
+  updateMyCompanyJob: (id, body) => apiClient(`${API_PATHS.jobs}/me/${id}`, { method: 'PUT', body }),
 };

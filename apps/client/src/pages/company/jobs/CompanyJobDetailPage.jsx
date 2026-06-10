@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
@@ -55,6 +56,14 @@ export default function CompanyJobDetailPage() {
   }, [jobId]);
 
   const attachments = job?.attachments || [];
+
+  const downloadAttachment = async (file) => {
+    try {
+      await fileApi.download(file.id, file.originalName || file.name);
+    } catch (err) {
+      alert(err.message || '파일 다운로드에 실패했습니다.');
+    }
+  };
 
   return (
     <main className="company-job-detail-page">
@@ -139,7 +148,9 @@ export default function CompanyJobDetailPage() {
                 {attachments.length > 0 ? (
                   <div className="company-job-attachment-list">
                     {attachments.map((file) => (
-                      <span key={file.id}>{file.originalName || file.name}</span>
+                      <button type="button" key={file.id} onClick={() => downloadAttachment(file)}>
+                        {file.originalName || file.name}
+                      </button>
                     ))}
                   </div>
                 ) : (

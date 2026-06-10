@@ -38,6 +38,16 @@ function BriefcaseIcon() {
   );
 }
 
+function MoreHorizontalIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="19" cy="12" r="2" />
+    </svg>
+  );
+}
+
 function normalizeSkillName(value = '') {
   return value.replace(/^SAP\s+/i, '').replace(/\s+/g, '').toUpperCase();
 }
@@ -61,6 +71,7 @@ export default function CompanyJobListPage() {
   const [status, setStatus] = useState('');
   const [keyword, setKeyword] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const loadJobs = async () => {
     setLoading(true);
@@ -113,6 +124,22 @@ export default function CompanyJobListPage() {
   const clearSkills = () => {
     setSelectedSkillIds([]);
     setSkillKeyword('');
+  };
+
+  const openUpdatePage = (jobId) => {
+    setOpenMenuId(null);
+    navigate(`${ROUTES.COMPANY_JOB_UPDATE}?id=${jobId}`);
+  };
+
+  const openDetailPage = (jobId) => {
+    navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${jobId}`);
+  };
+
+  const openDetailPageWithKeyboard = (event, jobId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openDetailPage(jobId);
+    }
   };
 
   return (
@@ -197,13 +224,56 @@ export default function CompanyJobListPage() {
             {!loading &&
               !error &&
               filteredJobs.map((job) => (
-                <article className="company-job-card" key={job.id}>
+                <article
+                  className="company-job-card"
+                  key={job.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openDetailPage(job.id)}
+                  onKeyDown={(event) => openDetailPageWithKeyboard(event, job.id)}
+                >
                   <div className="company-job-icon">
                     <BriefcaseIcon />
                   </div>
                   <div className="company-job-card-main">
                     <p>
                       <strong>{job.company}</strong>
+                      <span className="company-job-card-menu">
+                        <button
+                          type="button"
+                          className="company-job-card-menu-trigger"
+                          aria-label="공고 관리 메뉴"
+                          aria-expanded={openMenuId === job.id}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenMenuId((current) => (current === job.id ? null : job.id));
+                          }}
+                        >
+                          <MoreHorizontalIcon />
+                        </button>
+                        {openMenuId === job.id && (
+                          <span className="company-job-card-menu-list">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openUpdatePage(job.id);
+                              }}
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              삭제
+                            </button>
+                          </span>
+                        )}
+                      </span>
                       {job.location && <span> · {job.location}</span>}
                     </p>
                     <h2>{job.title}</h2>
@@ -219,7 +289,13 @@ export default function CompanyJobListPage() {
                   </div>
                   <div className="company-job-card-side">
                     <span className={`company-job-status ${statusClassNames[job.status] || ''}`}>{job.statusLabel || job.status}</span>
-                    <button type="button" onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${job.id}`)}>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openDetailPage(job.id);
+                      }}
+                    >
                       상세 보기 →
                     </button>
                   </div>

@@ -11,6 +11,8 @@ import java.util.List;
 public interface JobPostService {
     JobCreateResponse createJob(Long userId, JobCreateRequest request);
 
+    JobCreateResponse updateJob(Long userId, Long id, JobCreateRequest request);
+
     List<JobListItem> findOpenJobs(Integer limit);
 
     List<CompanyJobListItem> findCompanyJobs(Long userId);

@@ -24,15 +24,23 @@ public interface JobPostMapper {
 
     void insertJob(JobCreateParam param);
 
+    int updateJob(@Param("companyProfileId") Long companyProfileId, @Param("param") JobCreateParam param);
+
     void insertJobTag(@Param("jobPostId") Long jobPostId, @Param("tagName") String tagName);
 
+    void deleteJobTags(@Param("jobPostId") Long jobPostId);
+
     void insertJobSapSkill(@Param("jobPostId") Long jobPostId, @Param("sapSkillId") Long sapSkillId);
+
+    void deleteJobSapSkills(@Param("jobPostId") Long jobPostId);
 
     void insertJobAttachments(
             @Param("jobPostId") Long jobPostId,
             @Param("userId") Long userId,
             @Param("fileIds") List<Long> fileIds
     );
+
+    void deleteJobAttachments(@Param("jobPostId") Long jobPostId);
 
     List<JobAttachmentResponse> findJobAttachments(@Param("jobPostId") Long jobPostId);
 }

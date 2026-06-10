@@ -1,6 +1,7 @@
 package com.sapphire.domain.profile.mapper;
 
 import com.sapphire.domain.profile.dto.CompanyProfile;
+import com.sapphire.domain.profile.dto.CompanyProfileUpdateRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,4 +10,6 @@ public interface CompanyProfileMapper {
     void insertDefault(@Param("userId") Long userId);
 
     CompanyProfile findByUserId(@Param("userId") Long userId);
+
+    int updateByUserId(@Param("userId") Long userId, @Param("request") CompanyProfileUpdateRequest request);
 }

@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -66,6 +67,16 @@ public class JobPostController {
     ) {
         CustomUserDetails userDetails = requireCompany(authentication);
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJob(userDetails.getId(), id)));
+    }
+
+    @PutMapping("/me/{id}")
+    public ResponseEntity<ApiResponse<JobCreateResponse>> updateMyCompanyJob(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @RequestBody JobCreateRequest request
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.updateJob(userDetails.getId(), id, request)));
     }
 
     @GetMapping("/{id}")

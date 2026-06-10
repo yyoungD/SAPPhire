@@ -1,6 +1,7 @@
 package com.sapphire.domain.file.service;
 
 import com.sapphire.domain.file.dto.FileRecord;
+import com.sapphire.domain.file.dto.FileDownload;
 import com.sapphire.domain.file.dto.FileUploadResponse;
 import com.sapphire.domain.file.mapper.FileMapper;
 import com.sapphire.global.exception.CustomException;
@@ -78,6 +79,21 @@ public class FileServiceImpl implements FileService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Override
+    public FileDownload getDownloadFile(Long userId, Long fileId) {
+        FileRecord fileRecord = fileMapper.findByIdAndUploader(fileId, userId);
+        if (fileRecord == null) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+
+        Path filePath = Path.of(fileRecord.getFilePath()).toAbsolutePath().normalize();
+        if (!filePath.startsWith(uploadRoot) || !Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "다운로드할 파일을 찾을 수 없습니다.");
+        }
+
+        return new FileDownload(filePath, fileRecord.getOriginalName(), fileRecord.getContentType());
     }
 
     private void validateFile(MultipartFile file, String category) {
