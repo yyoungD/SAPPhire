@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { positionOfferApi } from '../../../api/positionOfferApi.js';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -44,6 +45,7 @@ export default function PositionOfferDetailPage() {
 
   return (
     <main className="offer-detail-shell">
+      <CompanyMemberHeader active="offers" />
       {loading && <p className="career-copy">제안 상세를 불러오는 중입니다.</p>}
       {!loading && error && <p className="form-error">{error}</p>}
       {!loading && offer && (

@@ -53,9 +53,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationListItem> findApplications(Long userId, String role) {
+    public List<ApplicationListItem> findApplications(Long userId, String role, Long jobPostId) {
         List<ApplicationListRow> rows = "COMPANY".equals(role)
-                ? applicationMapper.findCompanyApplications(userId)
+                ? applicationMapper.findCompanyApplications(userId, jobPostId)
                 : applicationMapper.findMyApplications(userId);
         return rows.stream().map(this::toListItem).toList();
     }
@@ -77,9 +77,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                 row.getJobPostId(),
                 row.getResumeId(),
                 row.getJobTitle(),
+                row.getJobPosition(),
                 row.getCompanyName(),
                 row.getApplicantName(),
                 row.getResumeTitle(),
+                row.getCareerYears(),
                 row.getStatus(),
                 formatStatus(row.getStatus()),
                 row.getAppliedAt() == null ? null : row.getAppliedAt().format(DATE_TIME_FORMATTER),
@@ -112,8 +114,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private String formatStatus(String status) {
-        if ("SUBMITTED".equals(status)) return "지원 완료";
-        if ("REVIEWING".equals(status)) return "검토 중";
+        if ("SUBMITTED".equals(status)) return "신규";
+        if ("REVIEWING".equals(status)) return "서류전형";
         if ("INTERVIEW".equals(status)) return "면접";
         if ("OFFERED".equals(status)) return "합격 제안";
         if ("REJECTED".equals(status)) return "불합격";
@@ -125,13 +127,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         if ("FULL_TIME".equals(employmentType)) return "정규직";
         if ("CONTRACT".equals(employmentType)) return "계약직";
         if ("PROJECT".equals(employmentType)) return "프로젝트";
-        return employmentType == null ? "협의" : employmentType;
+        return employmentType == null ? "미정" : employmentType;
     }
 
     private String formatWorkType(String workType) {
         if ("ONSITE".equals(workType)) return "출근";
         if ("REMOTE".equals(workType)) return "원격";
         if ("HYBRID".equals(workType)) return "하이브리드";
-        return workType == null ? "협의" : workType;
+        return workType == null ? "미정" : workType;
     }
 }

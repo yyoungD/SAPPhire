@@ -45,4 +45,21 @@
         ORDER BY created_at DESC, id DESC
         LIMIT #{limit}
     </select>
+
+    <select id="findByIdAndUploader" resultType="com.sapphire.domain.file.dto.FileRecord">
+        SELECT
+            id,
+            uploader_user_id,
+            original_name,
+            stored_name,
+            file_path,
+            file_url,
+            content_type,
+            file_size,
+            file_category,
+            created_at
+        FROM files
+        WHERE id = #{id}
+          AND uploader_user_id = #{userId}
+    </select>
 </mapper>

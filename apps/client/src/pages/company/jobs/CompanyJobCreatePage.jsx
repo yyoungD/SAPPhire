@@ -3,6 +3,7 @@ import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
 import { sapSkillApi } from '../../../api/sapSkillApi.js';
 import RichTextEditor from '../../../componenjs/editor/RichTextEditor.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -113,6 +114,7 @@ export default function CompanyJobCreatePage() {
   const [form, setForm] = useState(initialForm);
   const [skillGroups, setSkillGroups] = useState(() => normalizeSkillGroups());
   const [selectedSkills, setSelectedSkills] = useState([]);
+  const [attachments, setAttachments] = useState([]);
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -167,7 +169,7 @@ export default function CompanyJobCreatePage() {
     try {
       const payload = {
         title: form.title.trim(),
-        description: buildDescription(form),
+        description: form.description,
         responsibilities: form.responsibilities.trim() || null,
         qualifications: form.qualifications.trim() || null,
         preferredQualifications: null,
@@ -184,6 +186,7 @@ export default function CompanyJobCreatePage() {
         status: form.status,
         tags: [form.projectType, form.position, form.workType].filter(Boolean),
         sapSkillIds: selectedSkillIds,
+        attachmentFileIds: attachments.map((file) => Number(file.id)).filter((id) => Number.isFinite(id) && id > 0),
       };
 
       const created = await jobApi.create(payload);
@@ -197,6 +200,7 @@ export default function CompanyJobCreatePage() {
 
   return (
     <main className="company-job-create-page">
+      <CompanyMemberHeader active="create" />
       <section className="job-create-shell">
         <div className="job-create-hero">
           <p className="eyebrow">채용 담당자 워크스페이스</p>
@@ -344,6 +348,8 @@ export default function CompanyJobCreatePage() {
               value={form.description}
               placeholder="직무 상세 내용 및 요구 역량을 입력해 주세요..."
               onUploadFile={fileApi.uploadAttachment}
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
               onChange={(value) => setForm((current) => ({ ...current, description: value }))}
             />
           </section>

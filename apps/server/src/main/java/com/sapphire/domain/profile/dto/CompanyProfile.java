@@ -16,6 +16,7 @@ public class CompanyProfile {
     private String companySize;
     private String websiteUrl;
     private Long logoFileId;
+    private String logoUrl;
     private String description;
     private String address;
     private String verificationStatus;

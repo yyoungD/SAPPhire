@@ -7,9 +7,11 @@ public class ApplicationListRow {
     private Long jobPostId;
     private Long resumeId;
     private String jobTitle;
+    private String jobPosition;
     private String companyName;
     private String applicantName;
     private String resumeTitle;
+    private Integer careerYears;
     private String status;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
@@ -46,6 +48,14 @@ public class ApplicationListRow {
         this.jobTitle = jobTitle;
     }
 
+    public String getJobPosition() {
+        return jobPosition;
+    }
+
+    public void setJobPosition(String jobPosition) {
+        this.jobPosition = jobPosition;
+    }
+
     public String getCompanyName() {
         return companyName;
     }
@@ -68,6 +78,14 @@ public class ApplicationListRow {
 
     public void setResumeTitle(String resumeTitle) {
         this.resumeTitle = resumeTitle;
+    }
+
+    public Integer getCareerYears() {
+        return careerYears;
+    }
+
+    public void setCareerYears(Integer careerYears) {
+        this.careerYears = careerYears;
     }
 
     public String getStatus() {

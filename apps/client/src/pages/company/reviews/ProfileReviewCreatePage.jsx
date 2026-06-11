@@ -1,6 +1,9 @@
-﻿export default function ProfileReviewCreatePage() {
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+
+export default function ProfileReviewCreatePage() {
   return (
     <main className="page-shell">
+      <CompanyMemberHeader active="" />
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>프로필 리뷰 작성</h1>

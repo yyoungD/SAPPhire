@@ -92,9 +92,11 @@
         ja.job_post_id,
         ja.resume_id,
         jp.title AS job_title,
+        jp.experience_level AS job_position,
         cp.company_name,
         u.name AS applicant_name,
         r.title AS resume_title,
+        pp.career_years,
         ja.status,
         ja.applied_at,
         ja.updated_at
@@ -107,6 +109,7 @@
         JOIN job_posts jp ON jp.id = ja.job_post_id
         JOIN company_profiles cp ON cp.id = jp.company_profile_id
         JOIN users u ON u.id = ja.user_id
+        JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
         WHERE ja.user_id = #{userId}
         ORDER BY ja.applied_at DESC, ja.id DESC
@@ -119,8 +122,12 @@
         JOIN job_posts jp ON jp.id = ja.job_post_id
         JOIN company_profiles cp ON cp.id = jp.company_profile_id
         JOIN users u ON u.id = ja.user_id
+        JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
         WHERE cp.user_id = #{userId}
+        <if test="jobPostId != null">
+          AND ja.job_post_id = #{jobPostId}
+        </if>
         ORDER BY ja.applied_at DESC, ja.id DESC
     </select>
 
@@ -139,6 +146,7 @@
         JOIN job_posts jp ON jp.id = ja.job_post_id
         JOIN company_profiles cp ON cp.id = jp.company_profile_id
         JOIN users u ON u.id = ja.user_id
+        JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
         WHERE ja.user_id = #{userId}
           AND ja.id = #{id}
@@ -151,6 +159,7 @@
         JOIN job_posts jp ON jp.id = ja.job_post_id
         JOIN company_profiles cp ON cp.id = jp.company_profile_id
         JOIN users u ON u.id = ja.user_id
+        JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
         WHERE cp.user_id = #{userId}
           AND ja.id = #{id}

@@ -14,6 +14,7 @@ public class JobDetailRow {
     private String location;
     private String employmentType;
     private String experienceLevel;
+    private String status;
     private Integer minCareerYears;
     private Integer maxCareerYears;
     private String workType;

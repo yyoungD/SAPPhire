@@ -28,7 +28,7 @@ public interface ApplicationMapper {
 
     List<ApplicationListRow> findMyApplications(@Param("userId") Long userId);
 
-    List<ApplicationListRow> findCompanyApplications(@Param("userId") Long userId);
+    List<ApplicationListRow> findCompanyApplications(@Param("userId") Long userId, @Param("jobPostId") Long jobPostId);
 
     ApplicationDetailRow findMyApplicationDetail(@Param("userId") Long userId, @Param("id") Long id);
 

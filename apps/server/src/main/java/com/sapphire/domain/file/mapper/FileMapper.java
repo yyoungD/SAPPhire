@@ -15,4 +15,9 @@ public interface FileMapper {
             @Param("category") String category,
             @Param("limit") int limit
     );
+
+    FileRecord findByIdAndUploader(
+            @Param("id") Long id,
+            @Param("userId") Long userId
+    );
 }
