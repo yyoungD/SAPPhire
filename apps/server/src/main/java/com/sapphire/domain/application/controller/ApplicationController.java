@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -37,9 +38,10 @@ public class ApplicationController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ApplicationListItem>>> findApplications(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) Long jobPostId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(applicationService.findApplications(userDetails.getId(), userDetails.getRole())));
+        return ResponseEntity.ok(ApiResponse.success(applicationService.findApplications(userDetails.getId(), userDetails.getRole(), jobPostId)));
     }
 
     @GetMapping("/{id}")

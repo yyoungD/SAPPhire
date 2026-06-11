@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 function Icon({ type }) {
@@ -14,6 +14,7 @@ function Icon({ type }) {
     strokeLinejoin: 'round',
     'aria-hidden': true,
   };
+
   const paths = {
     bold: <path d="M7 5h6a4 4 0 0 1 0 8H7z M7 13h7a4 4 0 0 1 0 8H7z" />,
     italic: <path d="M16 5h-6 M14 5l-4 14 M8 19h6" />,
@@ -31,6 +32,7 @@ function Icon({ type }) {
     attach: <path d="M21 12.5 12.5 21a6 6 0 0 1-8.5-8.5L13 3.5a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8l8.2-8.2" />,
     remove: <path d="M18 6 6 18 M6 6l12 12" />,
   };
+
   return <svg {...common}>{paths[type]}</svg>;
 }
 
@@ -58,11 +60,29 @@ const toolbarGroups = [
   ],
 ];
 
-export default function RichTextEditor({ value = '', onChange, onUploadFile, placeholder = '내용을 입력하세요.' }) {
+export default function RichTextEditor({
+  value = '',
+  onChange,
+  onUploadFile,
+  placeholder = '내용을 입력하세요.',
+  attachments: controlledAttachments,
+  onAttachmentsChange,
+}) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const [attachments, setAttachments] = useState([]);
+  const [localAttachments, setLocalAttachments] = useState([]);
+  const attachments = controlledAttachments ?? localAttachments;
+
+  const setAttachments = (updater) => {
+    const next = typeof updater === 'function' ? updater(attachments) : updater;
+    if (onAttachmentsChange) {
+      onAttachmentsChange(next);
+    } else {
+      setLocalAttachments(next);
+    }
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -77,8 +97,8 @@ export default function RichTextEditor({ value = '', onChange, onUploadFile, pla
         'data-placeholder': placeholder,
       },
     },
-    onUpdate({ editor }) {
-      onChange?.(editor.getHTML());
+    onUpdate({ editor: currentEditor }) {
+      onChange?.(currentEditor.getHTML());
     },
   });
 

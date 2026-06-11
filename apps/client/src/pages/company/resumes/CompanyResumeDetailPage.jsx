@@ -1,6 +1,9 @@
-﻿export default function CompanyResumeDetailPage() {
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+
+export default function CompanyResumeDetailPage() {
   return (
     <main className="page-shell">
+      <CompanyMemberHeader active="" />
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>인재 이력서 상세</h1>

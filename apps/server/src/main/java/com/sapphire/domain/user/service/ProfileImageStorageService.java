@@ -56,9 +56,22 @@ public class ProfileImageStorageService {
         String extension = extensionOf(originalName);
 
         try {
-            return store(userId, file.getBytes(), originalName, extension, file.getContentType());
+            return store(userId, file.getBytes(), originalName, extension, file.getContentType(), "PROFILE_IMAGE");
         } catch (IOException exception) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to store profile image.");
+        }
+    }
+
+    public FileRecord storeCompanyLogo(Long userId, MultipartFile file) {
+        validateUpload(file);
+
+        String originalName = cleanOriginalName(file.getOriginalFilename());
+        String extension = extensionOf(originalName);
+
+        try {
+            return store(userId, file.getBytes(), originalName, extension, file.getContentType(), "COMPANY_LOGO");
+        } catch (IOException exception) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to store company logo.");
         }
     }
 
@@ -97,7 +110,7 @@ public class ProfileImageStorageService {
                 extension = "jpg";
             }
 
-            return store(userId, response.body(), "oauth-profile." + extension, extension, contentType);
+            return store(userId, response.body(), "oauth-profile." + extension, extension, contentType, "PROFILE_IMAGE");
         } catch (IOException | InterruptedException exception) {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
@@ -106,7 +119,7 @@ public class ProfileImageStorageService {
         }
     }
 
-    private FileRecord store(Long userId, byte[] bytes, String originalName, String extension, String contentType) throws IOException {
+    private FileRecord store(Long userId, byte[] bytes, String originalName, String extension, String contentType, String category) throws IOException {
         validateImageBytes(bytes, extension, contentType);
 
         String storedName = UUID.randomUUID() + "." + extension;
@@ -128,7 +141,7 @@ public class ProfileImageStorageService {
         fileRecord.setFileUrl("/profileImg/" + userId + "/" + storedName);
         fileRecord.setContentType(contentType);
         fileRecord.setFileSize((long) bytes.length);
-        fileRecord.setFileCategory("PROFILE_IMAGE");
+        fileRecord.setFileCategory(category);
         fileMapper.insert(fileRecord);
 
         return fileRecord;

@@ -1,6 +1,9 @@
-﻿export default function ApplicationDetailPage() {
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+
+export default function ApplicationDetailPage() {
   return (
     <main className="page-shell">
+      <CompanyMemberHeader active="applications" />
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>지원자 상세</h1>

@@ -51,15 +51,82 @@
         )
     </insert>
 
+    <update id="updateJob">
+        UPDATE job_posts
+        SET
+            title = #{param.title},
+            description = #{param.description},
+            responsibilities = #{param.responsibilities},
+            qualifications = #{param.qualifications},
+            preferred_qualifications = #{param.preferredQualifications},
+            employment_type = #{param.employmentType},
+            experience_level = #{param.experienceLevel},
+            min_career_years = #{param.minCareerYears},
+            max_career_years = #{param.maxCareerYears},
+            location = #{param.location},
+            work_type = #{param.workType},
+            salary_min = #{param.salaryMin},
+            salary_max = #{param.salaryMax},
+            salary_negotiable = #{param.salaryNegotiable},
+            deadline = #{param.deadline},
+            status = #{param.status},
+            updated_at = NOW()
+        WHERE id = #{param.id}
+          AND company_profile_id = #{companyProfileId}
+          AND deleted_at IS NULL
+    </update>
+
     <insert id="insertJobTag">
         INSERT INTO job_tags (job_post_id, tag_name)
         VALUES (#{jobPostId}, #{tagName})
     </insert>
 
+    <delete id="deleteJobTags">
+        DELETE FROM job_tags
+        WHERE job_post_id = #{jobPostId}
+    </delete>
+
     <insert id="insertJobSapSkill">
         INSERT INTO job_post_sap_skills (job_post_id, sap_skill_id, is_required)
         VALUES (#{jobPostId}, #{sapSkillId}, TRUE)
     </insert>
+
+    <delete id="deleteJobSapSkills">
+        DELETE FROM job_post_sap_skills
+        WHERE job_post_id = #{jobPostId}
+    </delete>
+
+    <insert id="insertJobAttachments">
+        INSERT INTO job_post_attachments (job_post_id, file_id)
+        SELECT #{jobPostId}, id
+        FROM files
+        WHERE uploader_user_id = #{userId}
+          AND file_category = 'ATTACHMENT'
+          AND id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+        ON CONFLICT (job_post_id, file_id) DO NOTHING
+    </insert>
+
+    <delete id="deleteJobAttachments">
+        DELETE FROM job_post_attachments
+        WHERE job_post_id = #{jobPostId}
+    </delete>
+
+    <select id="findJobAttachments" resultType="com.sapphire.domain.job.dto.JobAttachmentResponse">
+        SELECT
+            f.id,
+            f.original_name AS originalName,
+            f.content_type AS contentType,
+            f.file_size AS fileSize,
+            f.file_category AS fileCategory,
+            TO_CHAR(f.created_at, 'YYYY. MM. DD HH24:MI') AS createdAt
+        FROM job_post_attachments jpa
+        JOIN files f ON f.id = jpa.file_id
+        WHERE jpa.job_post_id = #{jobPostId}
+        ORDER BY jpa.id
+    </select>
 
     <select id="findOpenJobs" resultType="com.sapphire.domain.job.dto.JobPostRow">
         SELECT
@@ -92,6 +159,40 @@
         LIMIT #{limit}
     </select>
 
+    <select id="findCompanyJobs" resultType="com.sapphire.domain.job.dto.CompanyJobPostRow">
+        SELECT
+            jp.id,
+            cp.company_name AS company,
+            jp.title,
+            jp.location,
+            jp.experience_level,
+            jp.status,
+            jp.view_count,
+            jp.created_at,
+            COALESCE(tags.tags_csv, '') AS tags_csv,
+            COALESCE(skills.skills_csv, '') AS skills_csv
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        LEFT JOIN (
+            SELECT
+                job_post_id,
+                STRING_AGG(tag_name, ',' ORDER BY id) AS tags_csv
+            FROM job_tags
+            GROUP BY job_post_id
+        ) tags ON tags.job_post_id = jp.id
+        LEFT JOIN (
+            SELECT
+                jps.job_post_id,
+                STRING_AGG(ss.name, ',' ORDER BY jps.id) AS skills_csv
+            FROM job_post_sap_skills jps
+            JOIN sap_skills ss ON ss.id = jps.sap_skill_id
+            GROUP BY jps.job_post_id
+        ) skills ON skills.job_post_id = jp.id
+        WHERE jp.company_profile_id = #{companyProfileId}
+          AND jp.deleted_at IS NULL
+        ORDER BY jp.created_at DESC, jp.id DESC
+    </select>
+
     <select id="findOpenJobById" resultType="com.sapphire.domain.job.dto.JobDetailRow">
         SELECT
             jp.id,
@@ -100,6 +201,7 @@
             jp.location,
             jp.employment_type,
             jp.experience_level,
+            jp.status,
             jp.min_career_years,
             jp.max_career_years,
             jp.work_type,
@@ -133,6 +235,51 @@
         ) skills ON skills.job_post_id = jp.id
         WHERE jp.id = #{id}
           AND jp.status = 'OPEN'
+          AND jp.deleted_at IS NULL
+    </select>
+
+    <select id="findCompanyJobById" resultType="com.sapphire.domain.job.dto.JobDetailRow">
+        SELECT
+            jp.id,
+            cp.company_name AS company,
+            jp.title,
+            jp.location,
+            jp.employment_type,
+            jp.experience_level,
+            jp.status,
+            jp.min_career_years,
+            jp.max_career_years,
+            jp.work_type,
+            jp.salary_min,
+            jp.salary_max,
+            jp.salary_negotiable,
+            jp.deadline,
+            jp.view_count,
+            COALESCE(tags.tags_csv, '') AS tags_csv,
+            COALESCE(skills.skills_csv, '') AS skills_csv,
+            jp.description,
+            jp.responsibilities,
+            jp.qualifications,
+            jp.preferred_qualifications
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        LEFT JOIN (
+            SELECT
+                job_post_id,
+                STRING_AGG(tag_name, ',' ORDER BY id) AS tags_csv
+            FROM job_tags
+            GROUP BY job_post_id
+        ) tags ON tags.job_post_id = jp.id
+        LEFT JOIN (
+            SELECT
+                jps.job_post_id,
+                STRING_AGG(ss.name, ',' ORDER BY jps.id) AS skills_csv
+            FROM job_post_sap_skills jps
+            JOIN sap_skills ss ON ss.id = jps.sap_skill_id
+            GROUP BY jps.job_post_id
+        ) skills ON skills.job_post_id = jp.id
+        WHERE jp.id = #{id}
+          AND jp.company_profile_id = #{companyProfileId}
           AND jp.deleted_at IS NULL
     </select>
 </mapper>

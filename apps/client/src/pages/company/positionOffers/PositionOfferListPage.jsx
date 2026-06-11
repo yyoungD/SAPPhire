@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { positionOfferApi } from '../../../api/positionOfferApi.js';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -28,13 +29,18 @@ export default function PositionOfferListPage() {
 
   return (
     <main className="offer-shell company-offer-shell">
+      <CompanyMemberHeader active="offers" />
       <div className="offer-hero">
         <div>
           <p className="eyebrow">POSITION OFFER CRM</p>
           <h1>포지션 제안 관리</h1>
           <p>관심 인재에게 보낸 직접 제안의 응답 상태와 매칭 점수를 한곳에서 확인하세요.</p>
         </div>
-        <button type="button" className="primary-action jobs-hero-action" onClick={() => navigate(ROUTES.POSITION_OFFER_CREATE)}>
+        <button
+          type="button"
+          className="primary-action jobs-hero-action"
+          onClick={() => navigate(ROUTES.POSITION_OFFER_CREATE)}
+        >
           제안 작성
         </button>
       </div>
@@ -64,7 +70,9 @@ export default function PositionOfferListPage() {
             </button>
           </article>
         )}
-        {!loading && !error && offers.length === 0 && <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>}
+        {!loading && !error && offers.length === 0 && (
+          <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>
+        )}
 
         {!loading &&
           !error &&

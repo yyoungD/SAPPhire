@@ -1,6 +1,9 @@
-﻿export default function TalenjsearchPage() {
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+
+export default function TalenjsearchPage() {
   return (
     <main className="page-shell">
+      <CompanyMemberHeader active="" />
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>인재 검색</h1>

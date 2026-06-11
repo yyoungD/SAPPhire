@@ -7,12 +7,21 @@ public record JobDetail(
         String company,
         String title,
         String location,
+        String status,
+        String statusLabel,
+        String position,
+        String projectType,
         String employmentType,
         String experienceLevel,
         String career,
         String workType,
         String salary,
+        Integer salaryMin,
+        Integer salaryMax,
+        Boolean salaryNegotiable,
         String deadline,
+        Integer minCareerYears,
+        Integer maxCareerYears,
         String badge,
         Integer viewCount,
         List<String> tags,
@@ -20,6 +29,7 @@ public record JobDetail(
         String description,
         String responsibilities,
         String qualifications,
-        String preferredQualifications
+        String preferredQualifications,
+        List<JobAttachmentResponse> attachments
 ) {
 }

@@ -20,12 +20,29 @@
             cp.company_size,
             cp.website_url,
             cp.logo_file_id,
+            f.file_url AS logo_url,
             cp.description,
             cp.address,
             cp.verification_status
         FROM company_profiles cp
         JOIN users u ON u.id = cp.user_id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
         WHERE cp.user_id = #{userId}
           AND u.deleted_at IS NULL
     </select>
+
+    <update id="updateByUserId">
+        UPDATE company_profiles
+        SET
+            company_name = #{request.companyName},
+            business_number = #{request.businessNumber},
+            industry = #{request.industry},
+            company_size = #{request.companySize},
+            website_url = #{request.websiteUrl},
+            logo_file_id = #{request.logoFileId},
+            description = #{request.description},
+            address = #{request.address},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
 </mapper>
