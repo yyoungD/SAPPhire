@@ -7,6 +7,6 @@ export function navigate(path) {
 
 export function roleHome(role) {
   if (role === 'COMPANY') return ROUTES.COMPANY_MY_PAGE;
-  if (role === 'PERSONAL') return ROUTES.USER_MY_PAGE;
+  if (role === 'PERSONAL') return ROUTES.JOBS;
   return ROUTES.LOGIN;
 }

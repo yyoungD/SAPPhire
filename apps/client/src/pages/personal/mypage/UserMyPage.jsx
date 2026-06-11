@@ -111,7 +111,7 @@ export default function UserMyPage() {
 
   return (
     <main className="member-page">
-      <PersonalMemberHeader active="resume" />
+      <PersonalMemberHeader active="" />
       <div className="mypage-shell">
         <section className="mypage-title">
           <h1>내 프로필</h1>

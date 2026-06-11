@@ -41,6 +41,7 @@
                 r.id,
                 pp.career_years,
                 pp.location,
+                pp.sap_skills,
                 COALESCE(latest_eval.overall_score, 0) AS ai_score
             FROM resumes r
             JOIN personal_profiles pp ON pp.id = r.personal_profile_id
@@ -57,10 +58,35 @@
             SELECT
                 jp.id AS job_post_id,
                 COUNT(jps.id) AS required_skill_count,
-                COUNT(rss.id) AS matched_skill_count,
-                COUNT(rss.id) FILTER (WHERE jps.is_required = TRUE) AS matched_required_count,
-                STRING_AGG(DISTINCT ss.name, ',' ORDER BY ss.name) FILTER (WHERE rss.id IS NOT NULL) AS matched_skills_csv
+                COUNT(jps.id) FILTER (
+                    WHERE rss.id IS NOT NULL
+                       OR EXISTS (
+                           SELECT 1
+                           FROM REGEXP_SPLIT_TO_TABLE(COALESCE(tr.sap_skills, ''), '[[:space:]]*,[[:space:]]*') profile_skill
+                           WHERE LOWER(TRIM(profile_skill)) IN (LOWER(ss.name), LOWER(ss.code))
+                       )
+                ) AS matched_skill_count,
+                COUNT(jps.id) FILTER (
+                    WHERE jps.is_required = TRUE
+                      AND (
+                          rss.id IS NOT NULL
+                          OR EXISTS (
+                              SELECT 1
+                              FROM REGEXP_SPLIT_TO_TABLE(COALESCE(tr.sap_skills, ''), '[[:space:]]*,[[:space:]]*') profile_skill
+                              WHERE LOWER(TRIM(profile_skill)) IN (LOWER(ss.name), LOWER(ss.code))
+                          )
+                      )
+                ) AS matched_required_count,
+                STRING_AGG(DISTINCT ss.name, ',' ORDER BY ss.name) FILTER (
+                    WHERE rss.id IS NOT NULL
+                       OR EXISTS (
+                           SELECT 1
+                           FROM REGEXP_SPLIT_TO_TABLE(COALESCE(tr.sap_skills, ''), '[[:space:]]*,[[:space:]]*') profile_skill
+                           WHERE LOWER(TRIM(profile_skill)) IN (LOWER(ss.name), LOWER(ss.code))
+                       )
+                ) AS matched_skills_csv
             FROM job_posts jp
+            CROSS JOIN target_resume tr
             LEFT JOIN job_post_sap_skills jps ON jps.job_post_id = jp.id
             LEFT JOIN sap_skills ss ON ss.id = jps.sap_skill_id
             LEFT JOIN resume_sap_skills rss
@@ -95,7 +121,7 @@
                 END
                 + CASE
                     WHEN jp.location IS NULL OR tr.location IS NULL THEN 8
-                    WHEN jp.location = tr.location THEN 10
+                    WHEN LOWER(TRIM(SPLIT_PART(jp.location, ',', 1))) = LOWER(TRIM(SPLIT_PART(tr.location, ',', 1))) THEN 10
                     ELSE 3
                 END
                 + CASE
@@ -179,7 +205,7 @@
                 END
                 + CASE
                     WHEN tj.location IS NULL OR pp.location IS NULL THEN 8
-                    WHEN tj.location = pp.location THEN 10
+                    WHEN LOWER(TRIM(SPLIT_PART(tj.location, ',', 1))) = LOWER(TRIM(SPLIT_PART(pp.location, ',', 1))) THEN 10
                     ELSE 3
                 END
                 + CASE WHEN pp.is_offer_available = TRUE THEN 5 ELSE 0 END

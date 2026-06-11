@@ -13,7 +13,15 @@ function firstFilled(...values) {
 function scoreTone(score) {
   if (score >= 85) return 'excellent';
   if (score >= 70) return 'good';
+  if (score >= 45) return 'fair';
   return 'quiet';
+}
+
+function scoreLabel(score) {
+  if (score >= 85) return '강력 추천';
+  if (score >= 70) return '추천';
+  if (score >= 45) return '검토 가능';
+  return '보완 필요';
 }
 
 function normalizeResumeId(resumes, selectedResumeId) {
@@ -78,7 +86,40 @@ export default function AiEvaluationPage() {
   };
 
   useEffect(() => {
-    loadBaseData();
+    let ignore = false;
+
+    async function loadInitialData() {
+      setError('');
+      try {
+        const [profileData, resumeData] = await Promise.all([personalProfileApi.me(), resumeApi.list()]);
+
+        if (ignore) return;
+
+        const nextResumes = Array.isArray(resumeData) ? resumeData : [];
+        const nextResumeId = normalizeResumeId(nextResumes, '');
+
+        setProfile(profileData || null);
+        setResumes(nextResumes);
+        setSelectedResumeId(nextResumeId);
+
+        if (nextResumeId) {
+          const data = await recommendationApi.jobs({ resumeId: nextResumeId, limit: 30 });
+          if (!ignore) setRecommendations(Array.isArray(data) ? data : []);
+        } else {
+          setRecommendations([]);
+        }
+      } catch (err) {
+        if (!ignore) setError(err.message || '추천 공고를 불러오지 못했습니다.');
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    loadInitialData();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const changeResume = (event) => {
@@ -105,6 +146,10 @@ export default function AiEvaluationPage() {
 
   const topScore = recommendations[0]?.score || 0;
   const matchedSkillCount = new Set(recommendations.flatMap((job) => job.matchedSkills || [])).size;
+  const averageScore = recommendations.length
+    ? Math.round(recommendations.reduce((sum, job) => sum + Number(job.score || 0), 0) / recommendations.length)
+    : 0;
+  const strongMatchCount = recommendations.filter((job) => Number(job.score || 0) >= 70).length;
 
   return (
     <main className="member-page">
@@ -115,7 +160,7 @@ export default function AiEvaluationPage() {
           <div>
             <p className="eyebrow">AI JOB MATCHING</p>
             <h1>AI 추천 공고</h1>
-            <p>내 프로필과 선택한 이력서의 SAP 역량, 경력, 지역 정보를 기준으로 매칭 점수가 높은 공고부터 정렬했습니다.</p>
+            <p>선택한 이력서의 SAP 역량, 경력, 지역, AI 평가를 기준으로 공고별 적합도를 계산합니다.</p>
           </div>
           <button type="button" className="primary-action" onClick={() => navigate(ROUTES.CAREER_PROFILE_UPDATE)}>
             프로필 보강
@@ -139,6 +184,11 @@ export default function AiEvaluationPage() {
             <span>최고 매칭률</span>
             <strong>{loading ? '-' : `${Math.round(topScore)}%`}</strong>
             <small>{matchedSkillCount}개 SAP 역량이 추천 결과와 연결됨</small>
+          </article>
+          <article>
+            <span>추천 품질</span>
+            <strong>{loading ? '-' : `${averageScore}%`}</strong>
+            <small>{strongMatchCount}개 공고가 70% 이상으로 계산됨</small>
           </article>
         </section>
 
@@ -165,7 +215,7 @@ export default function AiEvaluationPage() {
 
         <section className="ai-recommend-layout">
           <div className="ai-recommend-list" aria-label="AI 추천 공고 목록">
-            {loading && <p className="career-copy">내 이력서와 프로필을 기준으로 추천 공고를 계산하는 중입니다.</p>}
+            {loading && <p className="career-copy">이력서와 프로필을 기준으로 추천 공고를 계산하는 중입니다.</p>}
 
             {!loading && error && (
               <article className="detail-section">
@@ -198,48 +248,63 @@ export default function AiEvaluationPage() {
 
             {!loading &&
               !error &&
-              recommendations.map((job, index) => (
-                <article
-                  className="ai-recommend-card"
-                  key={job.id}
-                  role="link"
-                  tabIndex={0}
-                  aria-label={`${job.title} 상세 페이지로 이동`}
-                  onClick={() => openDetail(job.id)}
-                  onKeyDown={(event) => handleCardKeyDown(event, job.id)}
-                >
-                  <div className={`ai-match-score ${scoreTone(Number(job.score || 0))}`}>
-                    <strong>{Math.round(Number(job.score || 0))}</strong>
-                    <span>%</span>
-                    <small>#{index + 1}</small>
-                  </div>
+              recommendations.map((job, index) => {
+                const score = Math.round(Number(job.score || 0));
 
-                  <div className="ai-recommend-card-main">
-                    <div className="job-meta">
-                      <strong>{job.company}</strong>
-                      <span>{job.location || '지역 협의'}</span>
+                return (
+                  <article
+                    className="ai-recommend-card"
+                    key={job.id}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`${job.title} 상세 페이지로 이동`}
+                    onClick={() => openDetail(job.id)}
+                    onKeyDown={(event) => handleCardKeyDown(event, job.id)}
+                  >
+                    <div className={`ai-match-score ${scoreTone(score)}`} style={{ '--score': `${score}%` }}>
+                      <div>
+                        <strong>{score}</strong>
+                        <span>%</span>
+                      </div>
+                      <em>{scoreLabel(score)}</em>
+                      <small>#{index + 1}</small>
                     </div>
-                    <h2>{job.title}</h2>
-                    <p>{job.reason}</p>
-                    <div className="tag-row">
-                      {(job.matchedSkills || []).map((skill) => (
-                        <span key={`${job.id}-skill-${skill}`}>{skill}</span>
-                      ))}
-                      {(job.tags || []).slice(0, 4).map((tag) => (
-                        <span key={`${job.id}-tag-${tag}`}>#{tag}</span>
-                      ))}
-                    </div>
-                    <div className="job-card-footer">
-                      <span>{job.salary}</span>
-                      <span>{job.badge}</span>
-                    </div>
-                  </div>
 
-                  <button type="button" className="primary-action ai-apply-button" onClick={(event) => openApply(event, job.id)}>
-                    지원하기
-                  </button>
-                </article>
-              ))}
+                    <div className="ai-recommend-card-main">
+                      <div className="job-meta">
+                        <strong>{job.company}</strong>
+                        <span>{job.location || '지역 협의'}</span>
+                      </div>
+                      <div className="ai-card-title-row">
+                        <h2>{job.title}</h2>
+                        <span>{job.badge}</span>
+                      </div>
+                      <p>{job.reason}</p>
+                      <div className="ai-score-bar" aria-hidden="true">
+                        <span style={{ width: `${Math.max(4, score)}%` }} />
+                      </div>
+                      <div className="tag-row">
+                        {(job.matchedSkills || []).map((skill) => (
+                          <span className="matched" key={`${job.id}-skill-${skill}`}>
+                            {skill}
+                          </span>
+                        ))}
+                        {(job.tags || []).slice(0, 4).map((tag) => (
+                          <span key={`${job.id}-tag-${tag}`}>#{tag}</span>
+                        ))}
+                      </div>
+                      <div className="job-card-footer">
+                        <span>{job.salary}</span>
+                        <span>스킬 {job.matchedSkills?.length || 0}개 일치</span>
+                      </div>
+                    </div>
+
+                    <button type="button" className="primary-action ai-apply-button" onClick={(event) => openApply(event, job.id)}>
+                      지원하기
+                    </button>
+                  </article>
+                );
+              })}
           </div>
 
           <aside className="ai-recommend-side">
@@ -262,11 +327,33 @@ export default function AiEvaluationPage() {
             </section>
 
             <section className="profile-card">
+              <h2>점수 계산 기준</h2>
+              <ul className="ai-score-list">
+                <li>
+                  <span>스킬 매칭</span>
+                  <strong>55점</strong>
+                </li>
+                <li>
+                  <span>경력 범위</span>
+                  <strong>15점</strong>
+                </li>
+                <li>
+                  <span>지역 일치</span>
+                  <strong>10점</strong>
+                </li>
+                <li>
+                  <span>AI 평가/마감/필수스킬</span>
+                  <strong>20점+</strong>
+                </li>
+              </ul>
+            </section>
+
+            <section className="profile-card">
               <h2>추천 정확도 높이기</h2>
               <ul className="ai-tip-list">
-                <li>대표 이력서에 주요 SAP 모듈을 등록하세요.</li>
+                <li>이력서 스킬에 공고의 SAP 모듈 코드를 정확히 넣으세요.</li>
                 <li>커리어 프로필의 경력 연차와 희망 지역을 최신으로 유지하세요.</li>
-                <li>프로젝트 요약을 구체적으로 적을수록 매칭 설명이 선명해집니다.</li>
+                <li>프로젝트 요약에는 모듈, 산업, 역할, 산출물을 구체적으로 적으세요.</li>
               </ul>
             </section>
           </aside>
