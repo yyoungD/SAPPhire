@@ -3,6 +3,7 @@ import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
 import { sapSkillApi } from '../../../api/sapSkillApi.js';
 import RichTextEditor from '../../../componenjs/editor/RichTextEditor.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -199,6 +200,7 @@ export default function CompanyJobCreatePage() {
 
   return (
     <main className="company-job-create-page">
+      <CompanyMemberHeader active="create" />
       <section className="job-create-shell">
         <div className="job-create-hero">
           <p className="eyebrow">채용 담당자 워크스페이스</p>

@@ -1,6 +1,9 @@
-﻿export default function CompanyProfilePage() {
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+
+export default function CompanyProfilePage() {
   return (
     <main className="page-shell">
+      <CompanyMemberHeader active="" />
       <section className="page-panel">
         <p className="eyebrow">SAPPhire</p>
         <h1>기업 프로필</h1>

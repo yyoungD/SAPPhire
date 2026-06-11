@@ -3,6 +3,7 @@ import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
 import { sapSkillApi } from '../../../api/sapSkillApi.js';
 import RichTextEditor from '../../../componenjs/editor/RichTextEditor.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -206,6 +207,7 @@ export default function CompanyJobUpdatePage() {
   if (loading) {
     return (
       <main className="company-job-create-page">
+        <CompanyMemberHeader active="jobs" />
         <section className="job-create-shell">
           <article className="job-create-card">
             <p className="career-copy">공고 정보를 불러오는 중입니다.</p>
@@ -217,6 +219,7 @@ export default function CompanyJobUpdatePage() {
 
   return (
     <main className="company-job-create-page">
+      <CompanyMemberHeader active="jobs" />
       <section className="job-create-shell">
         <div className="job-create-hero">
           <p className="eyebrow">JOB POSTING MANAGEMENT</p>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -67,6 +68,7 @@ export default function CompanyJobDetailPage() {
 
   return (
     <main className="company-job-detail-page">
+      <CompanyMemberHeader active="jobs" />
       <section className="company-job-detail-shell">
         {loading && (
           <article className="detail-section">

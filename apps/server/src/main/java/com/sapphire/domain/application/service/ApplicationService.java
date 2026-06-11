@@ -9,7 +9,7 @@ import java.util.List;
 public interface ApplicationService {
     ApplicationDetail create(Long userId, ApplicationCreateRequest request);
 
-    List<ApplicationListItem> findApplications(Long userId, String role);
+    List<ApplicationListItem> findApplications(Long userId, String role, Long jobPostId);
 
     ApplicationDetail findApplication(Long userId, String role, Long id);
 }

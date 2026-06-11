@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { companyProfileApi } from '../../../api/companyProfileApi.js';
-import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -133,7 +133,7 @@ export default function CompanyProfileUpdatePage() {
 
   return (
     <main className="member-page">
-      <PersonalMemberHeader active="company" />
+      <CompanyMemberHeader active="" />
       <div className="mypage-shell profile-edit-shell">
         <section className="mypage-title profile-edit-title">
           <p className="eyebrow">COMPANY PROFILE</p>

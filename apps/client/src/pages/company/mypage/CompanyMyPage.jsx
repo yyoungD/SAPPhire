@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { companyProfileApi } from '../../../api/companyProfileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
-import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
@@ -79,7 +79,7 @@ export default function CompanyMyPage() {
 
   return (
     <main className="member-page">
-      <PersonalMemberHeader active="company" />
+      <CompanyMemberHeader active="jobs" />
       <div className="mypage-shell">
         <section className="mypage-title">
           <h2>기업 프로필</h2>

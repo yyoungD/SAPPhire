@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { jobApi } from '../../../api/jobApi.js';
 import { sapSkillApi } from '../../../api/sapSkillApi.js';
 import SearchBar from '../../../componenjs/common/SearchBar.jsx';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -144,6 +145,7 @@ export default function CompanyJobListPage() {
 
   return (
     <main className="company-job-list-page">
+      <CompanyMemberHeader active="jobs" />
       <section className="company-job-list-shell">
         <div className="company-job-list-hero">
           <div>

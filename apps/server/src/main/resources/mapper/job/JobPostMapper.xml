@@ -101,6 +101,7 @@
         SELECT #{jobPostId}, id
         FROM files
         WHERE uploader_user_id = #{userId}
+          AND file_category = 'ATTACHMENT'
           AND id IN
         <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
             #{fileId}

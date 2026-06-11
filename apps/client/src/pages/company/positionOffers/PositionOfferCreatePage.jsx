@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { positionOfferApi } from '../../../api/positionOfferApi.js';
+import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
@@ -42,6 +43,7 @@ export default function PositionOfferCreatePage() {
 
   return (
     <main className="offer-detail-shell">
+      <CompanyMemberHeader active="offers" />
       <form className="detail-section offer-create-form" onSubmit={submit}>
         <p className="eyebrow">DIRECT OFFER</p>
         <h1>포지션 제안 작성</h1>

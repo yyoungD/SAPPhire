@@ -909,6 +909,27 @@ p {
   gap: 24px;
 }
 
+.member-profile-button {
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: #0b1c30;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.member-profile-button .avatar-button {
+  pointer-events: none;
+}
+
+.company-member-actions {
+  gap: 18px;
+}
+
 .member-search {
   position: relative;
   width: 256px;
@@ -991,7 +1012,15 @@ p {
   padding: 8px;
   display: grid;
   place-items: center;
+  border: 0;
   border-radius: 999px;
+  background: transparent;
+}
+
+.company-notification-button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .member-icon-button span {
@@ -1012,6 +1041,17 @@ p {
     18% 35%,
     22% 14%
   );
+}
+
+.company-logo-avatar {
+  border-color: #dbe3ef;
+  background: #ffffff;
+}
+
+.company-logo-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .jobs-hero,
@@ -5167,6 +5207,269 @@ dd {
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.company-candidate-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at 18% 12%, rgba(15, 82, 186, 0.08), transparent 34%), #f8f9ff;
+}
+
+.company-candidate-shell {
+  width: min(1320px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 86px 0;
+}
+
+.company-candidate-hero {
+  margin-bottom: 46px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.company-candidate-hero h1 {
+  margin: 0;
+  color: #0b1c30;
+  font-size: clamp(42px, 4.4vw, 64px);
+  line-height: 1.05;
+}
+
+.candidate-stat-grid {
+  margin-bottom: 38px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.candidate-stat-card {
+  min-height: 150px;
+  padding: 28px;
+  border: 1px solid rgba(195, 198, 211, 0.26);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px -36px rgba(0, 39, 100, 0.28);
+}
+
+.candidate-stat-card span {
+  display: block;
+  color: #64748b;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.candidate-stat-card strong {
+  display: block;
+  margin-top: 10px;
+  color: #003c90;
+  font-size: 52px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.candidate-stat-card p {
+  margin: 14px 0 0;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.candidate-filter-card {
+  margin-bottom: 40px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 460px minmax(0, 1fr) 44px 44px;
+  gap: 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 56px -38px rgba(0, 39, 100, 0.45);
+}
+
+.candidate-filter-card select,
+.candidate-filter-card input {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background: #edf4ff;
+  color: #0b1c30;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.candidate-filter-card select,
+.candidate-filter-card input {
+  padding: 0 18px;
+}
+
+.candidate-filter-card label {
+  position: relative;
+}
+
+.candidate-filter-card label span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.candidate-filter-card button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f3248;
+  font-weight: 900;
+}
+
+.candidate-pipeline-head {
+  margin: 0 0 22px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.candidate-pipeline-head h2 {
+  margin: 0;
+  color: #0b1c30;
+  font-size: 18px;
+}
+
+.candidate-pipeline-head button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.candidate-table {
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.candidate-table-head,
+.candidate-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1.15fr 0.75fr 0.75fr 58px;
+  align-items: center;
+  gap: 20px;
+}
+
+.candidate-table-head {
+  min-height: 52px;
+  padding: 0 24px;
+  border-bottom: 1px solid #edf2f7;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.candidate-row {
+  width: 100%;
+  min-height: 84px;
+  padding: 0 24px;
+  border: 0;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  color: #0b1c30;
+  text-align: left;
+}
+
+.candidate-row:hover {
+  background: #f8fbff;
+}
+
+.candidate-row > span {
+  min-width: 0;
+}
+
+.candidate-text-ellipsis,
+.candidate-row strong,
+.candidate-row small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidate-row strong {
+  display: grid;
+  gap: 4px;
+  color: #0b1c30;
+  font-size: 15px;
+}
+
+.candidate-row small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.candidate-applicant {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.candidate-applicant i {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #dceaff;
+  color: #0050b8;
+  font-style: normal;
+}
+
+.candidate-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #e9efff;
+  color: #334155;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.candidate-status.new {
+  color: #4f46e5;
+  background: #ecebff;
+}
+
+.candidate-status.review,
+.candidate-status.interview,
+.candidate-status.offer {
+  color: #0050b8;
+  background: #dbeafe;
+}
+
+.candidate-status.rejected,
+.candidate-status.withdrawn {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.candidate-row-arrow {
+  color: #0b1c30;
+  font-size: 26px;
+  text-align: right;
+}
+
+.candidate-empty {
+  margin: 0;
+  padding: 42px 24px;
+  color: #64748b;
+  text-align: center;
+  font-weight: 800;
+}
+
+.candidate-empty.error {
+  color: #dc2626;
 }
 
 .company-job-body-content {
