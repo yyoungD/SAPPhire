@@ -541,6 +541,11 @@ p {
   pointer-events: none;
 }
 
+.signup-social-area.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .link-button {
   width: 100%;
   margin-top: 14px;
@@ -2669,7 +2674,7 @@ p {
 }
 
 .ai-tip-list li::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   top: 0.7em;
@@ -4575,6 +4580,112 @@ dd {
   margin: 0 auto;
 }
 
+.company-position-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at 18% 12%, rgba(15, 82, 186, 0.08), transparent 34%), #f8f9ff;
+}
+
+.company-position-shell {
+  width: min(1320px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 64px 0 120px;
+}
+
+.company-position-shell.compact {
+  width: min(1120px, calc(100vw - 48px));
+}
+
+.company-position-hero {
+  margin-bottom: 34px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.company-position-hero h1 {
+  margin: 0;
+  color: #0b1c30;
+  line-height: 1.05;
+}
+
+.company-position-hero p:not(.eyebrow) {
+  max-width: 640px;
+  margin: 12px 0 0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.company-position-stats {
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.company-position-stats article {
+  min-height: 126px;
+  padding: 24px;
+  border: 1px solid rgba(195, 198, 211, 0.26);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px -36px rgba(0, 39, 100, 0.28);
+}
+
+.company-position-stats span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.company-position-stats strong {
+  display: block;
+  margin-top: 10px;
+  color: #003c90;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.company-position-list {
+  display: grid;
+  gap: 16px;
+}
+
+.company-position-page .offer-card {
+  min-height: 132px;
+  border-radius: 14px;
+  box-shadow: 0 18px 44px -32px rgba(0, 39, 100, 0.34);
+}
+
+.company-position-page .offer-company-mark {
+  color: #0f52ba;
+  background: #e5eeff;
+}
+
+.company-position-page .offer-card-main strong {
+  color: #003c90;
+  font-weight: 900;
+}
+
+.company-position-page .offer-card-main h2 {
+  color: #0b1c30;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.company-position-page .offer-card-side strong {
+  color: #003c90;
+}
+
+.company-position-page .offer-create-form {
+  margin: 0;
+}
+
+.company-position-page .offer-detail-layout {
+  margin-top: 0;
+}
+
 .company-job-list-page {
   min-height: 100vh;
   background: radial-gradient(circle at 18% 12%, rgba(15, 82, 186, 0.08), transparent 34%), #f8f9ff;
@@ -4583,7 +4694,7 @@ dd {
 .company-job-list-shell {
   width: min(1320px, calc(100vw - 48px));
   margin: 0 auto;
-  padding: 96px 0 120px;
+  padding: 64px 0 120px;
 }
 
 .company-job-list-hero {
@@ -4597,7 +4708,6 @@ dd {
 .company-job-list-hero h1 {
   margin: 0;
   color: #0b1c30;
-  font-size: clamp(38px, 4.2vw, 58px);
   line-height: 1.05;
 }
 
@@ -4622,7 +4732,7 @@ dd {
 
 .company-job-side-column {
   position: sticky;
-  top: 24px;
+  top: 104px;
   display: grid;
   gap: 14px;
 }
@@ -4910,6 +5020,14 @@ dd {
   align-items: center;
 }
 
+.company-job-detail-action-menu {
+  position: relative;
+  top: auto;
+  right: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
 .company-job-card-menu-trigger {
   width: 28px;
   height: 28px;
@@ -4933,7 +5051,7 @@ dd {
   top: calc(100% + 6px);
   right: 0;
   z-index: 10;
-  min-width: 92px;
+  min-width: 116px;
   padding: 6px;
   display: grid;
   gap: 2px;
@@ -4943,7 +5061,13 @@ dd {
   box-shadow: 0 16px 32px -24px rgba(0, 39, 100, 0.42);
 }
 
+.action-menu-item {
+  position: relative;
+  display: grid;
+}
+
 .company-job-card-menu-list button {
+  position: relative;
   min-height: 32px;
   padding: 0 10px;
   border: 0;
@@ -4953,12 +5077,44 @@ dd {
   font-size: 13px;
   font-weight: 800;
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
+}
+
+.company-job-card-menu-list button.has-submenu {
+  padding-right: 18px;
+}
+
+.company-job-card-menu-list button.has-submenu::after {
+  content: '›';
+  position: absolute;
+  right: 8px;
+  color: #64748b;
 }
 
 .company-job-card-menu-list button:hover {
   color: #003c90;
   background: #eff4ff;
+}
+
+.company-job-card-menu-list button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.action-submenu-list {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 6px);
+  z-index: 11;
+  min-width: 82px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 32px -24px rgba(0, 39, 100, 0.42);
 }
 
 .company-job-card-main h2 {
@@ -5136,9 +5292,7 @@ dd {
 
 .company-job-detail-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 8%, rgba(15, 82, 186, 0.08), transparent 32%),
-    #f8f9ff;
+  background: radial-gradient(circle at 20% 8%, rgba(15, 82, 186, 0.08), transparent 32%), #f8f9ff;
 }
 
 .company-job-detail-shell {
@@ -5162,6 +5316,8 @@ dd {
 
 .company-job-detail-hero {
   padding: 32px 32px 24px;
+  overflow: visible;
+  z-index: 3;
 }
 
 .company-job-detail-topline {
@@ -5188,11 +5344,91 @@ dd {
 .company-job-detail-stats {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 16px;
   color: #64748b;
   font-size: 12px;
   font-weight: 800;
   text-align: right;
+}
+
+.company-job-detail-stats > span,
+.company-job-detail-stats .company-job-card-menu-trigger {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.company-job-detail-stats .company-job-detail-action-menu {
+  margin-left: 8px;
+}
+
+.company-job-action-menu {
+  position: relative;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.company-job-more-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  vertical-align: top;
+}
+
+.company-job-more-button:hover {
+  background: #edf4ff;
+  color: #003c90;
+}
+
+.company-job-more-button span {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.company-job-action-popover {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 20;
+  width: 92px;
+  padding: 6px;
+  display: grid;
+  gap: 3px;
+  border: 1px solid #dbe3ef;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px -22px rgba(0, 39, 100, 0.34);
+}
+
+.company-job-action-popover button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0b1c30;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.company-job-action-popover button:hover {
+  background: #edf4ff;
+  color: #003c90;
+}
+
+.company-job-action-popover button.danger {
+  color: #0b1c30;
 }
 
 .company-job-detail-facts {
@@ -5219,6 +5455,13 @@ dd {
   margin: 0;
   color: #0b1c30;
   font-weight: 900;
+}
+
+.company-job-detail-facts .company-job-status {
+  min-width: 64px;
+  min-height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
 }
 
 .company-job-detail-card {
@@ -5265,6 +5508,7 @@ dd {
 .company-job-condition-grid dd {
   margin: 0;
   color: #1f3248;
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -5287,10 +5531,16 @@ dd {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 18px;
   color: #1f3248;
-  font-weight: 700;
   list-style: none;
+}
+
+.company-job-condition-grid li {
+  color: #1f3248;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.6;
 }
 
 .company-job-body-card {
@@ -5348,11 +5598,11 @@ dd {
 .company-candidate-shell {
   width: min(1320px, calc(100vw - 48px));
   margin: 0 auto;
-  padding: 86px 0;
+  padding: 64px 0 120px;
 }
 
 .company-candidate-hero {
-  margin-bottom: 46px;
+  margin-bottom: 34px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -5362,7 +5612,6 @@ dd {
 .company-candidate-hero h1 {
   margin: 0;
   color: #0b1c30;
-  font-size: clamp(42px, 4.4vw, 64px);
   line-height: 1.05;
 }
 
@@ -5725,7 +5974,7 @@ dd {
 .job-create-shell {
   width: min(1120px, calc(100vw - 48px));
   margin: 0 auto;
-  padding: 96px 0 120px;
+  padding: 64px 0 120px;
 }
 
 .job-create-hero {
@@ -5736,8 +5985,11 @@ dd {
 .job-create-hero h1 {
   margin: 0 0 12px;
   color: #0b1c30;
-  font-size: clamp(34px, 4vw, 54px);
   line-height: 1.08;
+}
+
+.company-page-title {
+  font-size: clamp(28px, 3.2vw, 46px);
 }
 
 .job-create-hero p:not(.eyebrow) {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { jobApi } from '../../../api/jobApi.js';
 import { sapSkillApi } from '../../../api/sapSkillApi.js';
+import ActionMenu from '../../../componenjs/common/ActionMenu.jsx';
 import SearchBar from '../../../componenjs/common/SearchBar.jsx';
 import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
@@ -21,6 +22,12 @@ const statusClassNames = {
   DELETED: 'hidden',
 };
 
+const statusMenuOptions = [
+  { value: 'OPEN', label: '모집중' },
+  { value: 'CLOSED', label: '마감' },
+  { value: 'DELETED', label: '숨김' },
+];
+
 const skillTypeLabels = {
   MODULE: '모듈 (Modules)',
   SOLUTION: '솔루션 (Solutions)',
@@ -31,20 +38,20 @@ const skillTypeOrder = ['MODULE', 'SOLUTION', 'TECHNICAL'];
 
 function BriefcaseIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M10 6V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1" />
       <path d="M4 8h16v11H4z" />
       <path d="M8 13v3M12 11v5M16 14v2" />
-    </svg>
-  );
-}
-
-function MoreHorizontalIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="12" r="2" />
     </svg>
   );
 }
@@ -93,7 +100,10 @@ export default function CompanyJobListPage() {
   }, []);
 
   const skillGroups = useMemo(() => groupSkills(skills), [skills]);
-  const activeGroup = useMemo(() => skillGroups.find((group) => group.type === activeSkillType) || skillGroups[0], [activeSkillType, skillGroups]);
+  const activeGroup = useMemo(
+    () => skillGroups.find((group) => group.type === activeSkillType) || skillGroups[0],
+    [activeSkillType, skillGroups],
+  );
   const selectedSkills = useMemo(() => skills.filter((skill) => selectedSkillIds.includes(skill.id)), [selectedSkillIds, skills]);
 
   const visibleSkills = useMemo(() => {
@@ -143,6 +153,25 @@ export default function CompanyJobListPage() {
     }
   };
 
+  const changeJobStatus = async (jobId, nextStatus) => {
+    try {
+      await jobApi.updateMyCompanyJobStatus(jobId, nextStatus);
+      setJobs((current) =>
+        current.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                status: nextStatus,
+                statusLabel: statusMenuOptions.find((item) => item.value === nextStatus)?.label || nextStatus,
+              }
+            : job,
+        ),
+      );
+    } catch (err) {
+      alert(err.message || '공고 상태 변경에 실패했습니다.');
+    }
+  };
+
   return (
     <main className="company-job-list-page">
       <CompanyMemberHeader active="jobs" />
@@ -150,7 +179,7 @@ export default function CompanyJobListPage() {
         <div className="company-job-list-hero">
           <div>
             <p className="eyebrow">JOB POSTING MANAGEMENT</p>
-            <h1>채용 공고 목록</h1>
+            <h1 className="company-page-title">채용 공고 목록</h1>
           </div>
           <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
             공고 등록하기
@@ -240,42 +269,26 @@ export default function CompanyJobListPage() {
                   <div className="company-job-card-main">
                     <p>
                       <strong>{job.company}</strong>
-                      <span className="company-job-card-menu">
-                        <button
-                          type="button"
-                          className="company-job-card-menu-trigger"
-                          aria-label="공고 관리 메뉴"
-                          aria-expanded={openMenuId === job.id}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setOpenMenuId((current) => (current === job.id ? null : job.id));
-                          }}
-                        >
-                          <MoreHorizontalIcon />
-                        </button>
-                        {openMenuId === job.id && (
-                          <span className="company-job-card-menu-list">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                openUpdatePage(job.id);
-                              }}
-                            >
-                              수정
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setOpenMenuId(null);
-                              }}
-                            >
-                              삭제
-                            </button>
-                          </span>
-                        )}
-                      </span>
+                      <ActionMenu
+                        className="company-job-card-menu"
+                        label="공고 관리 메뉴"
+                        open={openMenuId === job.id}
+                        onOpenChange={(nextOpen) => setOpenMenuId(nextOpen ? job.id : null)}
+                        items={[
+                          { label: '수정', onClick: () => openUpdatePage(job.id) },
+                          { label: '삭제', onClick: () => setOpenMenuId(null) },
+                          {
+                            key: 'status',
+                            label: '상태 변경',
+                            children: statusMenuOptions.map((option) => ({
+                              key: option.value,
+                              label: option.label,
+                              disabled: job.status === option.value,
+                              onClick: () => changeJobStatus(job.id, option.value),
+                            })),
+                          },
+                        ]}
+                      />
                       {job.location && <span> · {job.location}</span>}
                     </p>
                     <h2>{job.title}</h2>
@@ -308,8 +321,12 @@ export default function CompanyJobListPage() {
           <aside className="company-job-side-column">
             <section className="company-job-todo-card">
               <h2>To-Do / 알림</h2>
-              <p>현재 미열람 지원자가 <strong>12명</strong> 있습니다.</p>
-              <p>내일 마감되는 공고가 <strong>1건</strong> 있습니다.</p>
+              <p>
+                현재 미열람 지원자가 <strong>12명</strong> 있습니다.
+              </p>
+              <p>
+                내일 마감되는 공고가 <strong>1건</strong> 있습니다.
+              </p>
             </section>
 
             <section className="company-job-summary-card">

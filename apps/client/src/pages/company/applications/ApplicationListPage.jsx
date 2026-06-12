@@ -107,7 +107,7 @@ export default function ApplicationListPage() {
         <div className="company-candidate-hero">
           <div>
             <p className="eyebrow">CANDIDATE MANAGEMENT</p>
-            <h1>지원자 현황</h1>
+            <h1 className="company-page-title">지원자 현황</h1>
           </div>
           <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
             공고 등록하기
@@ -132,13 +132,13 @@ export default function ApplicationListPage() {
           </select>
           <label>
             <span>검색</span>
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="지원자, 공고, 이력서 검색..." />
+            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="지원자, 공고, 직무 검색..." />
           </label>
           <button type="button" aria-label="필터">
             ≡
           </button>
           <button type="button" aria-label="정렬">
-            ≡
+            ⋯
           </button>
         </section>
 

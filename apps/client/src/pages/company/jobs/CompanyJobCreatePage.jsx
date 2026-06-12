@@ -186,7 +186,9 @@ export default function CompanyJobCreatePage() {
         status: form.status,
         tags: [form.projectType, form.position, form.workType].filter(Boolean),
         sapSkillIds: selectedSkillIds,
-        attachmentFileIds: attachments.map((file) => Number(file.id)).filter((id) => Number.isFinite(id) && id > 0),
+        attachmentFileIds: attachments
+          .map((file) => Number(file.id))
+          .filter((id) => Number.isFinite(id) && id > 0),
       };
 
       const created = await jobApi.create(payload);
@@ -203,8 +205,8 @@ export default function CompanyJobCreatePage() {
       <CompanyMemberHeader active="create" />
       <section className="job-create-shell">
         <div className="job-create-hero">
-          <p className="eyebrow">채용 담당자 워크스페이스</p>
-          <h1>공고 등록</h1>
+          <p className="eyebrow">Job Posting</p>
+          <h1 className="company-page-title">공고 등록</h1>
           <p>정확한 인재 매칭을 위해 SAP 직무 요건을 상세히 입력해 주세요.</p>
         </div>
 

@@ -75,6 +75,36 @@ public class JobPostServiceImpl implements JobPostService {
     }
 
     @Override
+    @Transactional
+    public JobCreateResponse updateJobStatus(Long userId, Long id, String status) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
+        }
+
+        String normalizedStatus = normalizeStatus(status);
+        int updated = jobPostMapper.updateJobStatus(companyProfileId, id, normalizedStatus);
+        if (updated == 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
+        }
+
+        return new JobCreateResponse(id, normalizedStatus);
+    }
+
+    @Override
+    @Transactional
+    public void deleteJob(Long userId, Long id) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
+        }
+        int deleted = jobPostMapper.deleteJob(companyProfileId, id);
+        if (deleted == 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<JobListItem> findOpenJobs(Integer limit) {
         int size = limit == null ? DEFAULT_LIMIT : Math.max(1, Math.min(limit, MAX_LIMIT));
