@@ -284,6 +284,12 @@ export default function CompanyJobDetailPage() {
               </div>
               <button type="button">매칭 리포트 상세보기</button>
             </article>
+
+            <div className="company-job-detail-bottom-actions">
+              <button type="button" className="secondary" onClick={() => navigate(ROUTES.COMPANY_JOBS)}>
+                목록으로
+              </button>
+            </div>
           </>
         )}
       </section>

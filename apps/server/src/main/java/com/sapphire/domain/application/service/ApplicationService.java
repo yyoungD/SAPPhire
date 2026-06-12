@@ -12,4 +12,6 @@ public interface ApplicationService {
     List<ApplicationListItem> findApplications(Long userId, String role, Long jobPostId);
 
     ApplicationDetail findApplication(Long userId, String role, Long id);
+
+    ApplicationDetail updateStatus(Long userId, String role, Long id, String status);
 }

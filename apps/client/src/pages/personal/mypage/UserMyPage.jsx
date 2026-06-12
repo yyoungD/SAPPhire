@@ -120,7 +120,7 @@ export default function UserMyPage() {
 
         <div className="mypage-grid">
           <section className="profile-column">
-            <article className="profile-card profile-summary-card">
+            <article className="profile-card profile-summary-card personal-profile-summary-card">
               <div className="profile-avatar">
                 {profileImageUrl ? <img src={profileImageUrl} alt="" /> : firstLetter(displayName)}
               </div>

@@ -90,14 +90,15 @@ export default function CompanyMyPage() {
           <section className="profile-column">
             <article className="profile-card profile-summary-card">
               <div className="profile-avatar">
-                {profile?.logoUrl ? (
-                  <img src={profile.logoUrl} alt="" />
-                ) : (
-                  (profile?.companyName || 'C').slice(0, 1)
-                )}
+                {profile?.logoUrl ? <img src={profile.logoUrl} alt="" /> : (profile?.companyName || 'C').slice(0, 1)}
               </div>
-              <div>
-                <h2>{loading ? '불러오는 중' : profile?.companyName || '기업명 미등록'}</h2>
+              <div className="profile-summary-main">
+                <div className="profile-summary-head">
+                  <h2>{loading ? '불러오는 중' : profile?.companyName || '기업명 미등록'}</h2>
+                  <button type="button" className="secondary profile-edit" onClick={() => navigate(ROUTES.COMPANY_PROFILE_UPDATE)}>
+                    프로필 수정
+                  </button>
+                </div>
                 {error && <p className="form-error">{error}</p>}
                 <div className="profile-info-grid">
                   <div>
@@ -119,49 +120,25 @@ export default function CompanyMyPage() {
                     )}
                   </div>
                 </div>
-                <div>
-                  <p className="career-copy">
-                    {profile?.description || '등록된 기업 설명이 없습니다.'}
-                  </p>
-                </div>
-              </div>
-              <div className="profile-summary-actions">
-                <button
-                  type="button"
-                  className="secondary profile-edit"
-                  onClick={() => navigate(ROUTES.COMPANY_PROFILE_UPDATE)}
-                >
-                  프로필 수정
-                </button>
+                <p className="career-copy">{profile?.description || '등록된 기업 설명이 없습니다.'}</p>
               </div>
             </article>
 
             <article className="profile-card">
               <div className="section-heading editable-heading">
                 <h2>공고 리스트</h2>
-                <button
-                  type="button"
-                  className="section-edit-button"
-                  onClick={() => navigate(ROUTES.COMPANY_JOBS)}
-                >
+                <button type="button" className="section-edit-button" onClick={() => navigate(ROUTES.COMPANY_JOBS)}>
                   더보기
                 </button>
               </div>
               <div className="mypage-job-list" aria-label="기업 공고 목록">
                 {jobsLoading && <p className="career-copy">공고 목록을 불러오는 중입니다.</p>}
                 {!jobsLoading && jobsError && <p className="form-error">{jobsError}</p>}
-                {!jobsLoading && !jobsError && jobs.length === 0 && (
-                  <p className="career-copy">등록된 공고가 없습니다.</p>
-                )}
+                {!jobsLoading && !jobsError && jobs.length === 0 && <p className="career-copy">등록된 공고가 없습니다.</p>}
                 {!jobsLoading &&
                   !jobsError &&
                   jobs.map((job) => (
-                    <button
-                      type="button"
-                      className="mypage-job-item"
-                      key={job.id}
-                      onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${job.id}`)}
-                    >
+                    <button type="button" className="mypage-job-item" key={job.id} onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${job.id}`)}>
                       <strong>{job.title || '-'}</strong>
                       <span>{job.position || job.experienceLevel || '-'}</span>
                       <time>{job.createdAt || '-'}</time>
@@ -173,11 +150,7 @@ export default function CompanyMyPage() {
             <article className="profile-card">
               <div className="section-heading editable-heading">
                 <h2>포지션 제안 목록</h2>
-                <button
-                  type="button"
-                  className="section-edit-button"
-                  onClick={() => navigate(ROUTES.POSITION_OFFERS)}
-                >
+                <button type="button" className="section-edit-button" onClick={() => navigate(ROUTES.POSITION_OFFERS)}>
                   더보기
                 </button>
               </div>
