@@ -152,6 +152,8 @@
         SELECT
             jp.id,
             cp.company_name AS company,
+            f.file_url AS logo_url,
+            cp.website_url,
             jp.location,
             jp.title,
             COALESCE(STRING_AGG(jt.tag_name, ',' ORDER BY jt.id), '') AS tags_csv,
@@ -162,12 +164,15 @@
             jp.created_at
         FROM job_posts jp
         JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
         LEFT JOIN job_tags jt ON jt.job_post_id = jp.id
         WHERE jp.status = 'OPEN'
           AND jp.deleted_at IS NULL
         GROUP BY
             jp.id,
             cp.company_name,
+            f.file_url,
+            cp.website_url,
             jp.location,
             jp.title,
             jp.deadline,

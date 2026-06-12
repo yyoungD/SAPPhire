@@ -189,6 +189,8 @@ public class JobPostServiceImpl implements JobPostService {
         return new JobListItem(
                 row.getId(),
                 row.getCompany(),
+                row.getLogoUrl(),
+                row.getWebsiteUrl(),
                 row.getLocation(),
                 row.getTitle(),
                 parseCsv(row.getTagsCsv()),

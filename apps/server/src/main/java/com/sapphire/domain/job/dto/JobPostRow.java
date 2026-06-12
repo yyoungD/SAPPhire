@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class JobPostRow {
     private Long id;
     private String company;
+    private String logoUrl;
+    private String websiteUrl;
     private String location;
     private String title;
     private String tagsCsv;

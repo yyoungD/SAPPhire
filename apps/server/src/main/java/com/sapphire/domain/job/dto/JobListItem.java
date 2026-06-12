@@ -5,6 +5,8 @@ import java.util.List;
 public record JobListItem(
         Long id,
         String company,
+        String logoUrl,
+        String websiteUrl,
         String location,
         String title,
         List<String> tags,
