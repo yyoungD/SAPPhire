@@ -147,7 +147,7 @@
               FROM job_applications ja
               WHERE ja.user_id = #{userId}
                 AND ja.job_post_id = jp.id
-                AND ja.status != 'WITHDRAWN'
+                AND ja.status NOT IN ('CANCELED', 'WITHDRAWN')
           )
         ORDER BY score DESC, jsm.matched_required_count DESC, jp.created_at DESC, jp.id DESC
         LIMIT #{limit}

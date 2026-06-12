@@ -3,6 +3,7 @@ package com.sapphire.domain.application.controller;
 import com.sapphire.domain.application.dto.ApplicationCreateRequest;
 import com.sapphire.domain.application.dto.ApplicationDetail;
 import com.sapphire.domain.application.dto.ApplicationListItem;
+import com.sapphire.domain.application.dto.ApplicationStatusUpdateRequest;
 import com.sapphire.domain.application.service.ApplicationService;
 import com.sapphire.global.response.ApiResponse;
 import com.sapphire.global.security.auth.CustomUserDetails;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,5 +52,14 @@ public class ApplicationController {
             @PathVariable Long id
     ) {
         return ResponseEntity.ok(ApiResponse.success(applicationService.findApplication(userDetails.getId(), userDetails.getRole(), id)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<ApplicationDetail>> updateStatus(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
+            @Valid @RequestBody ApplicationStatusUpdateRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(applicationService.updateStatus(userDetails.getId(), userDetails.getRole(), id, request.status())));
     }
 }

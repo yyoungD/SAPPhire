@@ -1,13 +1,201 @@
+import { useEffect, useMemo, useState } from 'react';
+import { applicationApi } from '../../../api/applicationApi.js';
+import { fileApi } from '../../../api/fileApi.js';
 import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
+import { ROUTES } from '../../../constanjs/routes.js';
+import { navigate } from '../../../utils/authUtils.js';
+
+const statusClassNames = {
+  APPLIED: 'new',
+  REVIEWING: 'review',
+  INTERVIEW: 'interview',
+  ACCEPTED: 'offer',
+  REJECTED: 'rejected',
+  CANCELED: 'withdrawn',
+};
+
+const statusOptions = [
+  { value: 'APPLIED', label: '지원 완료' },
+  { value: 'REVIEWING', label: '서류전형' },
+  { value: 'INTERVIEW', label: '면접' },
+  { value: 'ACCEPTED', label: '합격' },
+  { value: 'REJECTED', label: '불합격' },
+  { value: 'CANCELED', label: '취소' },
+];
+
+function getApplicationIdFromUrl() {
+  return new URLSearchParams(window.location.search).get('id');
+}
 
 export default function ApplicationDetailPage() {
+  const applicationId = useMemo(() => getApplicationIdFromUrl(), []);
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
+
+  useEffect(() => {
+    const loadApplication = async () => {
+      if (!applicationId) {
+        setError('지원자 ID가 없습니다.');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+      try {
+        setApplication(await applicationApi.detail(applicationId));
+      } catch (err) {
+        setError(err.message || '지원자 상세 정보를 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApplication();
+  }, [applicationId]);
+
+  const downloadResume = async () => {
+    if (!application?.resumeFileId) return;
+
+    setDownloading(true);
+    try {
+      await fileApi.download(application.resumeFileId, application.resumeOriginalFileName || application.resumeTitle || 'resume');
+    } catch (err) {
+      alert(err.message || '이력서 다운로드에 실패했습니다.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const updateApplicationStatus = async (nextStatus) => {
+    if (!application || nextStatus === application.status) return;
+
+    setSavingStatus(true);
+    try {
+      const updated = await applicationApi.updateStatus(application.id, nextStatus);
+      setApplication(updated);
+    } catch (err) {
+      alert(err.message || '지원 상태 변경에 실패했습니다.');
+    } finally {
+      setSavingStatus(false);
+    }
+  };
+
   return (
-    <main className="page-shell">
+    <main className="company-candidate-page">
       <CompanyMemberHeader active="applications" />
-      <section className="page-panel">
-        <p className="eyebrow">SAPPhire</p>
-        <h1>지원자 상세</h1>
-        <p>백엔드 엔드포인트가 추가되면 이 화면에서 해당 API 모듈을 연결하면 됩니다.</p>
+      <section className="company-candidate-shell compact">
+        {loading && (
+          <article className="detail-section">
+            <p className="career-copy">지원자 상세 정보를 불러오는 중입니다.</p>
+          </article>
+        )}
+
+        {!loading && error && (
+          <article className="detail-section">
+            <h2>지원자 정보를 찾을 수 없습니다.</h2>
+            <p className="form-error">{error}</p>
+            <button type="button" className="secondary" onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}>
+              목록으로 돌아가기
+            </button>
+          </article>
+        )}
+
+        {!loading && !error && application && (
+          <div className="application-detail-layout">
+            <section className="application-detail-main">
+              <article className="detail-hero-card company-application-hero">
+                <p className="eyebrow">CANDIDATE DETAIL</p>
+                <div className="company-application-title-row">
+                  <div>
+                    <h1>{application.applicantName || '지원자'}</h1>
+                    <p>
+                      {application.jobTitle || '-'} · {application.jobLocation || '-'}
+                    </p>
+                  </div>
+                  <span className={`candidate-status ${statusClassNames[application.status] || ''}`}>{application.statusLabel || application.status || '-'}</span>
+                </div>
+                <div className="detail-badges">
+                  <span>지원일 {application.appliedAt || '-'}</span>
+                  <span>최근 변경 {application.updatedAt || '-'}</span>
+                  <span>{application.employmentType || '-'}</span>
+                  <span>{application.workType || '-'}</span>
+                </div>
+              </article>
+
+              <article className="detail-section">
+                <div className="apply-section-head">
+                  <div>
+                    <p className="eyebrow">RESUME</p>
+                    <h2>제출 이력서</h2>
+                  </div>
+                  {application.resumeFileId && (
+                    <button type="button" className="section-edit-button" onClick={downloadResume} disabled={downloading}>
+                      {downloading ? '다운로드 중...' : '이력서 다운로드'}
+                    </button>
+                  )}
+                </div>
+                <dl className="application-detail-dl">
+                  <div>
+                    <dt>이력서 제목</dt>
+                    <dd>{application.resumeTitle || '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>원본 파일</dt>
+                    <dd>{application.resumeOriginalFileName || '업로드된 이력서 파일이 없습니다.'}</dd>
+                  </div>
+                  <div>
+                    <dt>지원 공고</dt>
+                    <dd>{application.jobTitle || '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>경력</dt>
+                    <dd>{application.careerYears === null || application.careerYears === undefined ? '-' : `${application.careerYears}년`}</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article className="detail-section">
+                <div className="apply-section-head">
+                  <div>
+                    <p className="eyebrow">COVER LETTER</p>
+                    <h2>자기소개</h2>
+                  </div>
+                </div>
+                <p className="application-cover-letter">{application.coverLetter || '제출된 자기소개가 없습니다.'}</p>
+              </article>
+            </section>
+
+            <aside className="apply-submit-panel">
+              <section>
+                <h2>지원 상태</h2>
+                <div className="apply-summary-score application-status-summary">
+                  <span>현재 단계</span>
+                  <strong>{application.statusLabel || '-'}</strong>
+                </div>
+              </section>
+              <label className="application-status-select">
+                <span>상태 변경</span>
+                <select value={application.status || ''} onChange={(event) => updateApplicationStatus(event.target.value)} disabled={savingStatus}>
+                  {statusOptions.map((option) => (
+                    <option value={option.value} key={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="button" className="secondary" onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}>
+                지원자 목록
+              </button>
+              <button type="button" className="primary-action" onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${application.jobPostId}`)}>
+                공고 상세 보기
+              </button>
+            </aside>
+          </div>
+        )}
       </section>
     </main>
   );

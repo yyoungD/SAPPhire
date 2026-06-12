@@ -1,10 +1,28 @@
 package com.sapphire.domain.application.dto;
 
 public class ApplicationDetailRow extends ApplicationListRow {
+    private Long resumeFileId;
+    private String resumeOriginalFileName;
     private String coverLetter;
     private String jobLocation;
     private String employmentType;
     private String workType;
+
+    public Long getResumeFileId() {
+        return resumeFileId;
+    }
+
+    public void setResumeFileId(Long resumeFileId) {
+        this.resumeFileId = resumeFileId;
+    }
+
+    public String getResumeOriginalFileName() {
+        return resumeOriginalFileName;
+    }
+
+    public void setResumeOriginalFileName(String resumeOriginalFileName) {
+        this.resumeOriginalFileName = resumeOriginalFileName;
+    }
 
     public String getCoverLetter() {
         return coverLetter;

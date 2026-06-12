@@ -30,7 +30,7 @@
             FROM job_applications
             WHERE user_id = #{userId}
               AND job_post_id = #{jobPostId}
-              AND status != 'WITHDRAWN'
+              AND status != 'CANCELED'
         )
     </select>
 
@@ -48,7 +48,7 @@
             #{resumeId},
             #{userId},
             #{coverLetter},
-            'SUBMITTED'
+            'APPLIED'
         )
     </insert>
 
@@ -63,11 +63,41 @@
         VALUES (
             #{applicationId},
             NULL,
-            'SUBMITTED',
+            'APPLIED',
             'Application submitted',
             #{userId}
         )
     </insert>
+
+    <insert id="insertStatusChangeLog">
+        INSERT INTO application_status_logs (
+            application_id,
+            previous_status,
+            new_status,
+            memo,
+            changed_by_user_id
+        )
+        SELECT
+            ja.id,
+            ja.status,
+            #{newStatus},
+            'Application status changed',
+            #{userId}
+        FROM job_applications ja
+        WHERE ja.id = #{applicationId}
+    </insert>
+
+    <update id="updateCompanyApplicationStatus">
+        UPDATE job_applications ja
+        SET
+            status = #{status},
+            updated_at = NOW()
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        WHERE ja.job_post_id = jp.id
+          AND cp.user_id = #{userId}
+          AND ja.id = #{id}
+    </update>
 
     <insert id="insertAttachments">
         INSERT INTO job_application_attachments (
@@ -133,6 +163,8 @@
 
     <sql id="applicationDetailColumns">
         <include refid="applicationListColumns" />,
+        r.resume_file_id,
+        f.original_name AS resume_original_file_name,
         ja.cover_letter,
         jp.location AS job_location,
         jp.employment_type,
@@ -148,6 +180,7 @@
         JOIN users u ON u.id = ja.user_id
         JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
+        LEFT JOIN files f ON f.id = r.resume_file_id
         WHERE ja.user_id = #{userId}
           AND ja.id = #{id}
     </select>
@@ -161,6 +194,7 @@
         JOIN users u ON u.id = ja.user_id
         JOIN personal_profiles pp ON pp.user_id = u.id
         JOIN resumes r ON r.id = ja.resume_id
+        LEFT JOIN files f ON f.id = r.resume_file_id
         WHERE cp.user_id = #{userId}
           AND ja.id = #{id}
     </select>

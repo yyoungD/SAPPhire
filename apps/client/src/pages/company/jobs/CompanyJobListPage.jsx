@@ -108,11 +108,12 @@ export default function CompanyJobListPage() {
 
   const visibleSkills = useMemo(() => {
     const normalizedKeyword = skillKeyword.trim().toLowerCase();
-    return (activeGroup?.skills || []).filter((skill) => {
+    const sourceSkills = normalizedKeyword ? skills : activeGroup?.skills || [];
+    return sourceSkills.filter((skill) => {
       if (!normalizedKeyword) return true;
       return `${skill.name} ${skill.code}`.toLowerCase().includes(normalizedKeyword);
     });
-  }, [activeGroup, skillKeyword]);
+  }, [activeGroup, skillKeyword, skills]);
 
   const filteredJobs = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
