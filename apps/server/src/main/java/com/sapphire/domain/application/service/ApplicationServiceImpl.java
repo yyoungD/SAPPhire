@@ -14,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd HH:mm");
+    private static final Set<String> APPLICATION_STATUSES = Set.of("APPLIED", "REVIEWING", "INTERVIEW", "ACCEPTED", "REJECTED", "CANCELED");
 
     private final ApplicationMapper applicationMapper;
 
@@ -71,6 +73,27 @@ public class ApplicationServiceImpl implements ApplicationService {
         return toDetail(row);
     }
 
+    @Override
+    @Transactional
+    public ApplicationDetail updateStatus(Long userId, String role, Long id, String status) {
+        if (!"COMPANY".equals(role)) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+
+        String normalizedStatus = normalizeStatus(status);
+        if (applicationMapper.findCompanyApplicationDetail(userId, id) == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Application not found.");
+        }
+
+        applicationMapper.insertStatusChangeLog(id, userId, normalizedStatus);
+        int updated = applicationMapper.updateCompanyApplicationStatus(userId, id, normalizedStatus);
+        if (updated == 0) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Application not found.");
+        }
+
+        return findApplication(userId, role, id);
+    }
+
     private ApplicationListItem toListItem(ApplicationListRow row) {
         return new ApplicationListItem(
                 row.getId(),
@@ -98,6 +121,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 row.getCompanyName(),
                 row.getApplicantName(),
                 row.getResumeTitle(),
+                row.getResumeFileId(),
+                row.getResumeOriginalFileName(),
                 row.getStatus(),
                 formatStatus(row.getStatus()),
                 row.getAppliedAt() == null ? null : row.getAppliedAt().format(DATE_TIME_FORMATTER),
@@ -113,13 +138,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
+    private String normalizeStatus(String status) {
+        String normalized = status == null ? "" : status.trim().toUpperCase();
+        if (!APPLICATION_STATUSES.contains(normalized)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Invalid application status. Allowed values are APPLIED, REVIEWING, INTERVIEW, ACCEPTED, REJECTED, CANCELED.");
+        }
+        return normalized;
+    }
+
     private String formatStatus(String status) {
-        if ("SUBMITTED".equals(status)) return "신규";
+        if ("APPLIED".equals(status) || "SUBMITTED".equals(status)) return "지원 완료";
         if ("REVIEWING".equals(status)) return "서류전형";
         if ("INTERVIEW".equals(status)) return "면접";
-        if ("OFFERED".equals(status)) return "합격 제안";
+        if ("ACCEPTED".equals(status) || "OFFERED".equals(status)) return "합격";
         if ("REJECTED".equals(status)) return "불합격";
-        if ("WITHDRAWN".equals(status)) return "지원 취소";
+        if ("CANCELED".equals(status) || "WITHDRAWN".equals(status)) return "취소";
         return status == null ? "-" : status;
     }
 

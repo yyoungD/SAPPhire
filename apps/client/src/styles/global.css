@@ -25,6 +25,46 @@ input {
 
 button {
   cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+@keyframes companyPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.company-job-list-shell,
+.company-candidate-shell,
+.job-create-shell,
+.company-job-detail-shell,
+.company-position-shell,
+.mypage-shell,
+.profile-edit-shell {
+  animation: companyPageEnter 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-job-list-shell,
+  .company-candidate-shell,
+  .job-create-shell,
+  .company-job-detail-shell,
+  .company-position-shell,
+  .mypage-shell,
+  .profile-edit-shell {
+    animation: none;
+  }
 }
 
 .signup-header {
@@ -3033,7 +3073,27 @@ dd {
 .apply-panel p,
 .career-copy {
   color: #334155;
+  margin-top: 16px;
   line-height: 1.75;
+}
+
+.job-description-content {
+  margin-top: 16px;
+  color: #334155;
+  line-height: 1.8;
+}
+
+.job-description-content :first-child {
+  margin-top: 0;
+}
+
+.job-description-content :last-child {
+  margin-bottom: 0;
+}
+
+.job-description-content ul,
+.job-description-content ol {
+  padding-left: 22px;
 }
 
 .empty-copy {
@@ -3686,6 +3746,31 @@ dd {
   font-size: 24px;
 }
 
+.application-status-select {
+  display: grid;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.application-status-select select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #d8e2f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0b1c30;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.application-status-select select:disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
 .match-score {
   padding: 18px;
   display: flex;
@@ -3731,9 +3816,25 @@ dd {
 .profile-summary-card {
   position: relative;
   display: grid;
-  grid-template-columns: 96px 1fr auto;
-  align-items: center;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
   gap: 22px;
+}
+
+.profile-summary-main {
+  min-width: 0;
+}
+
+.profile-summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-summary-head h2 {
+  min-width: 0;
+  margin: 0;
 }
 
 .profile-avatar {
@@ -3766,7 +3867,7 @@ dd {
 .profile-info-grid {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
   gap: 10px;
 }
 
@@ -3797,14 +3898,44 @@ dd {
   white-space: nowrap;
 }
 
+.profile-info-grid a {
+  min-width: 0;
+  overflow: hidden;
+  color: #0f52ba;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .profile-summary-actions {
   display: grid;
   gap: 10px;
   justify-items: stretch;
 }
 
+.personal-profile-summary-card {
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
 .profile-summary-actions .profile-edit {
   min-width: 136px;
+}
+
+.profile-summary-head .profile-edit {
+  min-width: 136px;
+  flex: 0 0 auto;
+  border: 1px solid #cbd5e1;
+  color: #002764;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.profile-summary-head .profile-edit:hover {
+  color: #002764;
+  background: #eff6ff;
 }
 
 .mypage-job-list {
@@ -3886,7 +4017,6 @@ dd {
 }
 
 .section-edit-button:hover {
-  border-color: #93c5fd;
   background: #eff6ff;
 }
 
@@ -4968,6 +5098,59 @@ dd {
   border-radius: 0 8px 8px 0;
 }
 
+@media (max-width: 1180px) {
+  .company-job-list-hero {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .company-job-list-hero > div {
+    min-width: 0;
+    flex: 1 1 360px;
+  }
+
+  .company-job-list-hero .company-job-create-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .company-job-filter-panel {
+    grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr);
+    gap: 10px;
+  }
+
+  .company-job-filter-trigger,
+  .company-job-filter-panel select,
+  .search-bar input {
+    border: 1px solid rgba(195, 198, 211, 0.56);
+    border-radius: 8px;
+  }
+
+  .company-job-filter-panel .search-bar {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .company-job-list-hero {
+    gap: 16px;
+  }
+
+  .company-job-list-hero .company-job-create-button {
+    width: 100%;
+    min-height: 52px;
+    margin-left: 0;
+  }
+
+  .company-job-filter-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .company-job-filter-panel .search-bar {
+    grid-column: auto;
+  }
+}
+
 .company-job-mega-filter {
   grid-column: 1 / -1;
   margin-top: 0;
@@ -4988,13 +5171,14 @@ dd {
 }
 
 .company-job-mega-filter nav button {
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 14px;
   border: 0;
   border-radius: 8px;
   color: #526071;
   background: transparent;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 700;
   text-align: left;
 }
 
@@ -5021,6 +5205,7 @@ dd {
 }
 
 .company-job-skill-toolbar .search-bar input {
+  min-height: 42px;
   border-radius: 8px;
   background: #eff4ff;
 }
@@ -5734,6 +5919,10 @@ dd {
   padding: 64px 0 120px;
 }
 
+.company-candidate-shell.compact {
+  width: min(1120px, calc(100vw - 48px));
+}
+
 .company-candidate-hero {
   margin-bottom: 34px;
   display: flex;
@@ -5973,6 +6162,32 @@ dd {
   text-align: right;
 }
 
+.company-application-hero {
+  display: grid;
+  gap: 18px;
+}
+
+.company-application-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.company-application-title-row h1 {
+  margin: 0;
+  color: #0b1c30;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.12;
+}
+
+.company-application-title-row p {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .candidate-empty {
   margin: 0;
   padding: 42px 24px;
@@ -6099,6 +6314,24 @@ dd {
   font-weight: 900;
 }
 
+.company-job-detail-bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.company-job-detail-bottom-actions .secondary {
+  min-width: 112px;
+  border: 1px solid #cbd5e1;
+  color: #002764;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.company-job-detail-bottom-actions .secondary:hover {
+  color: #002764;
+  background: #eff6ff;
+}
+
 .company-job-create-page {
   min-height: 100vh;
   background: radial-gradient(circle at 18% 12%, rgba(15, 82, 186, 0.08), transparent 34%), #f8f9ff;
@@ -6122,7 +6355,7 @@ dd {
 }
 
 .company-page-title {
-  font-size: clamp(28px, 3.2vw, 46px);
+  font-size: clamp(28px, 3.2vw, 36px);
 }
 
 .job-create-hero p:not(.eyebrow) {
@@ -6717,7 +6950,6 @@ dd {
   .member-brand,
   .ai-recommend-hero,
   .jobs-hero,
-  .company-job-list-hero,
   .offer-hero,
   .detail-hero-top,
   .toggle-row {
@@ -6728,11 +6960,32 @@ dd {
   .member-header {
     position: static;
     padding: 14px 20px;
+    height: auto;
   }
 
   .member-brand nav {
-    flex-wrap: wrap;
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
     gap: 12px;
+    scrollbar-width: none;
+  }
+
+  .member-brand nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .member-brand nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .member-brand {
+    width: 100%;
+  }
+
+  .member-actions {
+    margin-left: auto;
   }
 
   .member-search {
@@ -6767,7 +7020,7 @@ dd {
   }
 
   .profile-info-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
   .profile-photo-editor {
@@ -6777,6 +7030,11 @@ dd {
   .profile-photo-preview {
     width: 88px;
     height: 88px;
+  }
+
+  .profile-summary-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
   .apply-panel,

@@ -8,6 +8,8 @@ public record ApplicationDetail(
         String companyName,
         String applicantName,
         String resumeTitle,
+        Long resumeFileId,
+        String resumeOriginalFileName,
         String status,
         String statusLabel,
         String appliedAt,

@@ -7,12 +7,12 @@ import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
 const statusClassNames = {
-  SUBMITTED: 'new',
+  APPLIED: 'new',
   REVIEWING: 'review',
   INTERVIEW: 'interview',
-  OFFERED: 'offer',
+  ACCEPTED: 'offer',
   REJECTED: 'rejected',
-  WITHDRAWN: 'withdrawn',
+  CANCELED: 'withdrawn',
 };
 
 function UserIcon() {
@@ -94,7 +94,7 @@ export default function ApplicationListPage() {
 
   const stats = useMemo(() => {
     const total = applications.length;
-    const newCount = applications.filter((item) => item.status === 'SUBMITTED').length;
+    const newCount = applications.filter((item) => item.status === 'APPLIED').length;
     const reviewingCount = applications.filter((item) => item.status === 'REVIEWING').length;
     const interviewCount = applications.filter((item) => item.status === 'INTERVIEW').length;
     return { total, newCount, reviewingCount, interviewCount };
@@ -138,7 +138,7 @@ export default function ApplicationListPage() {
             ≡
           </button>
           <button type="button" aria-label="정렬">
-            ⋯
+            ⇅
           </button>
         </section>
 

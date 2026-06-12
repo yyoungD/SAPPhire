@@ -20,6 +20,8 @@ public interface ApplicationMapper {
 
     void insertStatusLog(@Param("applicationId") Long applicationId, @Param("userId") Long userId);
 
+    void insertStatusChangeLog(@Param("applicationId") Long applicationId, @Param("userId") Long userId, @Param("newStatus") String newStatus);
+
     void insertAttachments(
             @Param("applicationId") Long applicationId,
             @Param("userId") Long userId,
@@ -33,4 +35,6 @@ public interface ApplicationMapper {
     ApplicationDetailRow findMyApplicationDetail(@Param("userId") Long userId, @Param("id") Long id);
 
     ApplicationDetailRow findCompanyApplicationDetail(@Param("userId") Long userId, @Param("id") Long id);
+
+    int updateCompanyApplicationStatus(@Param("userId") Long userId, @Param("id") Long id, @Param("status") String status);
 }

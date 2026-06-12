@@ -8,6 +8,23 @@ function getJobIdFromUrl() {
   return new URLSearchParams(window.location.search).get('id');
 }
 
+function sanitizeJobHtml(value = '') {
+  const template = document.createElement('template');
+  template.innerHTML = value;
+
+  const allowedTags = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'S', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'H2', 'H3', 'HR']);
+  template.content.querySelectorAll('*').forEach((node) => {
+    if (!allowedTags.has(node.tagName)) {
+      node.replaceWith(...node.childNodes);
+      return;
+    }
+
+    [...node.attributes].forEach((attribute) => node.removeAttribute(attribute.name));
+  });
+
+  return template.innerHTML;
+}
+
 export default function JobDetailPage() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -142,7 +159,7 @@ export default function JobDetailPage() {
 
             <article className="detail-section">
               <h2>공고 소개</h2>
-              <p>{job.description}</p>
+              <div className="job-description-content" dangerouslySetInnerHTML={{ __html: sanitizeJobHtml(job.description || '<p>등록된 공고 소개가 없습니다.</p>') }} />
               <div className="tag-row">
                 {(job.tags || []).map((tag) => (
                   <span key={tag}>#{tag}</span>
