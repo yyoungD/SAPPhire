@@ -76,6 +76,26 @@
           AND deleted_at IS NULL
     </update>
 
+    <update id="updateJobStatus">
+        UPDATE job_posts
+        SET
+            status = #{status},
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND company_profile_id = #{companyProfileId}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="deleteJob">
+        UPDATE job_posts
+        SET
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND company_profile_id = #{companyProfileId}
+          AND deleted_at IS NULL
+    </update>
+
     <insert id="insertJobTag">
         INSERT INTO job_tags (job_post_id, tag_name)
         VALUES (#{jobPostId}, #{tagName})

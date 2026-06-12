@@ -20,9 +20,13 @@ const initialForm = {
   passwordConfirm: '',
 };
 
+function getInitialRole() {
+  return new URLSearchParams(window.location.search).get('role') === 'COMPANY' ? 'COMPANY' : 'PERSONAL';
+}
+
 export default function SignupPage() {
   const { signup } = useAuth();
-  const [role, setRole] = useState('PERSONAL');
+  const [role, setRole] = useState(getInitialRole);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
   const [businessNumberVerified, setBusinessNumberVerified] = useState(false);
@@ -37,14 +41,14 @@ export default function SignupPage() {
     () =>
       isCompany
         ? {
-            title: '기업 계정 생성',
+            title: '기업회원 회원가입',
             description: '채용을 시작하기 위해 기업 정보와 담당자 정보를 입력해 주세요.',
             emailLabel: '비즈니스 이메일',
             nameLabel: '담당자 이름',
             namePlaceholder: '홍길동',
           }
         : {
-            title: '계정 생성',
+            title: '개인회원 회원가입',
             description: 'SAPPhire 서비스를 시작하기 위해 기본 정보를 입력해 주세요.',
             emailLabel: '이메일',
             nameLabel: '이름',
@@ -57,13 +61,14 @@ export default function SignupPage() {
     if (event.target.name === 'businessNumber') {
       setBusinessNumberVerified(false);
     }
-    setForm({ ...form, [event.target.name]: event.target.value });
+    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
   const changeRole = (nextRole) => {
     setRole(nextRole);
     setError('');
     setBusinessNumberVerified(false);
+    navigate(`${ROUTES.SIGNUP}?role=${nextRole}`);
   };
 
   const togglePassword = (field) => {
@@ -109,7 +114,7 @@ export default function SignupPage() {
     }
 
     if (isCompany && (!form.companyName.trim() || !form.businessNumber.trim())) {
-      setError('회사명과 사업자 번호를 입력해 주세요.');
+      setError('회사명과 사업자등록번호를 입력해 주세요.');
       return;
     }
 
@@ -130,7 +135,7 @@ export default function SignupPage() {
         businessNumberVerified,
         consents: [{ termId: 1, agreed: true }],
       });
-      navigate(ROUTES.LOGIN);
+      navigate(`${ROUTES.LOGIN}?role=${role}`);
     } catch (err) {
       setError(err.message);
     }
@@ -152,7 +157,7 @@ export default function SignupPage() {
           </div>
           <aside>
             <strong>AI INSIGHT</strong>
-            <p>SAP 역량과 채용 데이터를 바탕으로 더 정확한 매칭을 지원합니다.</p>
+            <p>SAP 역량과 채용 데이터를 기반으로 더 정확한 매칭을 지원합니다.</p>
           </aside>
         </section>
         <section className="signup-card">
@@ -160,10 +165,10 @@ export default function SignupPage() {
           <p>{pageCopy.description}</p>
           <div className="role-tabs" role="tablist" aria-label="회원 유형">
             <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => changeRole('PERSONAL')}>
-              개인 회원
+              개인회원
             </button>
             <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => changeRole('COMPANY')}>
-              기업 회원
+              기업회원
             </button>
           </div>
           <form className="form-stack" onSubmit={onSubmit}>
@@ -174,7 +179,7 @@ export default function SignupPage() {
                   <input name="companyName" value={form.companyName} onChange={update} placeholder="SAP Korea" required />
                 </label>
                 <label>
-                  사업자 번호
+                  사업자등록번호
                   <div className="inline-input">
                     <input name="businessNumber" value={form.businessNumber} onChange={update} placeholder="1234567890" inputMode="numeric" required />
                     <button type="button" onClick={verifyBusinessNumber} disabled={businessVerifying}>
@@ -240,17 +245,15 @@ export default function SignupPage() {
               시작하기
             </button>
           </form>
-          {!isCompany && (
-            <>
-              <div className="divider">
-                <span />또는<span />
-              </div>
-              <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
-                Google 계정으로 회원가입
-              </button>
-            </>
-          )}
-          <button type="button" className="link-button" onClick={() => navigate(ROUTES.LOGIN)}>
+          <div className={`signup-social-area ${isCompany ? 'is-hidden' : ''}`} aria-hidden={isCompany}>
+            <div className="divider">
+              <span />또는<span />
+            </div>
+            <button type="button" className="social-button" onClick={authApi.startGoogleLogin} disabled={isCompany}>
+              Google 계정으로 회원가입
+            </button>
+          </div>
+          <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.LOGIN}?role=${role}`)}>
             이미 계정이 있으신가요? 로그인
           </button>
         </section>

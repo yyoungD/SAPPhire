@@ -13,6 +13,10 @@ public interface JobPostService {
 
     JobCreateResponse updateJob(Long userId, Long id, JobCreateRequest request);
 
+    JobCreateResponse updateJobStatus(Long userId, Long id, String status);
+
+    void deleteJob(Long userId, Long id);
+
     List<JobListItem> findOpenJobs(Integer limit);
 
     List<CompanyJobListItem> findCompanyJobs(Long userId);

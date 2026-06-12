@@ -26,6 +26,10 @@ public interface JobPostMapper {
 
     int updateJob(@Param("companyProfileId") Long companyProfileId, @Param("param") JobCreateParam param);
 
+    int updateJobStatus(@Param("companyProfileId") Long companyProfileId, @Param("id") Long id, @Param("status") String status);
+
+    int deleteJob(@Param("companyProfileId") Long companyProfileId, @Param("id") Long id);
+
     void insertJobTag(@Param("jobPostId") Long jobPostId, @Param("tagName") String tagName);
 
     void deleteJobTags(@Param("jobPostId") Long jobPostId);

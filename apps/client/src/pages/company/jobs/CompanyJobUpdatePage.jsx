@@ -223,7 +223,7 @@ export default function CompanyJobUpdatePage() {
       <section className="job-create-shell">
         <div className="job-create-hero">
           <p className="eyebrow">JOB POSTING MANAGEMENT</p>
-          <h1>공고 수정</h1>
+          <h1 className="company-page-title">공고 수정</h1>
           <p>등록된 공고 정보를 확인하고 필요한 내용을 수정합니다.</p>
         </div>
 

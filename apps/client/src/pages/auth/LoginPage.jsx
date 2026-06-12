@@ -10,9 +10,13 @@ const mailIconUrl = new URL('../../assejs/images/container14.svg', import.meta.u
 const lockIconUrl = new URL('../../assejs/images/container18.svg', import.meta.url).href;
 const eyeIconUrl = new URL('../../assejs/images/container19.svg', import.meta.url).href;
 
+function getInitialRole() {
+  return new URLSearchParams(window.location.search).get('role') === 'COMPANY' ? 'COMPANY' : 'PERSONAL';
+}
+
 export default function LoginPage() {
   const { login } = useAuth();
-  const [role, setRole] = useState('PERSONAL');
+  const [role, setRole] = useState(getInitialRole);
   const [form, setForm] = useState({ email: '', password: '', keepSignedIn: false });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
@@ -118,7 +122,7 @@ export default function LoginPage() {
                 Google 계정으로 계속하기
               </button>
           </div>
-          <button type="button" className="link-button" onClick={() => navigate(ROUTES.SIGNUP)}>
+          <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.SIGNUP}?role=${role}`)}>
             계정이 없으신가요? 계정 만들기
           </button>
         </section>

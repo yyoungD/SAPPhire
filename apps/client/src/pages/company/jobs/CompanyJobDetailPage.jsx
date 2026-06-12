@@ -1,9 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fileApi } from '../../../api/fileApi.js';
 import { jobApi } from '../../../api/jobApi.js';
+import ActionMenu from '../../../componenjs/common/ActionMenu.jsx';
 import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
+
+const statusClassNames = {
+  OPEN: 'open',
+  DRAFT: 'draft',
+  CLOSED: 'closed',
+  DELETED: 'hidden',
+};
+
+const statusMenuOptions = [
+  { value: 'OPEN', label: '모집중' },
+  { value: 'CLOSED', label: '마감' },
+  { value: 'DELETED', label: '숨김' },
+];
 
 function getJobIdFromUrl() {
   return new URLSearchParams(window.location.search).get('id');
@@ -27,11 +41,24 @@ function TextValue({ label, value }) {
   );
 }
 
+function StatusFact({ status, label }) {
+  return (
+    <div>
+      <dt>공고 상태</dt>
+      <dd>
+        <span className={`company-job-status ${statusClassNames[status] || ''}`}>{label || status || '-'}</span>
+      </dd>
+    </div>
+  );
+}
+
 export default function CompanyJobDetailPage() {
   const jobId = useMemo(() => getJobIdFromUrl(), []);
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionOpen, setActionOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const loadJob = async () => {
@@ -63,6 +90,38 @@ export default function CompanyJobDetailPage() {
       await fileApi.download(file.id, file.originalName || file.name);
     } catch (err) {
       alert(err.message || '파일 다운로드에 실패했습니다.');
+    }
+  };
+
+  const updateJob = () => {
+    navigate(`${ROUTES.COMPANY_JOB_UPDATE}?id=${job.id}`);
+  };
+
+  const deleteJob = async () => {
+    if (!window.confirm('공고를 삭제하시겠습니까?')) return;
+
+    setDeleting(true);
+    try {
+      await jobApi.deleteMyCompanyJob(job.id);
+      navigate(ROUTES.COMPANY_JOBS);
+    } catch (err) {
+      alert(err.message || '공고 삭제에 실패했습니다.');
+    } finally {
+      setDeleting(false);
+      setActionOpen(false);
+    }
+  };
+
+  const changeJobStatus = async (nextStatus) => {
+    try {
+      await jobApi.updateMyCompanyJobStatus(job.id, nextStatus);
+      setJob((current) => ({
+        ...current,
+        status: nextStatus,
+        statusLabel: statusMenuOptions.find((item) => item.value === nextStatus)?.label || nextStatus,
+      }));
+    } catch (err) {
+      alert(err.message || '공고 상태 변경에 실패했습니다.');
     }
   };
 
@@ -105,13 +164,33 @@ export default function CompanyJobDetailPage() {
                 <div className="company-job-detail-stats">
                   <span>조회 {Number(job.viewCount || 0).toLocaleString()}</span>
                   <span>스크랩 0</span>
+                  <ActionMenu
+                    className="company-job-detail-action-menu"
+                    label="공고 관리 메뉴"
+                    open={actionOpen}
+                    onOpenChange={setActionOpen}
+                    items={[
+                      { label: '수정', onClick: updateJob },
+                      { label: deleting ? '삭제 중' : '삭제', onClick: deleteJob, disabled: deleting },
+                      {
+                        key: 'status',
+                        label: '상태 변경',
+                        children: statusMenuOptions.map((option) => ({
+                          key: option.value,
+                          label: option.label,
+                          disabled: job.status === option.value,
+                          onClick: () => changeJobStatus(option.value),
+                        })),
+                      },
+                    ]}
+                  />
                 </div>
               </div>
               <dl className="company-job-detail-facts">
                 <Fact label="경력" value={job.career} />
                 <Fact label="고용 형태" value={job.employmentType} />
                 <Fact label="근무 형태" value={job.workType} />
-                <Fact label="공고 상태" value={job.statusLabel || job.status} />
+                <StatusFact status={job.status} label={job.statusLabel} />
               </dl>
             </article>
 
@@ -126,7 +205,9 @@ export default function CompanyJobDetailPage() {
                     <div>
                       <dt>필수 스킬</dt>
                       <dd className="company-job-detail-tags">
-                        {(job.skills || []).length > 0 ? job.skills.map((skill) => <span key={skill}>{skill}</span>) : '-'}
+                        {(job.skills || []).length > 0
+                          ? job.skills.map((skill) => <span key={skill}>{skill}</span>)
+                          : '-'}
                       </dd>
                     </div>
                     <TextValue label="핵심 역량" value={job.qualifications} />
@@ -135,11 +216,11 @@ export default function CompanyJobDetailPage() {
                 </section>
                 <section>
                   <h3>근무 환경</h3>
-                  <ul>
-                    <li>근무지: {job.location || '-'}</li>
-                    <li>급여: {job.salary || '-'}</li>
-                    <li>마감일: {job.deadline || '-'}</li>
-                  </ul>
+                  <dl>
+                    <TextValue label="근무지" value={job.location} />
+                    <TextValue label="급여" value={job.salary} />
+                    <TextValue label="마감일" value={job.deadline} />
+                  </dl>
                 </section>
               </div>
             </article>
@@ -159,7 +240,10 @@ export default function CompanyJobDetailPage() {
                   <span>등록된 첨부파일이 없습니다.</span>
                 )}
               </div>
-              <div className="company-job-body-content" dangerouslySetInnerHTML={{ __html: job.description || '<p>등록된 공고 본문이 없습니다.</p>' }} />
+              <div
+                className="company-job-body-content"
+                dangerouslySetInnerHTML={{ __html: job.description || '<p>등록된 공고 본문이 없습니다.</p>' }}
+              />
             </article>
 
             <article className="company-job-detail-card">

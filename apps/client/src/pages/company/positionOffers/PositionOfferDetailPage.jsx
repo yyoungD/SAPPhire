@@ -44,52 +44,54 @@ export default function PositionOfferDetailPage() {
   };
 
   return (
-    <main className="offer-detail-shell">
+    <main className="company-position-page">
       <CompanyMemberHeader active="offers" />
-      {loading && <p className="career-copy">제안 상세를 불러오는 중입니다.</p>}
-      {!loading && error && <p className="form-error">{error}</p>}
-      {!loading && offer && (
-        <div className="offer-detail-layout">
-          <article className="detail-hero-card">
-            <p className="eyebrow">SENT POSITION OFFER</p>
-            <h1>{offer.title}</h1>
-            <div className="detail-badges">
-              <span>{offer.receiverName}</span>
-              <span>{offer.statusLabel}</span>
-              <span>{offer.matchScore}% match</span>
-            </div>
-          </article>
-          <article className="detail-section">
-            <h2>전송 메시지</h2>
-            <p className="application-cover-letter">{offer.message || '전송한 메시지가 없습니다.'}</p>
-          </article>
-          <aside className="detail-section offer-detail-side">
-            <h2>관리 정보</h2>
-            <dl className="application-detail-dl">
-              <div>
-                <dt>이력서</dt>
-                <dd>{offer.resumeTitle || '-'}</dd>
+      <section className="company-position-shell compact">
+        {loading && <p className="career-copy">제안 상세를 불러오는 중입니다.</p>}
+        {!loading && error && <p className="form-error">{error}</p>}
+        {!loading && offer && (
+          <div className="offer-detail-layout">
+            <article className="detail-hero-card">
+              <p className="eyebrow">SENT POSITION OFFER</p>
+              <h1>{offer.title}</h1>
+              <div className="detail-badges">
+                <span>{offer.receiverName}</span>
+                <span>{offer.statusLabel}</span>
+                <span>{offer.matchScore}% match</span>
               </div>
-              <div>
-                <dt>전송일</dt>
-                <dd>{offer.createdAt || '-'}</dd>
-              </div>
-              <div>
-                <dt>응답 기한</dt>
-                <dd>{offer.expiresAt || '상시'}</dd>
-              </div>
-            </dl>
-            {offer.status === 'SENT' && (
-              <button type="button" className="secondary" disabled={saving} onClick={cancelOffer}>
-                제안 취소
+            </article>
+            <article className="detail-section">
+              <h2>전송 메시지</h2>
+              <p className="application-cover-letter">{offer.message || '전송된 메시지가 없습니다.'}</p>
+            </article>
+            <aside className="detail-section offer-detail-side">
+              <h2>관리 정보</h2>
+              <dl className="application-detail-dl">
+                <div>
+                  <dt>이력서</dt>
+                  <dd>{offer.resumeTitle || '-'}</dd>
+                </div>
+                <div>
+                  <dt>전송일</dt>
+                  <dd>{offer.createdAt || '-'}</dd>
+                </div>
+                <div>
+                  <dt>응답 기한</dt>
+                  <dd>{offer.expiresAt || '상시'}</dd>
+                </div>
+              </dl>
+              {offer.status === 'SENT' && (
+                <button type="button" className="secondary" disabled={saving} onClick={cancelOffer}>
+                  {saving ? '취소 중...' : '제안 취소'}
+                </button>
+              )}
+              <button type="button" className="link-button" onClick={() => navigate(ROUTES.POSITION_OFFERS)}>
+                목록으로
               </button>
-            )}
-            <button type="button" className="link-button" onClick={() => navigate(ROUTES.POSITION_OFFERS)}>
-              목록으로
-            </button>
-          </aside>
-        </div>
-      )}
+            </aside>
+          </div>
+        )}
+      </section>
     </main>
   );
 }

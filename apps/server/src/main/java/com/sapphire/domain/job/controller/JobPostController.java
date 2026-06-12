@@ -5,6 +5,7 @@ import com.sapphire.domain.job.dto.JobCreateResponse;
 import com.sapphire.domain.job.dto.CompanyJobListItem;
 import com.sapphire.domain.job.dto.JobListItem;
 import com.sapphire.domain.job.dto.JobDetail;
+import com.sapphire.domain.job.dto.JobStatusUpdateRequest;
 import com.sapphire.domain.job.service.JobPostService;
 import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
@@ -13,7 +14,9 @@ import com.sapphire.global.security.auth.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -77,6 +80,26 @@ public class JobPostController {
     ) {
         CustomUserDetails userDetails = requireCompany(authentication);
         return ResponseEntity.ok(ApiResponse.success(jobPostService.updateJob(userDetails.getId(), id, request)));
+    }
+
+    @DeleteMapping("/me/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteMyCompanyJob(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        jobPostService.deleteJob(userDetails.getId(), id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PatchMapping("/me/{id}/status")
+    public ResponseEntity<ApiResponse<JobCreateResponse>> updateMyCompanyJobStatus(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @RequestBody JobStatusUpdateRequest request
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.updateJobStatus(userDetails.getId(), id, request.status())));
     }
 
     @GetMapping("/{id}")

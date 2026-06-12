@@ -4,6 +4,12 @@ import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
+function statusClassName(status) {
+  if (status === 'ACCEPTED') return 'accepted';
+  if (status === 'CANCELED' || status === 'EXPIRED' || status === 'REJECTED') return 'ended';
+  return 'waiting';
+}
+
 export default function PositionOfferListPage() {
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,81 +34,77 @@ export default function PositionOfferListPage() {
   const offers = payload?.offers || [];
 
   return (
-    <main className="offer-shell company-offer-shell">
+    <main className="company-position-page">
       <CompanyMemberHeader active="offers" />
-      <div className="offer-hero">
-        <div>
-          <p className="eyebrow">POSITION OFFER CRM</p>
-          <h1>포지션 제안 관리</h1>
-          <p>관심 인재에게 보낸 직접 제안의 응답 상태와 매칭 점수를 한곳에서 확인하세요.</p>
+      <section className="company-position-shell">
+        <div className="company-position-hero">
+          <div>
+            <p className="eyebrow">POSITION OFFER CRM</p>
+            <h1 className="company-page-title">포지션 제안 관리</h1>
+            <p>관심 인재에게 보낸 직접 제안과 응답 상태를 확인하세요.</p>
+          </div>
+          <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.POSITION_OFFER_CREATE)}>
+            제안 작성
+          </button>
         </div>
-        <button
-          type="button"
-          className="primary-action jobs-hero-action"
-          onClick={() => navigate(ROUTES.POSITION_OFFER_CREATE)}
-        >
-          제안 작성
-        </button>
-      </div>
 
-      <div className="offer-stats company-offer-stats">
-        <article>
-          <span>TOTAL SENT</span>
-          <strong>{loading ? '-' : payload?.totalOffers || 0}</strong>
-        </article>
-        <article>
-          <span>WAITING</span>
-          <strong>{loading ? '-' : payload?.waitingOffers || 0}</strong>
-        </article>
-        <article className="featured">
-          <span>ACCEPTED</span>
-          <strong>{loading ? '-' : payload?.acceptedOffers || 0}</strong>
-        </article>
-      </div>
-
-      <section className="offer-list-column" aria-label="보낸 포지션 제안 목록">
-        {loading && <p className="career-copy">보낸 제안을 불러오는 중입니다.</p>}
-        {!loading && error && (
-          <article className="detail-section">
-            <p>{error}</p>
-            <button type="button" className="secondary" onClick={loadOffers}>
-              다시 불러오기
-            </button>
+        <div className="company-position-stats">
+          <article>
+            <span>전체 제안</span>
+            <strong>{loading ? '-' : payload?.totalOffers || 0}</strong>
           </article>
-        )}
-        {!loading && !error && offers.length === 0 && (
-          <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>
-        )}
+          <article>
+            <span>응답 대기</span>
+            <strong>{loading ? '-' : payload?.waitingOffers || 0}</strong>
+          </article>
+          <article>
+            <span>수락 완료</span>
+            <strong>{loading ? '-' : payload?.acceptedOffers || 0}</strong>
+          </article>
+        </div>
 
-        {!loading &&
-          !error &&
-          offers.map((offer) => (
-            <article
-              key={offer.id}
-              className="offer-card"
-              role="link"
-              tabIndex={0}
-              onClick={() => navigate(`${ROUTES.POSITION_OFFER_DETAIL}?id=${offer.id}`)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  navigate(`${ROUTES.POSITION_OFFER_DETAIL}?id=${offer.id}`);
-                }
-              }}
-            >
-              <div className="offer-company-mark">{(offer.receiverName || 'T').slice(0, 1)}</div>
-              <div className="offer-card-main">
-                <strong>{offer.receiverName}</strong>
-                <h2>{offer.title}</h2>
-                <p>{offer.resumeTitle || '지정 이력서 없음'}</p>
-              </div>
-              <div className="offer-card-side">
-                <span>MATCH SCORE</span>
-                <strong>{offer.matchScore}%</strong>
-                <em>{offer.statusLabel}</em>
-              </div>
+        <section className="company-position-list" aria-label="보낸 포지션 제안 목록">
+          {loading && <p className="career-copy">포지션 제안 목록을 불러오는 중입니다.</p>}
+          {!loading && error && (
+            <article className="detail-section">
+              <p className="form-error">{error}</p>
+              <button type="button" className="secondary" onClick={loadOffers}>
+                다시 불러오기
+              </button>
             </article>
-          ))}
+          )}
+          {!loading && !error && offers.length === 0 && <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>}
+
+          {!loading &&
+            !error &&
+            offers.map((offer) => (
+              <article
+                key={offer.id}
+                className="offer-card"
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate(`${ROUTES.POSITION_OFFER_DETAIL}?id=${offer.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`${ROUTES.POSITION_OFFER_DETAIL}?id=${offer.id}`);
+                  }
+                }}
+              >
+                <div className="offer-company-mark">{(offer.receiverName || 'T').slice(0, 1)}</div>
+                <div className="offer-card-main">
+                  <strong>{offer.receiverName || '수신자 미확인'}</strong>
+                  <h2>{offer.title}</h2>
+                  <p>{offer.resumeTitle || '연결된 이력서가 없습니다.'}</p>
+                </div>
+                <div className="offer-card-side">
+                  <span>MATCH SCORE</span>
+                  <strong>{offer.matchScore || 0}%</strong>
+                  <em className={statusClassName(offer.status)}>{offer.statusLabel || offer.status}</em>
+                </div>
+              </article>
+            ))}
+        </section>
       </section>
     </main>
   );
