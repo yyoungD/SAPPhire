@@ -60,4 +60,12 @@ public class ResumeController {
     ) {
         return ResponseEntity.ok(ApiResponse.success(resumeService.updateResume(userDetails.getId(), id, request)));
     }
+
+    @PostMapping("/{id}/analysis")
+    public ResponseEntity<ApiResponse<ResumeDetail>> evaluateResume(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(resumeService.evaluateResume(userDetails.getId(), id)));
+    }
 }

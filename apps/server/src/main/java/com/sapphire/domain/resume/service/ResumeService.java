@@ -15,4 +15,6 @@ public interface ResumeService {
     ResumeListItem createResume(Long userId, ResumeCreateRequest request);
 
     ResumeDetail updateResume(Long userId, Long resumeId, ResumeUpdateRequest request);
+
+    ResumeDetail evaluateResume(Long userId, Long resumeId);
 }

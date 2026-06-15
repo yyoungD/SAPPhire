@@ -14,3 +14,4 @@ export const companyProfileApi = {
     return apiClient(`${API_PATHS.companyProfiles}/me`, { method: 'PUT', body: formData });
   },
 };
+ 
