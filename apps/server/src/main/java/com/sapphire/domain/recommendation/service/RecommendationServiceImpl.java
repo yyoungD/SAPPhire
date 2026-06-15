@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -21,9 +22,14 @@ public class RecommendationServiceImpl implements RecommendationService {
     private static final int MAX_LIMIT = 50;
 
     private final RecommendationMapper recommendationMapper;
+    private final AiRecommendationExplanationService explanationService;
 
-    public RecommendationServiceImpl(RecommendationMapper recommendationMapper) {
+    public RecommendationServiceImpl(
+            RecommendationMapper recommendationMapper,
+            AiRecommendationExplanationService explanationService
+    ) {
         this.recommendationMapper = recommendationMapper;
+        this.explanationService = explanationService;
     }
 
     @Override
@@ -37,9 +43,18 @@ public class RecommendationServiceImpl implements RecommendationService {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "추천에 사용할 이력서를 찾을 수 없습니다.");
         }
 
-        return recommendationMapper.findRecommendedJobs(userId, targetResumeId, normalizeLimit(limit))
+        List<JobRecommendationRow> rows = recommendationMapper.findRecommendedJobs(
+                userId,
+                targetResumeId,
+                normalizeLimit(limit)
+        );
+        Map<String, String> explanations = explanationService.explain(rows.stream()
+                .map(this::toJobExplanationInput)
+                .toList());
+
+        return rows
                 .stream()
-                .map(this::toJobItem)
+                .map(row -> toJobItem(row, explanations.get(jobKey(row))))
                 .toList();
     }
 
@@ -52,13 +67,21 @@ public class RecommendationServiceImpl implements RecommendationService {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "추천에 사용할 채용 공고를 찾을 수 없습니다.");
         }
 
-        return recommendationMapper.findRecommendedCandidates(jobPostId, normalizeLimit(limit))
+        List<CandidateRecommendationRow> rows = recommendationMapper.findRecommendedCandidates(
+                jobPostId,
+                normalizeLimit(limit)
+        );
+        Map<String, String> explanations = explanationService.explain(rows.stream()
+                .map(this::toCandidateExplanationInput)
+                .toList());
+
+        return rows
                 .stream()
-                .map(this::toCandidateItem)
+                .map(row -> toCandidateItem(row, explanations.get(candidateKey(row))))
                 .toList();
     }
 
-    private JobRecommendationItem toJobItem(JobRecommendationRow row) {
+    private JobRecommendationItem toJobItem(JobRecommendationRow row, String explanation) {
         List<String> matchedSkills = parseCsv(row.getMatchedSkillsCsv());
         return new JobRecommendationItem(
                 row.getId(),
@@ -68,13 +91,13 @@ public class RecommendationServiceImpl implements RecommendationService {
                 parseCsv(row.getTagsCsv()),
                 toPercent(row.getScore()),
                 matchedSkills,
-                reason(matchedSkills),
+                explanation,
                 formatSalary(row.getSalaryMin(), row.getSalaryMax(), row.getSalaryNegotiable()),
                 formatBadge(row.getDeadline())
         );
     }
 
-    private CandidateRecommendationItem toCandidateItem(CandidateRecommendationRow row) {
+    private CandidateRecommendationItem toCandidateItem(CandidateRecommendationRow row, String explanation) {
         List<String> matchedSkills = parseCsv(row.getMatchedSkillsCsv());
         return new CandidateRecommendationItem(
                 row.getUserId(),
@@ -86,8 +109,40 @@ public class RecommendationServiceImpl implements RecommendationService {
                 row.getResumeTitle(),
                 toPercent(row.getScore()),
                 matchedSkills,
-                reason(matchedSkills)
+                explanation
         );
+    }
+
+    private RecommendationExplanationInput toJobExplanationInput(JobRecommendationRow row) {
+        return new RecommendationExplanationInput(
+                jobKey(row),
+                "JOB",
+                row.getTitle(),
+                row.getCompany(),
+                row.getLocation(),
+                toPercent(row.getScore()),
+                parseCsv(row.getMatchedSkillsCsv())
+        );
+    }
+
+    private RecommendationExplanationInput toCandidateExplanationInput(CandidateRecommendationRow row) {
+        return new RecommendationExplanationInput(
+                candidateKey(row),
+                "CANDIDATE",
+                row.getName(),
+                row.getProfessionalTitle(),
+                row.getLocation(),
+                toPercent(row.getScore()),
+                parseCsv(row.getMatchedSkillsCsv())
+        );
+    }
+
+    private String jobKey(JobRecommendationRow row) {
+        return "job-" + row.getId();
+    }
+
+    private String candidateKey(CandidateRecommendationRow row) {
+        return "resume-" + row.getResumeId();
     }
 
     private int normalizeLimit(Integer limit) {
@@ -110,13 +165,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .filter(value -> !value.isBlank())
                 .distinct()
                 .toList();
-    }
-
-    private String reason(List<String> matchedSkills) {
-        if (matchedSkills.isEmpty()) {
-            return "경력, 지역, 근무 조건을 기준으로 추천되었습니다.";
-        }
-        return String.join(", ", matchedSkills) + " 역량이 요구 조건과 일치합니다.";
     }
 
     private String formatSalary(Integer salaryMin, Integer salaryMax, Boolean salaryNegotiable) {
