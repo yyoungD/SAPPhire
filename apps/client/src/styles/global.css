@@ -2822,9 +2822,7 @@ p {
   place-items: center;
   border-radius: 8px;
   color: #0f3d75;
-  background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(20, 184, 166, 0.18)),
-    #f8fbff;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(20, 184, 166, 0.18)), #f8fbff;
   font-size: 26px;
   font-weight: 900;
 }
@@ -3052,9 +3050,9 @@ dt {
 }
 
 dd {
-  margin: 4px 0 0;
   color: #0b1c30;
-  font-weight: 800;
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .danger {
@@ -3720,15 +3718,21 @@ dd {
 .application-detail-dl {
   margin: 0;
   display: grid;
-  gap: 14px;
 }
 
 .application-detail-dl div {
   padding: 14px 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
   border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.application-detail-dl dd {
+  max-width: 70%;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .application-cover-letter {
@@ -3737,21 +3741,52 @@ dd {
   white-space: pre-wrap;
 }
 
+.application-download-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
 .application-status-summary {
   display: grid;
   align-items: start;
+  color: #0b1c30;
 }
 
 .application-status-summary strong {
-  font-size: 24px;
+  color: #0b1c30;
+  font-size: 20px;
+  font-weight: 600;
+  padding-top: 8px;
+}
+
+.application-status-summary.new strong {
+  color: #4f46e5;
+}
+
+.application-status-summary.review strong {
+  color: #0050b8;
+}
+
+.application-status-summary.interview strong {
+  color: #0f766e;
+}
+
+.application-status-summary.offer strong {
+  color: #15803d;
+}
+
+.application-status-summary.rejected strong,
+.application-status-summary.withdrawn strong {
+  color: #dc2626;
 }
 
 .application-status-select {
   display: grid;
   gap: 8px;
-  color: #64748b;
+  color: #0b1c30;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .application-status-select select {
@@ -3763,7 +3798,7 @@ dd {
   background: #ffffff;
   color: #0b1c30;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .application-status-select select:disabled {
@@ -4018,6 +4053,22 @@ dd {
 
 .section-edit-button:hover {
   background: #eff6ff;
+}
+
+.portfolio-download-button {
+  border-color: #003c90;
+  color: #ffffff;
+  background: #003c90;
+}
+
+.portfolio-download-button:hover {
+  background: #0f52ba;
+}
+
+.section-edit-button:disabled {
+  cursor: not-allowed;
+  color: #94a3b8;
+  background: #f8fafc;
 }
 
 .profile-dl {
@@ -5772,7 +5823,7 @@ dd {
 .company-job-detail-facts dd {
   margin: 0;
   color: #0b1c30;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .company-job-detail-facts .company-job-status {
@@ -6169,9 +6220,37 @@ dd {
 
 .company-application-title-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
+}
+
+.company-application-profile {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.company-application-avatar {
+  flex: 0 0 auto;
+  width: 108px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #d8e2f0;
+  border-radius: 50%;
+  background: #e8f1ff;
+  color: #003c90;
+  font-size: 38px;
+  font-weight: 800;
+}
+
+.company-application-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .company-application-title-row h1 {
