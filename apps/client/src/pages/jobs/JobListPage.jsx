@@ -78,6 +78,12 @@ function includesText(value, keyword) {
   return (value || '').toLowerCase().includes(keyword);
 }
 
+function formatLocationFilterLabel(location) {
+  return String(location || '')
+    .replace(/\s*,\s*(KR|KOREA)\s*$/i, '')
+    .trim();
+}
+
 function formatCount(value) {
   return Number(value || 0).toLocaleString();
 }
@@ -186,10 +192,12 @@ export default function JobListPage() {
     [jobs, market],
   );
 
-  const locations = useMemo(
-    () => Array.from(new Set(marketJobs.map((job) => job.location).filter(Boolean))).sort(),
-    [marketJobs],
-  );
+  const locations = useMemo(() => {
+    const values = marketJobs
+      .map((job) => formatLocationFilterLabel(job.location))
+      .filter(Boolean);
+    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, 'ko'));
+  }, [marketJobs]);
 
   const roles = useMemo(() => {
     const values = marketJobs.flatMap((job) => job.tags || []).filter((tag) => !ignoredRoleTags.includes(tag));
@@ -201,7 +209,7 @@ export default function JobListPage() {
 
     return marketJobs.filter((job) => {
       const tagText = (job.tags || []).join(' ');
-      const matchesLocation = !locationFilter || job.location === locationFilter;
+      const matchesLocation = !locationFilter || formatLocationFilterLabel(job.location) === locationFilter;
       const matchesRole = !roleFilter || (job.tags || []).includes(roleFilter) || includesText(job.title, roleFilter.toLowerCase());
       const matchesKeyword =
         !normalizedKeyword ||
