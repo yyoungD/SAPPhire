@@ -3,6 +3,8 @@ package com.sapphire.domain.resume.mapper;
 import com.sapphire.domain.resume.dto.ResumeCreateParam;
 import com.sapphire.domain.resume.dto.ResumeDetailRow;
 import com.sapphire.domain.resume.dto.ResumeExperienceRow;
+import com.sapphire.domain.resume.dto.ResumeEvaluationItemParam;
+import com.sapphire.domain.resume.dto.ResumeEvaluationParam;
 import com.sapphire.domain.resume.dto.ResumeListRow;
 import com.sapphire.domain.resume.dto.ResumeSkillCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeSkillRow;
@@ -40,4 +42,11 @@ public interface ResumeMapper {
     );
 
     void deleteSkills(@Param("resumeId") Long resumeId);
+
+    void insertEvaluation(ResumeEvaluationParam param);
+
+    void insertEvaluationItems(
+            @Param("evaluationId") Long evaluationId,
+            @Param("items") List<ResumeEvaluationItemParam> items
+    );
 }

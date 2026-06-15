@@ -91,6 +91,42 @@
         WHERE resume_id = #{resumeId}
     </delete>
 
+    <insert id="insertEvaluation" parameterType="com.sapphire.domain.resume.dto.ResumeEvaluationParam"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO ai_evaluations (
+            personal_profile_id,
+            resume_id,
+            overall_score,
+            summary,
+            model_name
+        )
+        VALUES (
+            #{personalProfileId},
+            #{resumeId},
+            #{overallScore},
+            #{summary},
+            #{modelName}
+        )
+    </insert>
+
+    <insert id="insertEvaluationItems">
+        INSERT INTO ai_evaluation_items (
+            ai_evaluation_id,
+            category,
+            score,
+            comment
+        )
+        VALUES
+        <foreach collection="items" item="item" separator=",">
+            (
+                #{evaluationId},
+                #{item.category},
+                #{item.score},
+                #{item.comment}
+            )
+        </foreach>
+    </insert>
+
     <select id="findMyResumes" resultType="com.sapphire.domain.resume.dto.ResumeListRow">
         SELECT
             r.id,

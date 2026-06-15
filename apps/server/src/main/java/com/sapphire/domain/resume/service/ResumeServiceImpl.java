@@ -7,6 +7,8 @@ import com.sapphire.domain.resume.dto.ResumeDetail;
 import com.sapphire.domain.resume.dto.ResumeDetailRow;
 import com.sapphire.domain.resume.dto.ResumeExperienceItem;
 import com.sapphire.domain.resume.dto.ResumeExperienceRow;
+import com.sapphire.domain.resume.dto.ResumeEvaluationItemParam;
+import com.sapphire.domain.resume.dto.ResumeEvaluationParam;
 import com.sapphire.domain.resume.dto.ResumeListItem;
 import com.sapphire.domain.resume.dto.ResumeListRow;
 import com.sapphire.domain.resume.dto.ResumeSkillCreateRequest;
@@ -23,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +149,126 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         return findMyResume(userId, resumeId);
+    }
+
+    @Override
+    @Transactional
+    public ResumeDetail evaluateResume(Long userId, Long resumeId) {
+        ResumeDetailRow row = resumeMapper.findMyResumeDetail(userId, resumeId);
+        Long personalProfileId = resumeMapper.findResumePersonalProfileId(userId, resumeId);
+        if (row == null || personalProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "진단할 이력서를 찾을 수 없습니다.");
+        }
+
+        List<ResumeSkillItem> skills = resumeMapper.findResumeSkills(resumeId)
+                .stream()
+                .map(this::toSkillItem)
+                .toList();
+        List<ResumeExperienceItem> experiences = resumeMapper.findResumeExperiences(resumeId)
+                .stream()
+                .map(this::toExperienceItem)
+                .toList();
+
+        int moduleScore = calculateSkillScore(skills);
+        int integrationScore = calculateIntegrationScore(skills, experiences);
+        int projectScore = calculateProjectScore(row.getSummary(), experiences);
+        int overallScore = Math.round(moduleScore * 0.45f + integrationScore * 0.25f + projectScore * 0.30f);
+
+        List<String> suggestions = buildSuggestions(row.getSummary(), skills, experiences, moduleScore, integrationScore, projectScore);
+        String summary = buildEvaluationSummary(skills, experiences, moduleScore, projectScore);
+
+        ResumeEvaluationParam evaluation = new ResumeEvaluationParam();
+        evaluation.setPersonalProfileId(personalProfileId);
+        evaluation.setResumeId(resumeId);
+        evaluation.setOverallScore(BigDecimal.valueOf(overallScore));
+        evaluation.setSummary(summary);
+        evaluation.setModelName("SAPPHIRE_RULE_V1");
+        resumeMapper.insertEvaluation(evaluation);
+
+        List<ResumeEvaluationItemParam> items = new ArrayList<>();
+        items.add(new ResumeEvaluationItemParam("MODULE_PROFICIENCY", BigDecimal.valueOf(moduleScore), suggestions.get(0)));
+        items.add(new ResumeEvaluationItemParam("INTEGRATION_KNOWLEDGE", BigDecimal.valueOf(integrationScore), suggestions.get(1)));
+        items.add(new ResumeEvaluationItemParam("PROJECT_SPECIFICITY", BigDecimal.valueOf(projectScore), suggestions.get(2)));
+        resumeMapper.insertEvaluationItems(evaluation.getId(), items);
+
+        return findMyResume(userId, resumeId);
+    }
+
+    private int calculateSkillScore(List<ResumeSkillItem> skills) {
+        if (skills.isEmpty()) return 0;
+        double average = skills.stream().mapToInt(ResumeSkillItem::score).average().orElse(0);
+        int breadthBonus = Math.min(12, Math.max(0, skills.size() - 1) * 3);
+        int experienceBonus = Math.min(10, skills.stream().mapToInt(ResumeSkillItem::yearsOfExperience).sum() / 2);
+        return clamp((int) Math.round(average + breadthBonus + experienceBonus));
+    }
+
+    private int calculateIntegrationScore(List<ResumeSkillItem> skills, List<ResumeExperienceItem> experiences) {
+        if (skills.isEmpty()) return 0;
+        long skillTypes = skills.stream().map(ResumeSkillItem::skillType).filter(value -> value != null && !value.isBlank()).distinct().count();
+        int score = 25 + Math.min(35, skills.size() * 7) + Math.min(20, (int) skillTypes * 8);
+        if (experiences.stream().anyMatch(experience -> !experience.descriptions().isEmpty())) score += 12;
+        return clamp(score);
+    }
+
+    private int calculateProjectScore(String summary, List<ResumeExperienceItem> experiences) {
+        int score = summary == null ? 0 : Math.min(25, summary.trim().length() / 4);
+        for (ResumeExperienceItem experience : experiences) {
+            score += 10;
+            if (hasText(experience.companyName())) score += 3;
+            if (hasText(experience.projectName())) score += 4;
+            if (hasText(experience.role()) || hasText(experience.position())) score += 4;
+            if (!experience.descriptions().isEmpty()) score += Math.min(8, experience.descriptions().size() * 3);
+        }
+        return clamp(score);
+    }
+
+    private List<String> buildSuggestions(
+            String summary,
+            List<ResumeSkillItem> skills,
+            List<ResumeExperienceItem> experiences,
+            int moduleScore,
+            int integrationScore,
+            int projectScore
+    ) {
+        String skillSuggestion = skills.isEmpty()
+                ? "SAP 모듈과 숙련도, 경력 연차를 등록해 핵심 역량을 보여 주세요."
+                : moduleScore < 70
+                ? "주력 SAP 스킬의 숙련도와 실제 사용 연차를 더 구체적으로 보강해 주세요."
+                : "주력 SAP 역량이 잘 드러납니다. 관련 자격이나 대표 성과를 추가하면 더 강해집니다.";
+        String integrationSuggestion = integrationScore < 70
+                ? "모듈 간 연계, 인터페이스, 데이터 전환 경험을 프로젝트 설명에 추가해 주세요."
+                : "여러 역량의 연계 경험이 확인됩니다. 통합 범위와 본인의 책임을 수치로 표현해 주세요.";
+        String projectSuggestion = experiences.isEmpty()
+                ? "프로젝트 경력을 등록하고 고객사, 기간, 역할, 주요 산출물을 작성해 주세요."
+                : projectScore < 70 || !hasText(summary)
+                ? "프로젝트별 문제, 수행 내용, 결과를 수치와 함께 구체적으로 작성해 주세요."
+                : "프로젝트 정보가 구체적입니다. 비용 절감이나 일정 단축 같은 성과 지표를 추가해 주세요.";
+        return List.of(skillSuggestion, integrationSuggestion, projectSuggestion);
+    }
+
+    private String buildEvaluationSummary(List<ResumeSkillItem> skills, List<ResumeExperienceItem> experiences, int moduleScore, int projectScore) {
+        if (skills.isEmpty() && experiences.isEmpty()) {
+            return "등록된 SAP 역량과 프로젝트 경력이 부족해 기본 정보 중심으로 진단했습니다.";
+        }
+        String strongestSkill = skills.stream()
+                .max((left, right) -> Integer.compare(left.score(), right.score()))
+                .map(ResumeSkillItem::name)
+                .orElse("SAP 역량");
+        if (moduleScore >= 75 && projectScore >= 70) {
+            return strongestSkill + " 역량과 프로젝트 경험이 구체적으로 연결된 경쟁력 있는 이력서입니다.";
+        }
+        if (moduleScore >= 65) {
+            return strongestSkill + " 역량은 확인되며, 프로젝트 성과와 통합 경험을 보강하면 전문성이 더 선명해집니다.";
+        }
+        return "보유 역량의 숙련도와 프로젝트 수행 내용을 구체화하면 이력서 진단 점수를 높일 수 있습니다.";
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private int clamp(int score) {
+        return Math.max(0, Math.min(100, score));
     }
 
     private List<ResumeSkillCreateRequest> normalizeSkills(List<ResumeSkillCreateRequest> skills) {
