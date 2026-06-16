@@ -31,6 +31,7 @@ export const ROUTES = {
   COMPANY_JOB_UPDATE: '/company/jobs/update',
   COMPANY_APPLICATIONS: '/company/applications',
   COMPANY_APPLICATION_DETAIL: '/company/applications/detail',
+  COMPANY_RESUMES: '/company/resumes',
   TALENT_SEARCH: '/company/resumes',
   COMPANY_RESUME_DETAIL: '/company/resumes/detail',
   POSITION_OFFERS: '/company/position-offers',
