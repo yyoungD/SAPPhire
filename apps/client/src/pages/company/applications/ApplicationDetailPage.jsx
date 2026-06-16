@@ -67,7 +67,10 @@ export default function ApplicationDetailPage() {
 
     setDownloading(true);
     try {
-      await fileApi.download(application.resumeFileId, application.resumeOriginalFileName || application.resumeTitle || 'resume');
+      await fileApi.download(
+        application.resumeFileId,
+        application.resumeOriginalFileName || application.resumeTitle || 'resume'
+      );
     } catch (err) {
       alert(err.message || '이력서 다운로드에 실패했습니다.');
     } finally {
@@ -117,7 +120,11 @@ export default function ApplicationDetailPage() {
           <article className="detail-section">
             <h2>지원자 정보를 찾을 수 없습니다.</h2>
             <p className="form-error">{error}</p>
-            <button type="button" className="secondary" onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}
+            >
               목록으로 돌아가기
             </button>
           </article>
@@ -132,7 +139,10 @@ export default function ApplicationDetailPage() {
                   <div className="company-application-profile">
                     <div className="company-application-avatar">
                       {application.applicantProfileImageUrl ? (
-                        <img src={application.applicantProfileImageUrl} alt={`${application.applicantName || '지원자'} 프로필`} />
+                        <img
+                          src={application.applicantProfileImageUrl}
+                          alt={`${application.applicantName || '지원자'} 프로필`}
+                        />
                       ) : (
                         <span>{getApplicantInitial(application.applicantName)}</span>
                       )}
@@ -161,7 +171,12 @@ export default function ApplicationDetailPage() {
                   </div>
                   <div className="application-download-actions">
                     {application.resumeFileId && (
-                      <button type="button" className="section-edit-button" onClick={downloadResume} disabled={downloading}>
+                      <button
+                        type="button"
+                        className="section-edit-button"
+                        onClick={downloadResume}
+                        disabled={downloading}
+                      >
                         {downloading ? '다운로드 중...' : '이력서 다운로드'}
                       </button>
                     )}
@@ -188,7 +203,9 @@ export default function ApplicationDetailPage() {
                     <dt>포트폴리오</dt>
                     <dd>
                       {application.attachments?.length
-                        ? application.attachments.map((attachment) => attachment.originalName).join(', ')
+                        ? application.attachments
+                            .map((attachment) => attachment.originalName)
+                            .join(', ')
                         : '등록된 포트폴리오가 없습니다.'}
                     </dd>
                   </div>
@@ -206,21 +223,29 @@ export default function ApplicationDetailPage() {
                     <h2>자기소개</h2>
                   </div>
                 </div>
-                <p className="application-cover-letter">{application.coverLetter || '제출된 자기소개가 없습니다.'}</p>
+                <p className="application-cover-letter">
+                  {application.coverLetter || '제출된 자기소개가 없습니다.'}
+                </p>
               </article>
             </section>
 
             <aside className="apply-submit-panel">
               <section>
                 <h2>지원 상태</h2>
-                <div className={`apply-summary-score application-status-summary ${statusClassNames[application.status] || ''}`}>
+                <div
+                  className={`apply-summary-score application-status-summary ${statusClassNames[application.status] || ''}`}
+                >
                   <span>현재 단계</span>
                   <strong>{application.statusLabel || '-'}</strong>
                 </div>
               </section>
               <label className="application-status-select">
                 <span>상태 변경</span>
-                <select value={application.status || ''} onChange={(event) => updateApplicationStatus(event.target.value)} disabled={savingStatus}>
+                <select
+                  value={application.status || ''}
+                  onChange={(event) => updateApplicationStatus(event.target.value)}
+                  disabled={savingStatus}
+                >
                   {statusOptions.map((option) => (
                     <option value={option.value} key={option.value}>
                       {option.label}
@@ -228,10 +253,18 @@ export default function ApplicationDetailPage() {
                   ))}
                 </select>
               </label>
-              <button type="button" className="secondary" onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => navigate(ROUTES.COMPANY_APPLICATIONS)}
+              >
                 지원자 목록
               </button>
-              <button type="button" className="primary-action" onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${application.jobPostId}`)}>
+              <button
+                type="button"
+                className="primary-action"
+                onClick={() => navigate(`${ROUTES.COMPANY_JOB_DETAIL}?id=${application.jobPostId}`)}
+              >
                 공고 상세 보기
               </button>
             </aside>
