@@ -7,6 +7,7 @@ public record CompanyResumeDetail(
         String title,
         String summary,
         String applicantName,
+        Long applicantUserId,
         String applicantEmail,
         String applicantPhone,
         String applicantProfileImageUrl,

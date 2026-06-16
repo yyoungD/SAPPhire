@@ -74,9 +74,15 @@ export default function CompanyResumeDetailPage() {
     }
   };
 
-  const downloadPortfolio = () => {
-    if (!resume?.portfolioUrl) return;
-    window.open(resume.portfolioUrl, '_blank', 'noopener,noreferrer');
+  const createOffer = () => {
+    if (!resume?.applicantUserId) return;
+
+    const params = new URLSearchParams({
+      receiverUserId: String(resume.applicantUserId),
+      receiverEmail: resume.applicantEmail || '',
+      resumeId: String(resume.id || ''),
+    });
+    navigate(`${ROUTES.POSITION_OFFER_CREATE}?${params.toString()}`);
   };
 
   return (
@@ -279,9 +285,15 @@ export default function CompanyResumeDetailPage() {
               </section>
 
               <section className="company-resume-side-card company-resume-side-section">
-                <button type="button" className="primary-action company-resume-offer-button">
+                <button
+                  type="button"
+                  className="primary-action company-resume-offer-button"
+                  onClick={createOffer}
+                  disabled={!resume.applicantUserId}
+                >
                   제안서 보내기
                 </button>
+
                 <button
                   type="button"
                   className="secondary company-resume-list-button"

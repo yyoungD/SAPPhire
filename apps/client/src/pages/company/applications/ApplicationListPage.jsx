@@ -24,16 +24,6 @@ function UserIcon() {
   );
 }
 
-function StatCard({ label, value, caption }) {
-  return (
-    <article className="candidate-stat-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <p>{caption}</p>
-    </article>
-  );
-}
-
 export default function ApplicationListPage() {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -114,11 +104,23 @@ export default function ApplicationListPage() {
           </button>
         </div>
 
-        <div className="candidate-stat-grid">
-          <StatCard label="전체 지원자 수" value={stats.total.toLocaleString()} caption="현재 선택 범위 기준" />
-          <StatCard label="신규 지원" value={stats.newCount.toLocaleString()} caption="미열람 지원자" />
-          <StatCard label="서류 전형 진행" value={stats.reviewingCount.toLocaleString()} caption="검토 중인 지원자" />
-          <StatCard label="면접 전형 진행" value={stats.interviewCount.toLocaleString()} caption="면접 단계 지원자" />
+        <div className="company-position-stats">
+          <article>
+            <span>전체 지원자</span>
+            <strong>{stats.total.toLocaleString()}</strong>
+          </article>
+          <article>
+            <span>신규 지원</span>
+            <strong>{stats.newCount.toLocaleString()}</strong>
+          </article>
+          <article>
+            <span>서류 전형 진행</span>
+            <strong>{stats.reviewingCount.toLocaleString()}</strong>
+          </article>
+          <article>
+            <span>면접 전형 진행</span>
+            <strong>{stats.interviewCount.toLocaleString()}</strong>
+          </article>
         </div>
 
         <section className="candidate-filter-card" aria-label="지원자 필터">
@@ -138,7 +140,7 @@ export default function ApplicationListPage() {
             ≡
           </button>
           <button type="button" aria-label="정렬">
-            ⇅
+            ≡
           </button>
         </section>
 
@@ -184,7 +186,11 @@ export default function ApplicationListPage() {
                   <span>
                     <strong className="candidate-text-ellipsis">{application.jobPosition || '-'}</strong>
                   </span>
-                  <span>{application.careerYears === null || application.careerYears === undefined ? '-' : `경력 ${application.careerYears}년`}</span>
+                  <span>
+                    {application.careerYears === null || application.careerYears === undefined
+                      ? '-'
+                      : `경력 ${application.careerYears}년`}
+                  </span>
                   <span>
                     <em className={`candidate-status ${statusClassNames[application.status] || ''}`}>{application.statusLabel || application.status || '-'}</em>
                   </span>

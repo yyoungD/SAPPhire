@@ -230,6 +230,7 @@
             r.title,
             r.summary,
             u.name AS applicant_name,
+            u.id AS applicant_user_id,
             u.email AS applicant_email,
             u.phone AS applicant_phone,
             u.profile_image_url AS applicant_profile_image_url,

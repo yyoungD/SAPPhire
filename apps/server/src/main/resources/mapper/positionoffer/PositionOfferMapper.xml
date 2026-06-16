@@ -64,6 +64,7 @@
         r.title AS resume_title,
         po.title,
         po.message,
+        po.status AS raw_status,
         CASE
             WHEN po.status = 'SENT' AND po.expires_at IS NOT NULL AND po.expires_at &lt; NOW() THEN 'EXPIRED'
             ELSE po.status
