@@ -34,7 +34,7 @@ import CompanyJobDetailPage from '../pages/company/jobs/CompanyJobDetailPage.jsx
 import CompanyJobUpdatePage from '../pages/company/jobs/CompanyJobUpdatePage.jsx';
 import ApplicationListPage from '../pages/company/applications/ApplicationListPage.jsx';
 import ApplicationDetailPage from '../pages/company/applications/ApplicationDetailPage.jsx';
-import TalenjsearchPage from '../pages/company/resumes/TalenjsearchPage.jsx';
+import CompanyResumeListPage from '../pages/company/resumes/CompanyResumeListPage.jsx';
 import CompanyResumeDetailPage from '../pages/company/resumes/CompanyResumeDetailPage.jsx';
 import PositionOfferListPage from '../pages/company/positionOffers/PositionOfferListPage.jsx';
 import PositionOfferCreatePage from '../pages/company/positionOffers/PositionOfferCreatePage.jsx';
@@ -104,7 +104,7 @@ export default function AppRouter() {
       [ROUTES.COMPANY_JOB_UPDATE]: guarded(CompanyJobUpdatePage, ['COMPANY']),
       [ROUTES.COMPANY_APPLICATIONS]: guarded(ApplicationListPage, ['COMPANY']),
       [ROUTES.COMPANY_APPLICATION_DETAIL]: guarded(ApplicationDetailPage, ['COMPANY']),
-      [ROUTES.TALENT_SEARCH]: guarded(TalenjsearchPage, ['COMPANY']),
+      [ROUTES.TALENT_SEARCH]: guarded(CompanyResumeListPage, ['COMPANY']),
       [ROUTES.COMPANY_RESUME_DETAIL]: guarded(CompanyResumeDetailPage, ['COMPANY']),
       [ROUTES.POSITION_OFFERS]: guarded(PositionOfferListPage, ['COMPANY']),
       [ROUTES.POSITION_OFFER_CREATE]: guarded(PositionOfferCreatePage, ['COMPANY']),
