@@ -6,10 +6,17 @@ import { navigate } from '../../utils/authUtils.js';
 
 const gsItmLogoUrl = new URL('../../assejs/images/company-logos/gs-itm.svg', import.meta.url).href;
 const ktDsLogoUrl = new URL('../../assejs/images/company-logos/kt-ds.svg', import.meta.url).href;
-const shinsegaeIncLogoUrl = new URL('../../assejs/images/company-logos/shinsegae-inc.jpg', import.meta.url).href;
+const shinsegaeIncLogoUrl = new URL(
+  '../../assejs/images/company-logos/shinsegae-inc.jpg',
+  import.meta.url
+).href;
 const lgCnsLogoUrl = new URL('../../assejs/images/company-logos/lg-cns.png', import.meta.url).href;
-const poscoDxLogoUrl = new URL('../../assejs/images/company-logos/posco-dx.png', import.meta.url).href;
-const hanwhaSystemsLogoUrl = new URL('../../assejs/images/company-logos/hanwha-systems.svg', import.meta.url).href;
+const poscoDxLogoUrl = new URL('../../assejs/images/company-logos/posco-dx.png', import.meta.url)
+  .href;
+const hanwhaSystemsLogoUrl = new URL(
+  '../../assejs/images/company-logos/hanwha-systems.svg',
+  import.meta.url
+).href;
 
 const MARKET = {
   DOMESTIC: 'domestic',
@@ -43,7 +50,7 @@ const domesticLocationKeywords = [
 const ignoredRoleTags = ['AI Recommended', 'Verified Company', 'Urgent'];
 
 const companyLogoDomains = {
-  '삼정KPMG': 'kpmg.com',
+  삼정KPMG: 'kpmg.com',
   KPMG: 'kpmg.com',
   '딜로이트 안진회계법인': 'deloitte.com',
   'Deloitte Korea': 'deloitte.com',
@@ -95,16 +102,21 @@ function getInitial(company) {
 function getBundledCompanyLogoUrl(company) {
   const normalizedCompany = String(company || '').toUpperCase();
   if (normalizedCompany.includes('LG CNS')) return lgCnsLogoUrl;
-  if (normalizedCompany.includes('POSCO') || normalizedCompany.includes('포스코')) return poscoDxLogoUrl;
-  if (normalizedCompany.includes('HANWHA') || normalizedCompany.includes('한화')) return hanwhaSystemsLogoUrl;
+  if (normalizedCompany.includes('POSCO') || normalizedCompany.includes('포스코'))
+    return poscoDxLogoUrl;
+  if (normalizedCompany.includes('HANWHA') || normalizedCompany.includes('한화'))
+    return hanwhaSystemsLogoUrl;
   if (normalizedCompany.includes('GS ITM')) return gsItmLogoUrl;
   if (normalizedCompany.includes('KT DS')) return ktDsLogoUrl;
-  if (normalizedCompany.includes('신세계') || normalizedCompany.includes('SHINSEGAE')) return shinsegaeIncLogoUrl;
+  if (normalizedCompany.includes('신세계') || normalizedCompany.includes('SHINSEGAE'))
+    return shinsegaeIncLogoUrl;
   return '';
 }
 
 function isKpmgCompany(company) {
-  return String(company || '').toUpperCase().includes('KPMG');
+  return String(company || '')
+    .toUpperCase()
+    .includes('KPMG');
 }
 
 function getDomainFromUrl(value) {
@@ -113,7 +125,10 @@ function getDomainFromUrl(value) {
   try {
     return new URL(value).hostname.replace(/^www\./, '');
   } catch {
-    return String(value).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    return String(value)
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0];
   }
 }
 
@@ -151,8 +166,18 @@ function CompanyLogo({ job }) {
   }
 
   return (
-    <div className={`job-logo ${logoUrl ? 'has-image' : ''} ${hasBundledLogo ? 'bundled-image' : ''} ${logoIndex >= 3 ? 'favicon-image' : ''}`} aria-hidden="true">
-      {logoUrl && <img src={logoUrl} alt="" referrerPolicy="no-referrer" onError={() => setLogoIndex((current) => current + 1)} />}
+    <div
+      className={`job-logo ${logoUrl ? 'has-image' : ''} ${hasBundledLogo ? 'bundled-image' : ''} ${logoIndex >= 3 ? 'favicon-image' : ''}`}
+      aria-hidden="true"
+    >
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setLogoIndex((current) => current + 1)}
+        />
+      )}
       <span>{getInitial(job.company)}</span>
     </div>
   );
@@ -188,19 +213,20 @@ export default function JobListPage() {
   }, []);
 
   const marketJobs = useMemo(
-    () => jobs.filter((job) => (market === MARKET.DOMESTIC ? isDomesticJob(job) : !isDomesticJob(job))),
-    [jobs, market],
+    () =>
+      jobs.filter((job) => (market === MARKET.DOMESTIC ? isDomesticJob(job) : !isDomesticJob(job))),
+    [jobs, market]
   );
 
   const locations = useMemo(() => {
-    const values = marketJobs
-      .map((job) => formatLocationFilterLabel(job.location))
-      .filter(Boolean);
+    const values = marketJobs.map((job) => formatLocationFilterLabel(job.location)).filter(Boolean);
     return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, 'ko'));
   }, [marketJobs]);
 
   const roles = useMemo(() => {
-    const values = marketJobs.flatMap((job) => job.tags || []).filter((tag) => !ignoredRoleTags.includes(tag));
+    const values = marketJobs
+      .flatMap((job) => job.tags || [])
+      .filter((tag) => !ignoredRoleTags.includes(tag));
     return Array.from(new Set(values)).sort();
   }, [marketJobs]);
 
@@ -209,8 +235,12 @@ export default function JobListPage() {
 
     return marketJobs.filter((job) => {
       const tagText = (job.tags || []).join(' ');
-      const matchesLocation = !locationFilter || formatLocationFilterLabel(job.location) === locationFilter;
-      const matchesRole = !roleFilter || (job.tags || []).includes(roleFilter) || includesText(job.title, roleFilter.toLowerCase());
+      const matchesLocation =
+        !locationFilter || formatLocationFilterLabel(job.location) === locationFilter;
+      const matchesRole =
+        !roleFilter ||
+        (job.tags || []).includes(roleFilter) ||
+        includesText(job.title, roleFilter.toLowerCase());
       const matchesKeyword =
         !normalizedKeyword ||
         includesText(job.title, normalizedKeyword) ||
@@ -225,7 +255,10 @@ export default function JobListPage() {
   }, [marketJobs, locationFilter, roleFilter, keyword, urgentOnly, fixedSalaryOnly]);
 
   const urgentCount = useMemo(() => marketJobs.filter(isUrgentJob).length, [marketJobs]);
-  const fixedSalaryCount = useMemo(() => marketJobs.filter((job) => job.salary && job.salary !== '협의 후 결정').length, [marketJobs]);
+  const fixedSalaryCount = useMemo(
+    () => marketJobs.filter((job) => job.salary && job.salary !== '협의 후 결정').length,
+    [marketJobs]
+  );
 
   const resetFilters = () => {
     setLocationFilter('');
@@ -261,11 +294,11 @@ export default function JobListPage() {
           <div>
             <p className="eyebrow">SAP RECRUITMENT FEED</p>
             <h1>채용 공고</h1>
-            <p>SAP 전문가를 위한 최신 프로젝트와 채용 기회를 한눈에 탐색하세요. 지역, 직무, 급여 조건까지 빠르게 좁혀볼 수 있습니다.</p>
+            <p>
+              SAP 전문가를 위한 최신 프로젝트와 채용 기회를 한눈에 탐색하세요. 지역, 직무, 급여
+              조건까지 빠르게 좁혀볼 수 있습니다.
+            </p>
           </div>
-          <button type="button" className="primary-action jobs-hero-action" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
-            공고 등록하기
-          </button>
         </header>
 
         <section className="jobs-summary" aria-label="채용 공고 요약">
@@ -293,16 +326,28 @@ export default function JobListPage() {
 
         <section className="job-filter-panel" aria-label="채용 공고 필터">
           <div className="filter-tabs" role="tablist" aria-label="채용 시장 선택">
-            <button type="button" className={market === MARKET.DOMESTIC ? 'active' : ''} onClick={() => changeMarket(MARKET.DOMESTIC)}>
+            <button
+              type="button"
+              className={market === MARKET.DOMESTIC ? 'active' : ''}
+              onClick={() => changeMarket(MARKET.DOMESTIC)}
+            >
               국내
             </button>
-            <button type="button" className={market === MARKET.OVERSEAS ? 'active' : ''} onClick={() => changeMarket(MARKET.OVERSEAS)}>
+            <button
+              type="button"
+              className={market === MARKET.OVERSEAS ? 'active' : ''}
+              onClick={() => changeMarket(MARKET.OVERSEAS)}
+            >
               해외
             </button>
           </div>
 
           <div className="filter-row">
-            <select aria-label="지역" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)}>
+            <select
+              aria-label="지역"
+              value={locationFilter}
+              onChange={(event) => setLocationFilter(event.target.value)}
+            >
               <option value="">지역 전체</option>
               {locations.map((location) => (
                 <option key={location} value={location}>
@@ -311,7 +356,11 @@ export default function JobListPage() {
               ))}
             </select>
 
-            <select aria-label="직무" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
+            <select
+              aria-label="직무"
+              value={roleFilter}
+              onChange={(event) => setRoleFilter(event.target.value)}
+            >
               <option value="">직무 선택</option>
               {roles.map((role) => (
                 <option key={role} value={role}>
@@ -320,9 +369,18 @@ export default function JobListPage() {
               ))}
             </select>
 
-            <input aria-label="검색어" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="회사, 직무, SAP 모듈 검색" />
+            <input
+              aria-label="검색어"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="회사, 직무, SAP 모듈 검색"
+            />
 
-            <button type="button" className="filter-submit" onClick={() => setShowAdvanced((current) => !current)}>
+            <button
+              type="button"
+              className="filter-submit"
+              onClick={() => setShowAdvanced((current) => !current)}
+            >
               상세조건
             </button>
           </div>
@@ -330,11 +388,19 @@ export default function JobListPage() {
           {showAdvanced && (
             <div className="advanced-filter-panel">
               <label>
-                <input type="checkbox" checked={urgentOnly} onChange={(event) => setUrgentOnly(event.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={urgentOnly}
+                  onChange={(event) => setUrgentOnly(event.target.checked)}
+                />
                 <span>마감 임박만 보기</span>
               </label>
               <label>
-                <input type="checkbox" checked={fixedSalaryOnly} onChange={(event) => setFixedSalaryOnly(event.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={fixedSalaryOnly}
+                  onChange={(event) => setFixedSalaryOnly(event.target.checked)}
+                />
                 <span>급여 공개 공고</span>
               </label>
               <button type="button" onClick={resetFilters}>
@@ -356,51 +422,53 @@ export default function JobListPage() {
             </article>
           )}
 
-          {!loading && !error && filteredJobs.length === 0 && <p className="career-copy">조건에 맞는 채용 공고가 없습니다.</p>}
+          {!loading && !error && filteredJobs.length === 0 && (
+            <p className="career-copy">조건에 맞는 채용 공고가 없습니다.</p>
+          )}
 
           {!loading &&
             !error &&
             filteredJobs.map((job, index) => (
-                <article
-                  className="job-card"
-                  key={job.id}
-                  role="link"
-                  tabIndex={0}
-                  aria-label={`${job.title} 상세 페이지로 이동`}
-                  onClick={() => openDetail(job.id)}
-                  onKeyDown={(event) => handleCardKeyDown(event, job.id)}
-                >
-                  <CompanyLogo job={job} />
+              <article
+                className="job-card"
+                key={job.id}
+                role="link"
+                tabIndex={0}
+                aria-label={`${job.title} 상세 페이지로 이동`}
+                onClick={() => openDetail(job.id)}
+                onKeyDown={(event) => handleCardKeyDown(event, job.id)}
+              >
+                <CompanyLogo job={job} />
 
-                  <div className="job-card-body">
-                    <div className="job-meta">
-                      <strong>{job.company}</strong>
-                      <span>{job.location || '지역 협의'}</span>
-                    </div>
-
-                    <div className="job-card-title-row">
-                      <h2>{job.title}</h2>
-                      <span>{job.badge || `#${index + 1}`}</span>
-                    </div>
-
-                    <div className="tag-row">
-                      {(job.tags || []).slice(0, 6).map((tag) => (
-                        <span key={`${job.id}-${tag}`}>#{tag}</span>
-                      ))}
-                    </div>
-
-                    <div className="job-card-footer">
-                      <span>{job.posted || '등록일 확인 중'}</span>
-                      <span>{job.salary || '급여 협의'}</span>
-                    </div>
+                <div className="job-card-body">
+                  <div className="job-meta">
+                    <strong>{job.company}</strong>
+                    <span>{job.location || '지역 협의'}</span>
                   </div>
 
-                  <div className="job-card-side">
-                    <strong>{isUrgentJob(job) ? '마감 임박' : '채용중'}</strong>
-                    <span>{job.employmentType || job.workType || '상세 보기'}</span>
+                  <div className="job-card-title-row">
+                    <h2>{job.title}</h2>
+                    <span>{job.badge || `#${index + 1}`}</span>
                   </div>
-                </article>
-              ))}
+
+                  <div className="tag-row">
+                    {(job.tags || []).slice(0, 6).map((tag) => (
+                      <span key={`${job.id}-${tag}`}>#{tag}</span>
+                    ))}
+                  </div>
+
+                  <div className="job-card-footer">
+                    <span>{job.posted || '등록일 확인 중'}</span>
+                    <span>{job.salary || '급여 협의'}</span>
+                  </div>
+                </div>
+
+                <div className="job-card-side">
+                  <strong>{isUrgentJob(job) ? '마감 임박' : '채용중'}</strong>
+                  <span>{job.employmentType || job.workType || '상세 보기'}</span>
+                </div>
+              </article>
+            ))}
         </section>
       </section>
     </main>

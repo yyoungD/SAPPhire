@@ -62,4 +62,41 @@
         WHERE id = #{id}
           AND uploader_user_id = #{userId}
     </select>
+
+    <select id="findDownloadableByUser" resultType="com.sapphire.domain.file.dto.FileRecord">
+        SELECT
+            f.id,
+            f.uploader_user_id,
+            f.original_name,
+            f.stored_name,
+            f.file_path,
+            f.file_url,
+            f.content_type,
+            f.file_size,
+            f.file_category,
+            f.created_at
+        FROM files f
+        WHERE f.id = #{id}
+          AND (
+              f.uploader_user_id = #{userId}
+              OR EXISTS (
+                  SELECT 1
+                  FROM job_application_attachments jaa
+                  JOIN job_applications ja ON ja.id = jaa.application_id
+                  JOIN job_posts jp ON jp.id = ja.job_post_id
+                  JOIN company_profiles cp ON cp.id = jp.company_profile_id
+                  WHERE jaa.file_id = f.id
+                    AND cp.user_id = #{userId}
+              )
+              OR EXISTS (
+                  SELECT 1
+                  FROM resumes r
+                  JOIN job_applications ja ON ja.resume_id = r.id
+                  JOIN job_posts jp ON jp.id = ja.job_post_id
+                  JOIN company_profiles cp ON cp.id = jp.company_profile_id
+                  WHERE r.resume_file_id = f.id
+                    AND cp.user_id = #{userId}
+              )
+          )
+    </select>
 </mapper>

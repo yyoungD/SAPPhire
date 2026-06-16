@@ -23,6 +23,10 @@ const statusOptions = [
   { value: 'CANCELED', label: '취소' },
 ];
 
+function getApplicantInitial(name) {
+  return (name || '지원자').trim().charAt(0);
+}
+
 function getApplicationIdFromUrl() {
   return new URLSearchParams(window.location.search).get('id');
 }
@@ -33,6 +37,7 @@ export default function ApplicationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPortfolio, setDownloadingPortfolio] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
@@ -67,6 +72,20 @@ export default function ApplicationDetailPage() {
       alert(err.message || '이력서 다운로드에 실패했습니다.');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const downloadPortfolio = async () => {
+    const portfolio = application?.attachments?.[0];
+    if (!portfolio?.id) return;
+
+    setDownloadingPortfolio(true);
+    try {
+      await fileApi.download(portfolio.id, portfolio.originalName || 'portfolio');
+    } catch (err) {
+      alert(err.message || '포트폴리오 다운로드에 실패했습니다.');
+    } finally {
+      setDownloadingPortfolio(false);
     }
   };
 
@@ -110,13 +129,21 @@ export default function ApplicationDetailPage() {
               <article className="detail-hero-card company-application-hero">
                 <p className="eyebrow">CANDIDATE DETAIL</p>
                 <div className="company-application-title-row">
-                  <div>
-                    <h1>{application.applicantName || '지원자'}</h1>
-                    <p>
-                      {application.jobTitle || '-'} · {application.jobLocation || '-'}
-                    </p>
+                  <div className="company-application-profile">
+                    <div className="company-application-avatar">
+                      {application.applicantProfileImageUrl ? (
+                        <img src={application.applicantProfileImageUrl} alt={`${application.applicantName || '지원자'} 프로필`} />
+                      ) : (
+                        <span>{getApplicantInitial(application.applicantName)}</span>
+                      )}
+                    </div>
+                    <div>
+                      <h1>{application.applicantName || '지원자'}</h1>
+                      <p>
+                        {application.jobTitle || '-'} · {application.jobLocation || '-'}
+                      </p>
+                    </div>
                   </div>
-                  <span className={`candidate-status ${statusClassNames[application.status] || ''}`}>{application.statusLabel || application.status || '-'}</span>
                 </div>
                 <div className="detail-badges">
                   <span>지원일 {application.appliedAt || '-'}</span>
@@ -132,28 +159,42 @@ export default function ApplicationDetailPage() {
                     <p className="eyebrow">RESUME</p>
                     <h2>제출 이력서</h2>
                   </div>
-                  {application.resumeFileId && (
-                    <button type="button" className="section-edit-button" onClick={downloadResume} disabled={downloading}>
-                      {downloading ? '다운로드 중...' : '이력서 다운로드'}
+                  <div className="application-download-actions">
+                    {application.resumeFileId && (
+                      <button type="button" className="section-edit-button" onClick={downloadResume} disabled={downloading}>
+                        {downloading ? '다운로드 중...' : '이력서 다운로드'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="section-edit-button portfolio-download-button"
+                      onClick={downloadPortfolio}
+                      disabled={!application.attachments?.length || downloadingPortfolio}
+                    >
+                      {downloadingPortfolio ? '다운로드 중...' : '포트폴리오 다운로드'}
                     </button>
-                  )}
+                  </div>
                 </div>
                 <dl className="application-detail-dl">
-                  <div>
-                    <dt>이력서 제목</dt>
-                    <dd>{application.resumeTitle || '-'}</dd>
-                  </div>
-                  <div>
-                    <dt>원본 파일</dt>
-                    <dd>{application.resumeOriginalFileName || '업로드된 이력서 파일이 없습니다.'}</dd>
-                  </div>
                   <div>
                     <dt>지원 공고</dt>
                     <dd>{application.jobTitle || '-'}</dd>
                   </div>
                   <div>
-                    <dt>경력</dt>
-                    <dd>{application.careerYears === null || application.careerYears === undefined ? '-' : `${application.careerYears}년`}</dd>
+                    <dt>이력서 제목</dt>
+                    <dd>{application.resumeTitle || '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>포트폴리오</dt>
+                    <dd>
+                      {application.attachments?.length
+                        ? application.attachments.map((attachment) => attachment.originalName).join(', ')
+                        : '등록된 포트폴리오가 없습니다.'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>지원일</dt>
+                    <dd>{application.appliedAt || '-'}</dd>
                   </div>
                 </dl>
               </article>
@@ -172,7 +213,7 @@ export default function ApplicationDetailPage() {
             <aside className="apply-submit-panel">
               <section>
                 <h2>지원 상태</h2>
-                <div className="apply-summary-score application-status-summary">
+                <div className={`apply-summary-score application-status-summary ${statusClassNames[application.status] || ''}`}>
                   <span>현재 단계</span>
                   <strong>{application.statusLabel || '-'}</strong>
                 </div>

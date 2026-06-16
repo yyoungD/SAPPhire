@@ -10,6 +10,7 @@ public class ApplicationListRow {
     private String jobPosition;
     private String companyName;
     private String applicantName;
+    private String applicantProfileImageUrl;
     private String resumeTitle;
     private Integer careerYears;
     private String status;
@@ -70,6 +71,14 @@ public class ApplicationListRow {
 
     public void setApplicantName(String applicantName) {
         this.applicantName = applicantName;
+    }
+
+    public String getApplicantProfileImageUrl() {
+        return applicantProfileImageUrl;
+    }
+
+    public void setApplicantProfileImageUrl(String applicantProfileImageUrl) {
+        this.applicantProfileImageUrl = applicantProfileImageUrl;
     }
 
     public String getResumeTitle() {

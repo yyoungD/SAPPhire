@@ -3,6 +3,7 @@ package com.sapphire.domain.application.dto;
 public class ApplicationDetailRow extends ApplicationListRow {
     private Long resumeFileId;
     private String resumeOriginalFileName;
+    private String portfolioUrl;
     private String coverLetter;
     private String jobLocation;
     private String employmentType;
@@ -22,6 +23,14 @@ public class ApplicationDetailRow extends ApplicationListRow {
 
     public void setResumeOriginalFileName(String resumeOriginalFileName) {
         this.resumeOriginalFileName = resumeOriginalFileName;
+    }
+
+    public String getPortfolioUrl() {
+        return portfolioUrl;
+    }
+
+    public void setPortfolioUrl(String portfolioUrl) {
+        this.portfolioUrl = portfolioUrl;
     }
 
     public String getCoverLetter() {

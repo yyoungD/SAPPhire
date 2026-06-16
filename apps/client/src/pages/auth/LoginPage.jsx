@@ -114,13 +114,15 @@ export default function LoginPage() {
               로그인
             </button>
           </form>
-          <div className={`login-social-area ${role === 'PERSONAL' ? '' : 'is-hidden'}`} aria-hidden={role !== 'PERSONAL'}>
+          <div className="login-social-area">
               <div className="divider">
                 <span />또는<span />
               </div>
-              <button type="button" className="social-button" onClick={authApi.startGoogleLogin} disabled={role !== 'PERSONAL'}>
-                Google 계정으로 계속하기
-              </button>
+              {role === 'PERSONAL' && (
+                <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
+                  Google 계정으로 계속하기
+                </button>
+              )}
           </div>
           <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.SIGNUP}?role=${role}`)}>
             계정이 없으신가요? 계정 만들기

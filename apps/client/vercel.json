@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!api/|profileImg/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
