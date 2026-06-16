@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { aiApi } from '../../api/aiApi.js';
 import { applicationApi } from '../../api/applicationApi.js';
 import { fileApi } from '../../api/fileApi.js';
 import { jobApi } from '../../api/jobApi.js';
@@ -32,6 +33,7 @@ export default function JobApplyPage() {
   const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -78,12 +80,27 @@ export default function JobApplyPage() {
     setAttachments(Array.from(event.target.files || []));
   };
 
-  const handleGenerateCoverLetter = () => {
-    const title = job?.title || '지원 직무';
-    const skills = selectedResume?.tags?.slice(0, 4).join(', ') || 'SAP 프로젝트 경험';
-    setCoverLetter(
-      `${title} 포지션에서 요구하는 역량과 제 경험이 잘 맞는다고 판단해 지원합니다. ${skills} 역량을 기반으로 ERP 운영과 개선 과제를 안정적으로 수행하고, 현업과 개발 조직 사이에서 실행 가능한 해결책을 제시하겠습니다.`,
-    );
+  const handleGenerateCoverLetter = async () => {
+    setGeneratingDraft(true);
+    setError('');
+
+    try {
+      const draft = await aiApi.generateCoverLetterDraft({
+        jobPostId: job?.id ? Number(job.id) : undefined,
+        jobTitle: job?.title,
+        companyName: job?.company,
+        jobSkills: job?.skills || [],
+        resumeId: selectedResume?.id ? Number(selectedResume.id) : undefined,
+        resumeTitle: selectedResume?.title,
+        skills: selectedResume?.tags || job?.skills || [],
+        existingCoverLetter: coverLetter.trim() || undefined,
+      });
+      setCoverLetter(draft);
+    } catch (err) {
+      setError(err.message || 'AI 초안을 생성하지 못했습니다.');
+    } finally {
+      setGeneratingDraft(false);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -276,8 +293,8 @@ export default function JobApplyPage() {
                       onChange={(event) => setCoverLetter(event.target.value)}
                     />
                   </label>
-                  <button type="button" className="secondary apply-ai-button" onClick={handleGenerateCoverLetter}>
-                    AI 초안 생성
+                  <button type="button" className="secondary apply-ai-button" onClick={handleGenerateCoverLetter} disabled={generatingDraft}>
+                    {generatingDraft ? 'AI 초안 생성 중...' : 'AI 초안 생성'}
                   </button>
                 </div>
               </section>

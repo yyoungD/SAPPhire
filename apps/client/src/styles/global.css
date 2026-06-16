@@ -2472,6 +2472,123 @@ p {
   gap: 18px;
 }
 
+.jobs-content-layout {
+  width: min(1280px, calc(100vw - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.jobs-content-layout .job-list {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding-top: 24px;
+}
+
+.jobs-bookmark-sidebar {
+  position: sticky;
+  top: 92px;
+  margin-top: 24px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.jobs-bookmark-sidebar header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.jobs-bookmark-sidebar header div {
+  display: grid;
+  gap: 3px;
+}
+
+.jobs-bookmark-sidebar header span {
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.jobs-bookmark-sidebar header strong {
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.jobs-bookmark-sidebar header button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.jobs-bookmark-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.jobs-bookmark-list {
+  display: grid;
+  gap: 10px;
+}
+
+.jobs-bookmark-item {
+  width: 100%;
+  padding: 12px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jobs-bookmark-item span,
+.jobs-bookmark-item small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.jobs-bookmark-item strong {
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.jobs-bookmark-item:hover {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+@media (max-width: 1180px) {
+  .jobs-content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .jobs-bookmark-sidebar {
+    position: static;
+    margin-top: 0;
+  }
+}
+
 .ai-recommend-shell {
   width: min(1280px, calc(100vw - 48px));
   margin: 0 auto;
@@ -2978,6 +3095,134 @@ p {
   color: #64748b;
   font-size: 13px;
   font-weight: 800;
+}
+
+.job-bookmark-button {
+  min-width: 72px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.job-bookmark-button.active,
+.job-detail-bookmark-button.active {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.job-bookmark-button:disabled,
+.job-detail-bookmark-button:disabled,
+.job-detail-bookmark-saved button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.job-detail-bookmark-saved {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  overflow: hidden;
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+  background: #ecfdf5;
+}
+
+.job-detail-bookmark-saved span,
+.job-detail-bookmark-saved button {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.job-detail-bookmark-saved span {
+  color: #0f766e;
+}
+
+.job-detail-bookmark-saved button {
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid rgba(15, 118, 110, 0.28);
+  border-radius: 0;
+  background: #ffffff;
+  color: #0f766e;
+}
+
+.job-detail-bookmark-saved button:hover {
+  background: #f0fdfa;
+}
+
+.job-bookmark-shell {
+  align-items: stretch;
+}
+
+.job-bookmark-panel {
+  width: min(1040px, 100%);
+}
+
+.bookmark-empty-state,
+.bookmark-job-list {
+  margin-top: 24px;
+}
+
+.bookmark-empty-state {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.bookmark-empty-state strong {
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.bookmark-job-list {
+  display: grid;
+  gap: 12px;
+}
+
+.bookmark-job-card {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.bookmark-job-card h2 {
+  margin: 4px 0 8px;
+  color: #0f172a;
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+.bookmark-job-card p,
+.bookmark-job-card span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bookmark-job-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.mypage-bookmark-count {
+  color: #0f766e;
+  font-size: 32px;
+  line-height: 1;
 }
 
 .company-link,
@@ -7082,8 +7327,14 @@ dd {
     width: min(420px, calc(100vw - 40px));
   }
 
+  .jobs-bookmark-sidebar {
+    position: static;
+    margin-top: 0;
+  }
+
   .filter-row,
   .jobs-summary,
+  .jobs-content-layout,
   .ai-recommend-summary,
   .ai-recommend-layout,
   .detail-layout,

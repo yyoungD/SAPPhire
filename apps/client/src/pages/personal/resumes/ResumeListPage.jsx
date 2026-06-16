@@ -179,9 +179,6 @@ export default function ResumeListPage() {
               </ul>
             </div>
 
-            <button type="button" className="secondary resume-report-button" onClick={() => navigate(ROUTES.AI_EVALUATION)}>
-              AI 리포트 전체 보기
-            </button>
           </aside>
         </section>
       </section>

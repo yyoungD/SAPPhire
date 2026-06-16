@@ -38,7 +38,7 @@ export default function LoginPage() {
     event.preventDefault();
     setError('');
     try {
-      const data = await login({ email: form.email, password: form.password });
+      const data = await login({ email: form.email, password: form.password, expectedRole: role });
       navigate(roleHome(data.user?.role));
     } catch (err) {
       setError(err.message);

@@ -14,6 +14,16 @@ import java.util.List;
 public interface JobPostMapper {
     List<JobPostRow> findOpenJobs(@Param("limit") int limit);
 
+    List<JobPostRow> findBookmarkedJobs(@Param("userId") Long userId);
+
+    boolean existsOpenJob(@Param("id") Long id);
+
+    boolean existsJobBookmark(@Param("userId") Long userId, @Param("jobPostId") Long jobPostId);
+
+    void insertJobBookmark(@Param("userId") Long userId, @Param("jobPostId") Long jobPostId);
+
+    int deleteJobBookmark(@Param("userId") Long userId, @Param("jobPostId") Long jobPostId);
+
     List<CompanyJobPostRow> findCompanyJobs(@Param("companyProfileId") Long companyProfileId);
 
     JobDetailRow findOpenJobById(@Param("id") Long id);

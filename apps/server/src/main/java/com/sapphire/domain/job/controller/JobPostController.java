@@ -55,6 +55,41 @@ public class JobPostController {
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findOpenJobs(limit)));
     }
 
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponse<List<JobListItem>>> findBookmarkedJobs(Authentication authentication) {
+        CustomUserDetails userDetails = requirePersonal(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.findBookmarkedJobs(userDetails.getId())));
+    }
+
+    @GetMapping("/bookmarks/{id}")
+    public ResponseEntity<ApiResponse<Boolean>> isBookmarked(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        CustomUserDetails userDetails = requirePersonal(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.isBookmarked(userDetails.getId(), id)));
+    }
+
+    @PostMapping("/{id}/bookmark")
+    public ResponseEntity<ApiResponse<Void>> bookmarkJob(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        CustomUserDetails userDetails = requirePersonal(authentication);
+        jobPostService.bookmarkJob(userDetails.getId(), id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/{id}/bookmark")
+    public ResponseEntity<ApiResponse<Void>> removeBookmark(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        CustomUserDetails userDetails = requirePersonal(authentication);
+        jobPostService.removeBookmark(userDetails.getId(), id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<List<CompanyJobListItem>>> findMyCompanyJobs(
             Authentication authentication
@@ -117,6 +152,14 @@ public class JobPostController {
     private CustomUserDetails requireCompany(Authentication authentication) {
         CustomUserDetails userDetails = requireUser(authentication);
         if (!"COMPANY".equals(userDetails.getRole())) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
+        return userDetails;
+    }
+
+    private CustomUserDetails requirePersonal(Authentication authentication) {
+        CustomUserDetails userDetails = requireUser(authentication);
+        if (!"PERSONAL".equals(userDetails.getRole())) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }
         return userDetails;

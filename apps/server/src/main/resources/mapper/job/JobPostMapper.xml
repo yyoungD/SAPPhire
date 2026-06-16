@@ -184,6 +184,75 @@
         LIMIT #{limit}
     </select>
 
+    <select id="findBookmarkedJobs" resultType="com.sapphire.domain.job.dto.JobPostRow">
+        SELECT
+            jp.id,
+            cp.company_name AS company,
+            f.file_url AS logo_url,
+            cp.website_url,
+            jp.location,
+            jp.title,
+            COALESCE(STRING_AGG(jt.tag_name, ',' ORDER BY jt.id), '') AS tags_csv,
+            jp.deadline,
+            jp.salary_min,
+            jp.salary_max,
+            jp.salary_negotiable,
+            jp.created_at
+        FROM job_bookmarks jb
+        JOIN job_posts jp ON jp.id = jb.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
+        LEFT JOIN job_tags jt ON jt.job_post_id = jp.id
+        WHERE jb.user_id = #{userId}
+          AND jp.status = 'OPEN'
+          AND jp.deleted_at IS NULL
+        GROUP BY
+            jb.created_at,
+            jp.id,
+            cp.company_name,
+            f.file_url,
+            cp.website_url,
+            jp.location,
+            jp.title,
+            jp.deadline,
+            jp.salary_min,
+            jp.salary_max,
+            jp.salary_negotiable,
+            jp.created_at
+        ORDER BY jb.created_at DESC, jp.id DESC
+    </select>
+
+    <select id="existsOpenJob" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM job_posts
+            WHERE id = #{id}
+              AND status = 'OPEN'
+              AND deleted_at IS NULL
+        )
+    </select>
+
+    <select id="existsJobBookmark" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM job_bookmarks
+            WHERE user_id = #{userId}
+              AND job_post_id = #{jobPostId}
+        )
+    </select>
+
+    <insert id="insertJobBookmark">
+        INSERT INTO job_bookmarks (user_id, job_post_id)
+        VALUES (#{userId}, #{jobPostId})
+        ON CONFLICT (user_id, job_post_id) DO NOTHING
+    </insert>
+
+    <delete id="deleteJobBookmark">
+        DELETE FROM job_bookmarks
+        WHERE user_id = #{userId}
+          AND job_post_id = #{jobPostId}
+    </delete>
+
     <select id="findCompanyJobs" resultType="com.sapphire.domain.job.dto.CompanyJobPostRow">
         SELECT
             jp.id,

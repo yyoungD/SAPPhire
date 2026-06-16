@@ -1,8 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getAccessToken } from '../../api/apiClient.js';
 import { jobApi } from '../../api/jobApi.js';
 import { ROUTES } from '../../constanjs/routes.js';
 import PersonalMemberHeader from '../../componenjs/layout/PersonalMemberHeader.jsx';
 import { navigate } from '../../utils/authUtils.js';
+
+const employmentTypeLabels = {
+  FULL_TIME: '정규직',
+  PART_TIME: '파트타임',
+  CONTRACT: '계약직',
+  INTERN: '인턴',
+  FREELANCE: '프리랜서',
+  TEMPORARY: '임시직',
+  UNSPECIFIED: '협의',
+};
+
+const workTypeLabels = {
+  ONSITE: '상주',
+  REMOTE: '원격',
+  HYBRID: '하이브리드',
+  UNSPECIFIED: '협의',
+};
 
 function getJobIdFromUrl() {
   return new URLSearchParams(window.location.search).get('id');
@@ -25,12 +43,36 @@ function sanitizeJobHtml(value = '') {
   return template.innerHTML;
 }
 
+function formatCareer(value) {
+  if (!value) return '경력 무관';
+
+  return String(value)
+    .replace(/Any experience/i, '경력 무관')
+    .replace(/Up to (\d+) years?/i, '$1년 이하')
+    .replace(/(\d+)\+ years?/i, '$1년 이상')
+    .replace(/(\d+)-(\d+) years?/i, '$1-$2년')
+    .replace(/(\d+) years?/i, '$1년');
+}
+
+function formatEmploymentType(value) {
+  if (!value) return '협의';
+  return employmentTypeLabels[value] || value;
+}
+
+function formatWorkType(value) {
+  if (!value) return '협의';
+  return workTypeLabels[value] || value;
+}
+
 export default function JobDetailPage() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   const jobId = useMemo(() => getJobIdFromUrl(), []);
+  const isSignedIn = Boolean(getAccessToken());
 
   useEffect(() => {
     const loadJob = async () => {
@@ -54,6 +96,45 @@ export default function JobDetailPage() {
 
     loadJob();
   }, [jobId]);
+
+  useEffect(() => {
+    if (!jobId || !isSignedIn) return;
+
+    let ignore = false;
+    jobApi
+      .isBookmarked(jobId)
+      .then((saved) => {
+        if (!ignore) setIsBookmarked(Boolean(saved));
+      })
+      .catch(() => {
+        if (!ignore) setIsBookmarked(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [jobId, isSignedIn]);
+
+  const toggleBookmark = async () => {
+    if (!isSignedIn) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
+    const nextBookmarked = !isBookmarked;
+    setBookmarkLoading(true);
+    setIsBookmarked(nextBookmarked);
+
+    try {
+      if (nextBookmarked) await jobApi.addBookmark(jobId);
+      else await jobApi.removeBookmark(jobId);
+    } catch (err) {
+      setIsBookmarked(!nextBookmarked);
+      window.alert(err.message || '관심공고를 변경하지 못했습니다.');
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
 
   return (
     <main className="member-page">
@@ -100,18 +181,19 @@ export default function JobDetailPage() {
                   <span>{job.location}</span>
                 </div>
               </div>
+
               <dl className="job-facts">
                 <div>
                   <dt>경력</dt>
-                  <dd>{job.career}</dd>
+                  <dd>{formatCareer(job.career)}</dd>
                 </div>
                 <div>
                   <dt>고용형태</dt>
-                  <dd>{job.employmentType}</dd>
+                  <dd>{formatEmploymentType(job.employmentType)}</dd>
                 </div>
                 <div>
                   <dt>근무형태</dt>
-                  <dd>{job.workType}</dd>
+                  <dd>{formatWorkType(job.workType)}</dd>
                 </div>
                 <div>
                   <dt>마감일</dt>
@@ -147,7 +229,7 @@ export default function JobDetailPage() {
                 <ul className="plain-list">
                   <li>근무지: {job.location}</li>
                   <li>급여: {job.salary}</li>
-                  <li>경력: {job.career}</li>
+                  <li>경력: {formatCareer(job.career)}</li>
                 </ul>
               </div>
             </article>
@@ -159,7 +241,12 @@ export default function JobDetailPage() {
 
             <article className="detail-section">
               <h2>공고 소개</h2>
-              <div className="job-description-content" dangerouslySetInnerHTML={{ __html: sanitizeJobHtml(job.description || '<p>등록된 공고 소개가 없습니다.</p>') }} />
+              <div
+                className="job-description-content"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeJobHtml(job.description || '<p>등록된 공고 소개가 없습니다.</p>'),
+                }}
+              />
               <div className="tag-row">
                 {(job.tags || []).map((tag) => (
                   <span key={tag}>#{tag}</span>
@@ -178,9 +265,24 @@ export default function JobDetailPage() {
             <button type="button" className="primary-action" onClick={() => navigate(`${ROUTES.JOB_APPLY}?id=${job.id}`)}>
               지원하기
             </button>
-            <button type="button" className="secondary" onClick={() => navigate(ROUTES.JOB_BOOKMARKS)}>
-              관심공고 보기
-            </button>
+            {isBookmarked ? (
+              <div className="job-detail-bookmark-saved" aria-live="polite">
+                <span>관심공고 저장됨</span>
+                <button type="button" disabled={bookmarkLoading} onClick={toggleBookmark}>
+                  취소
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="secondary job-detail-bookmark-button"
+                aria-pressed={false}
+                disabled={bookmarkLoading}
+                onClick={toggleBookmark}
+              >
+                관심공고 저장
+              </button>
+            )}
           </aside>
         </div>
       )}
