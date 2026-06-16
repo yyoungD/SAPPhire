@@ -95,6 +95,7 @@ public class ResumeServiceImpl implements ResumeService {
                 row.getTitle(),
                 row.getSummary(),
                 row.getApplicantName(),
+                row.getApplicantUserId(),
                 row.getApplicantEmail(),
                 row.getApplicantPhone(),
                 row.getApplicantProfileImageUrl(),

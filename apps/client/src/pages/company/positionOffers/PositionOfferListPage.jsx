@@ -10,6 +10,17 @@ function statusClassName(status) {
   return 'waiting';
 }
 
+function DocumentIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M8 13h8" />
+      <path d="M8 17h6" />
+    </svg>
+  );
+}
+
 export default function PositionOfferListPage() {
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +43,7 @@ export default function PositionOfferListPage() {
   }, []);
 
   const offers = payload?.offers || [];
+  const canceledOffers = offers.filter((offer) => offer.status === 'CANCELED').length;
 
   return (
     <main className="company-position-page">
@@ -43,8 +55,12 @@ export default function PositionOfferListPage() {
             <h1 className="company-page-title">포지션 제안 관리</h1>
             <p>관심 인재에게 보낸 직접 제안과 응답 상태를 확인하세요.</p>
           </div>
-          <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.POSITION_OFFER_CREATE)}>
-            제안 작성
+          <button
+            type="button"
+            className="primary-action company-job-create-button"
+            onClick={() => navigate(ROUTES.COMPANY_RESUMES)}
+          >
+            인재풀 보러가기
           </button>
         </div>
 
@@ -61,6 +77,10 @@ export default function PositionOfferListPage() {
             <span>수락 완료</span>
             <strong>{loading ? '-' : payload?.acceptedOffers || 0}</strong>
           </article>
+          <article>
+            <span>제안 취소</span>
+            <strong>{loading ? '-' : canceledOffers}</strong>
+          </article>
         </div>
 
         <section className="company-position-list" aria-label="보낸 포지션 제안 목록">
@@ -73,7 +93,9 @@ export default function PositionOfferListPage() {
               </button>
             </article>
           )}
-          {!loading && !error && offers.length === 0 && <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>}
+          {!loading && !error && offers.length === 0 && (
+            <p className="career-copy">아직 보낸 포지션 제안이 없습니다.</p>
+          )}
 
           {!loading &&
             !error &&
@@ -91,7 +113,9 @@ export default function PositionOfferListPage() {
                   }
                 }}
               >
-                <div className="offer-company-mark">{(offer.receiverName || 'T').slice(0, 1)}</div>
+                <div className="offer-company-mark">
+                  <DocumentIcon />
+                </div>
                 <div className="offer-card-main">
                   <strong>{offer.receiverName || '수신자 미확인'}</strong>
                   <h2>{offer.title}</h2>
@@ -100,7 +124,9 @@ export default function PositionOfferListPage() {
                 <div className="offer-card-side">
                   <span>MATCH SCORE</span>
                   <strong>{offer.matchScore || 0}%</strong>
-                  <em className={statusClassName(offer.status)}>{offer.statusLabel || offer.status}</em>
+                  <em className={statusClassName(offer.status)}>
+                    {offer.statusLabel || offer.status}
+                  </em>
                 </div>
               </article>
             ))}

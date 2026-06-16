@@ -13,6 +13,7 @@ public class CompanyResumeDetailRow {
     private String title;
     private String summary;
     private String applicantName;
+    private Long applicantUserId;
     private String applicantEmail;
     private String applicantPhone;
     private String applicantProfileImageUrl;
