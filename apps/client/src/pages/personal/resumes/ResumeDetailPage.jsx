@@ -12,10 +12,29 @@ function clampScore(score) {
   return Math.max(0, Math.min(100, Number(score || 0)));
 }
 
+function getRecommendedRoles(skills = []) {
+  const codes = new Set(skills.map((skill) => String(skill.code || '').toUpperCase()));
+  const roles = [];
+
+  if (codes.has('FI') || codes.has('CO')) roles.push('SAP FICO Consultant');
+  if (codes.has('MM') || codes.has('SD')) roles.push('SAP Logistics Consultant');
+  if (codes.has('ABAP')) roles.push('SAP ABAP Developer');
+  if (codes.has('BASIS')) roles.push('SAP Basis Administrator');
+  if (codes.has('BTP')) roles.push('SAP BTP Consultant');
+  if (codes.has('S4HANA') || codes.has('S/4HANA')) roles.push('SAP S/4HANA Consultant');
+
+  if (roles.length === 0 && skills.length > 0) roles.push('SAP Functional Consultant');
+  if (skills.length >= 3) roles.push('SAP Solution Architect');
+
+  return [...new Set(roles)].slice(0, 3);
+}
+
 export default function ResumeDetailPage() {
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
 
   const resumeId = useMemo(() => getResumeIdFromUrl(), []);
 
@@ -46,6 +65,20 @@ export default function ResumeDetailPage() {
   const scoreStyle = { '--score': `${score * 3.6}deg` };
   const suggestions = resume?.analysis?.suggestions || [];
   const coreStrengths = (resume?.tags || []).slice(0, 3);
+  const recommendedRoles = getRecommendedRoles(resume?.skills || []);
+
+  const analyzeResume = async () => {
+    setAnalyzing(true);
+    setAnalysisError('');
+    try {
+      const data = await resumeApi.analyze(resumeId);
+      setResume(data);
+    } catch (err) {
+      setAnalysisError(err.message || '이력서 역량 진단을 실행하지 못했습니다.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   return (
     <main className="member-page">
@@ -170,21 +203,27 @@ export default function ResumeDetailPage() {
                 <div className="resume-side-block">
                   <h3>RECOMMENDED MATCHES</h3>
                   <div className="resume-match-tags">
-                    <span>SAP FI Consultant</span>
-                    <span>SAP ERP Architect</span>
-                    <span>SAP PMO Lead</span>
+                    {(recommendedRoles.length ? recommendedRoles : ['스킬 등록 후 추천']).map((role) => (
+                      <span key={role}>{role}</span>
+                    ))}
                   </div>
                 </div>
-                <button type="button" className="resume-analyze-button" onClick={() => navigate(ROUTES.AI_EVALUATION)}>
-                  AI 리포트 보기
+                <button type="button" className="resume-analyze-button" onClick={analyzeResume} disabled={analyzing}>
+                  {analyzing ? 'AI 진단 중...' : score > 0 ? 'AI 진단 다시 실행' : 'AI 역량 진단 실행'}
                 </button>
+                {analysisError && <p className="resume-analysis-error">{analysisError}</p>}
+                {score > 0 && (
+                  <button type="button" className="secondary resume-report-link" onClick={() => navigate(ROUTES.AI_EVALUATION)}>
+                    추천 공고 보기
+                  </button>
+                )}
               </section>
 
               <section className="resume-suggestion-card">
                 <h3>IMPROVEMENT SUGGESTIONS</h3>
                 <div>
-                  {(suggestions.length ? suggestions : ['AI 진단을 실행하면 개선 제안이 표시됩니다.']).map((suggestion) => (
-                    <p key={suggestion}>{suggestion}</p>
+                  {(suggestions.length ? suggestions : ['AI 진단을 실행하면 개선 제안이 표시됩니다.']).map((suggestion, index) => (
+                    <p key={`${index}-${suggestion}`}>{suggestion}</p>
                   ))}
                 </div>
               </section>

@@ -174,21 +174,21 @@ public class AuthServiceImpl implements AuthService {
 
         User existingOAuthUser = userMapper.findByOAuth(user.getOauthProvider(), user.getOauthId());
         if (existingOAuthUser != null) {
-            throw new CustomException(ErrorCode.DUPLICATED_EMAIL, "This social account is already registered.");
+            validateActiveUser(existingOAuthUser);
+            return createOAuthLoginResponse(existingOAuthUser);
         }
 
         User existingUser = userMapper.findByEmailIncludingDeleted(email);
         if (existingUser != null) {
-            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
+            if (existingUser.getDeletedAt() == null) {
+                throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
+            }
+
+            user.setId(existingUser.getId());
+            userMapper.restoreOAuthUser(user);
         } else {
             userMapper.insertOAuthUser(user);
             personalProfileMapper.insertDefault(user.getId());
-            FileRecord profileImage = profileImageStorageService.storeRemoteImage(user.getId(), request.profileImageUrl());
-            if (profileImage != null) {
-                user.setProfileImageFileId(profileImage.getId());
-                user.setProfileImageUrl(profileImage.getFileUrl());
-                userMapper.updateOAuthInfo(user);
-            }
 
             consentMapper.findRequiredTermIds().forEach(termId -> {
                 UserConsent consent = new UserConsent();
@@ -199,12 +199,31 @@ public class AuthServiceImpl implements AuthService {
             });
         }
 
-        User savedUser = userMapper.findById(user.getId());
-        String accessToken = jwtTokenProvider.createAccessToken(savedUser);
-        String refreshTokenValue = jwtTokenProvider.createRefreshToken(savedUser);
-        saveRefreshToken(savedUser.getId(), refreshTokenValue);
+        storeOAuthProfileImage(user, request.profileImageUrl());
 
-        return new LoginResponse(accessToken, refreshTokenValue, "Bearer", toUserInfo(savedUser));
+        User savedUser = userMapper.findById(user.getId());
+        return createOAuthLoginResponse(savedUser);
+    }
+
+    private void storeOAuthProfileImage(User user, String profileImageUrl) {
+        try {
+            FileRecord profileImage = profileImageStorageService.storeRemoteImage(user.getId(), profileImageUrl);
+            if (profileImage != null) {
+                user.setProfileImageFileId(profileImage.getId());
+                user.setProfileImageUrl(profileImage.getFileUrl());
+                userMapper.updateOAuthInfo(user);
+            }
+        } catch (CustomException exception) {
+            log.warn("OAuth profile image could not be stored. userId={}, message={}", user.getId(), exception.getMessage());
+        }
+    }
+
+    private LoginResponse createOAuthLoginResponse(User user) {
+        String accessToken = jwtTokenProvider.createAccessToken(user);
+        String refreshTokenValue = jwtTokenProvider.createRefreshToken(user);
+        saveRefreshToken(user.getId(), refreshTokenValue);
+
+        return new LoginResponse(accessToken, refreshTokenValue, "Bearer", toUserInfo(user));
     }
 
     @Override
