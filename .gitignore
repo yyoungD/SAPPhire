@@ -7,6 +7,11 @@
 *.log
 logs/
 
+# Node
+node_modules/
+dist/
+dist-ssr/
+
 # Uploaded files
 apps/server/uploads/**
 !apps/server/uploads/
