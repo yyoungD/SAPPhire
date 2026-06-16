@@ -95,7 +95,7 @@ public class PositionOfferServiceImpl implements PositionOfferService {
         if (!"COMPANY".equals(role) && !PERSONAL_STATUSES.contains(normalizedStatus)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "받은 제안은 수락 또는 거절만 할 수 있습니다.");
         }
-        if (!"SENT".equals(row.getStatus())) {
+        if (!"SENT".equals(row.getRawStatus())) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "대기 중인 제안만 상태를 변경할 수 있습니다.");
         }
         positionOfferMapper.updateStatus(id, normalizedStatus);

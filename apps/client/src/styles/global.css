@@ -4936,7 +4936,7 @@ dd {
 
 .offer-card {
   min-height: 116px;
-  padding: 22px 24px;
+  padding: 20px;
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr) 150px;
   gap: 20px;
@@ -4968,11 +4968,11 @@ dd {
 }
 
 .offer-company-mark {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 12px;
   color: #002764;
   background: #eff6ff;
   font-size: 22px;
@@ -5022,7 +5022,7 @@ dd {
 .offer-card-side {
   display: grid;
   justify-items: end;
-  gap: 6px;
+  gap: 15px;
 }
 
 .offer-card-side span {
@@ -5034,17 +5034,17 @@ dd {
 
 .offer-card-side strong {
   color: #002764;
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
 }
 
 .offer-card-side em {
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 900px;
   color: #334155;
   background: #dbeafe;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .offer-card-side em.waiting {
@@ -5182,6 +5182,66 @@ dd {
   gap: 18px;
 }
 
+.company-offer-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 28px;
+  grid-template-areas: none;
+  align-items: start;
+}
+
+.company-offer-detail-layout .application-detail-main {
+  display: grid;
+  gap: 22px;
+}
+
+.company-offer-detail-layout .detail-hero-card,
+.company-offer-detail-layout .application-detail-main,
+.company-offer-detail-layout .offer-detail-side {
+  grid-area: auto;
+}
+
+.company-offer-detail-layout .offer-message-card {
+  min-height: 260px;
+}
+
+.company-offer-detail-layout .offer-message-card .application-cover-letter {
+  min-height: 150px;
+}
+
+.offer-detail-action-card {
+  display: grid;
+  gap: 12px;
+}
+
+.offer-detail-action-card button {
+  width: 100%;
+  min-height: 46px;
+}
+
+.offer-resume-link-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 8px;
+}
+
+.offer-cancel-button:hover:not(:disabled) {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.offer-list-button {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #002764;
+  background: #ffffff;
+}
+
+.offer-list-button:hover {
+  background: #eff6ff;
+}
+
 .offer-action-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -5189,8 +5249,7 @@ dd {
 }
 
 .offer-create-form {
-  width: min(860px, 100%);
-  margin: 0 auto;
+  width: 100%;
 }
 
 .company-position-page {
@@ -5233,7 +5292,7 @@ dd {
 .company-position-stats {
   margin-bottom: 24px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -5278,13 +5337,13 @@ dd {
 
 .company-position-page .offer-card-main strong {
   color: #003c90;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .company-position-page .offer-card-main h2 {
   color: #0b1c30;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .company-position-page .offer-card-side strong {
@@ -6053,21 +6112,13 @@ dd {
 
 .company-resume-side-section button {
   width: 100%;
-  min-height: 52px;
+  min-height: 48px;
   transition:
     color 160ms ease,
     background-color 160ms ease,
     background 160ms ease,
     box-shadow 160ms ease,
     transform 160ms ease;
-}
-
-.company-resume-portfolio-button {
-  background: #0f52ba;
-}
-
-.company-resume-portfolio-button:hover {
-  background: #003c90;
 }
 
 .company-resume-offer-button {
@@ -6279,6 +6330,7 @@ dd {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
 
 .company-job-detail-stats .company-job-detail-action-menu {

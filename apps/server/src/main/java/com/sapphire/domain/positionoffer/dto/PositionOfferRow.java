@@ -13,6 +13,7 @@ public class PositionOfferRow {
     private String title;
     private String message;
     private String status;
+    private String rawStatus;
     private BigDecimal matchScore;
     private String tagsCsv;
     private LocalDateTime createdAt;
@@ -89,6 +90,14 @@ public class PositionOfferRow {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRawStatus() {
+        return rawStatus;
+    }
+
+    public void setRawStatus(String rawStatus) {
+        this.rawStatus = rawStatus;
     }
 
     public BigDecimal getMatchScore() {
