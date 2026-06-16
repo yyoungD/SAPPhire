@@ -20,4 +20,9 @@ public interface FileMapper {
             @Param("id") Long id,
             @Param("userId") Long userId
     );
+
+    FileRecord findDownloadableByUser(
+            @Param("id") Long id,
+            @Param("userId") Long userId
+    );
 }

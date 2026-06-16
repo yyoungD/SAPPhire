@@ -200,4 +200,18 @@
         WHERE cp.user_id = #{userId}
           AND ja.id = #{id}
     </select>
+
+    <select id="findAttachments" resultType="com.sapphire.domain.application.dto.ApplicationAttachment">
+        SELECT
+            f.id,
+            f.original_name,
+            f.content_type,
+            f.file_size,
+            f.file_category,
+            TO_CHAR(f.created_at, 'YYYY. MM. DD HH24:MI') AS created_at
+        FROM job_application_attachments jaa
+        JOIN files f ON f.id = jaa.file_id
+        WHERE jaa.application_id = #{applicationId}
+        ORDER BY f.created_at DESC, f.id DESC
+    </select>
 </mapper>

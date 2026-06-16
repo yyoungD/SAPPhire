@@ -1,5 +1,7 @@
 package com.sapphire.domain.application.dto;
 
+import java.util.List;
+
 public record ApplicationDetail(
         Long id,
         Long jobPostId,
@@ -12,6 +14,7 @@ public record ApplicationDetail(
         Long resumeFileId,
         String resumeOriginalFileName,
         String portfolioUrl,
+        List<ApplicationAttachment> attachments,
         String status,
         String statusLabel,
         String appliedAt,

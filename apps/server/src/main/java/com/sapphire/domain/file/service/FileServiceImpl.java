@@ -83,7 +83,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileDownload getDownloadFile(Long userId, Long fileId) {
-        FileRecord fileRecord = fileMapper.findByIdAndUploader(fileId, userId);
+        FileRecord fileRecord = fileMapper.findDownloadableByUser(fileId, userId);
         if (fileRecord == null) {
             throw new CustomException(ErrorCode.ACCESS_DENIED);
         }

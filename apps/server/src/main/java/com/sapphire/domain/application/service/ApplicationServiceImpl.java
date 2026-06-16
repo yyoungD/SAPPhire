@@ -125,6 +125,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 row.getResumeFileId(),
                 row.getResumeOriginalFileName(),
                 row.getPortfolioUrl(),
+                applicationMapper.findAttachments(row.getId()),
                 row.getStatus(),
                 formatStatus(row.getStatus()),
                 row.getAppliedAt() == null ? null : row.getAppliedAt().format(DATE_TIME_FORMATTER),

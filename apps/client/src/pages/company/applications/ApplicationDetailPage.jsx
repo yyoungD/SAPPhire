@@ -37,6 +37,7 @@ export default function ApplicationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPortfolio, setDownloadingPortfolio] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
@@ -74,9 +75,18 @@ export default function ApplicationDetailPage() {
     }
   };
 
-  const openPortfolio = () => {
-    if (!application?.portfolioUrl) return;
-    window.open(application.portfolioUrl, '_blank', 'noopener,noreferrer');
+  const downloadPortfolio = async () => {
+    const portfolio = application?.attachments?.[0];
+    if (!portfolio?.id) return;
+
+    setDownloadingPortfolio(true);
+    try {
+      await fileApi.download(portfolio.id, portfolio.originalName || 'portfolio');
+    } catch (err) {
+      alert(err.message || '포트폴리오 다운로드에 실패했습니다.');
+    } finally {
+      setDownloadingPortfolio(false);
+    }
   };
 
   const updateApplicationStatus = async (nextStatus) => {
@@ -158,10 +168,10 @@ export default function ApplicationDetailPage() {
                     <button
                       type="button"
                       className="section-edit-button portfolio-download-button"
-                      onClick={openPortfolio}
-                      disabled={!application.portfolioUrl}
+                      onClick={downloadPortfolio}
+                      disabled={!application.attachments?.length || downloadingPortfolio}
                     >
-                      포트폴리오 다운로드
+                      {downloadingPortfolio ? '다운로드 중...' : '포트폴리오 다운로드'}
                     </button>
                   </div>
                 </div>
@@ -176,7 +186,11 @@ export default function ApplicationDetailPage() {
                   </div>
                   <div>
                     <dt>포트폴리오</dt>
-                    <dd>{application.portfolioUrl || '등록된 포트폴리오가 없습니다.'}</dd>
+                    <dd>
+                      {application.attachments?.length
+                        ? application.attachments.map((attachment) => attachment.originalName).join(', ')
+                        : '등록된 포트폴리오가 없습니다.'}
+                    </dd>
                   </div>
                   <div>
                     <dt>지원일</dt>
