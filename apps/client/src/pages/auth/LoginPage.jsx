@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '', keepSignedIn: false });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const copy = useMemo(
     () => ({
@@ -36,12 +37,16 @@ export default function LoginPage() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     setError('');
+    setIsSubmitting(true);
     try {
       const data = await login({ email: form.email, password: form.password, expectedRole: role });
       navigate(roleHome(data.user?.role));
     } catch (err) {
       setError(err.message);
+      setIsSubmitting(false);
     }
   };
 
@@ -68,19 +73,19 @@ export default function LoginPage() {
           <h2>로그인</h2>
           <p>Sapphire SAP Recruitment Portal</p>
           <div className="role-tabs" role="tablist" aria-label="회원 유형">
-            <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => setRole('PERSONAL')}>
+            <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => setRole('PERSONAL')} disabled={isSubmitting}>
               개인회원
             </button>
-            <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => setRole('COMPANY')}>
+            <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => setRole('COMPANY')} disabled={isSubmitting}>
               기업회원
             </button>
           </div>
-          <form onSubmit={onSubmit} className="form-stack login-form" aria-label={`${copy.tabLabel} 로그인`}>
+          <form onSubmit={onSubmit} className="form-stack login-form" aria-label={`${copy.tabLabel} 로그인`} aria-busy={isSubmitting}>
             <label>
               아이디 / 이메일 주소
               <div className="icon-input">
                 <img src={mailIconUrl} alt="" />
-                <input name="email" type="email" value={form.email} onChange={update} placeholder={copy.emailPlaceholder} required />
+                <input name="email" type="email" value={form.email} onChange={update} placeholder={copy.emailPlaceholder} required disabled={isSubmitting} />
               </div>
             </label>
             <label>
@@ -94,24 +99,30 @@ export default function LoginPage() {
                   onChange={update}
                   placeholder="aa123456!"
                   required
+                  disabled={isSubmitting}
                 />
-                <button type="button" onClick={() => setPasswordVisible((value) => !value)} aria-label={passwordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}>
+                <button type="button" onClick={() => setPasswordVisible((value) => !value)} aria-label={passwordVisible ? '비밀번호 숨기기' : '비밀번호 보기'} disabled={isSubmitting}>
                   <img src={eyeIconUrl} alt="" />
                 </button>
               </div>
             </label>
             <div className="login-options">
               <label className="checkbox-label">
-                <input name="keepSignedIn" type="checkbox" checked={form.keepSignedIn} onChange={update} />
+                <input name="keepSignedIn" type="checkbox" checked={form.keepSignedIn} onChange={update} disabled={isSubmitting} />
                 <span>로그인 상태 유지</span>
               </label>
-              <button type="button" className="text-link">
+              <button type="button" className="text-link" disabled={isSubmitting}>
                 정보 찾기
               </button>
             </div>
             {error && <p className="form-error">{error}</p>}
-            <button type="submit" className="primary-action">
-              로그인
+            {isSubmitting && (
+              <p className="form-loading" role="status" aria-live="polite">
+                서버에서 로그인 확인 중입니다. 잠시만 기다려 주세요.
+              </p>
+            )}
+            <button type="submit" className="primary-action" disabled={isSubmitting}>
+              {isSubmitting ? '로그인 중...' : '로그인'}
             </button>
           </form>
           <div className="login-social-area">
