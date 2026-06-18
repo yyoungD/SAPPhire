@@ -1,5 +1,7 @@
 package com.sapphire.domain.resume.controller;
 
+import com.sapphire.domain.resume.dto.CompanyResumeDetail;
+import com.sapphire.domain.resume.dto.CompanyResumeListItem;
 import com.sapphire.domain.resume.dto.ResumeCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeDetail;
 import com.sapphire.domain.resume.dto.ResumeListItem;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,6 +37,22 @@ public class ResumeController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return ResponseEntity.ok(ApiResponse.success(resumeService.findMyResumes(userDetails.getId())));
+    }
+
+    @GetMapping("/public")
+    public ResponseEntity<ApiResponse<List<CompanyResumeListItem>>> findPublicResumes(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) String keyword
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(resumeService.findPublicResumes(userDetails.getRole(), keyword)));
+    }
+
+    @GetMapping("/public/{id}")
+    public ResponseEntity<ApiResponse<CompanyResumeDetail>> findPublicResume(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(resumeService.findPublicResume(userDetails.getRole(), id)));
     }
 
     @GetMapping("/{id}")

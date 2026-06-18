@@ -1,6 +1,10 @@
 package com.sapphire.domain.resume.service;
 
 import com.sapphire.domain.resume.dto.ResumeAnalysis;
+import com.sapphire.domain.resume.dto.CompanyResumeDetail;
+import com.sapphire.domain.resume.dto.CompanyResumeDetailRow;
+import com.sapphire.domain.resume.dto.CompanyResumeListItem;
+import com.sapphire.domain.resume.dto.CompanyResumeListRow;
 import com.sapphire.domain.resume.dto.ResumeCreateParam;
 import com.sapphire.domain.resume.dto.ResumeCreateRequest;
 import com.sapphire.domain.resume.dto.ResumeDetail;
@@ -47,6 +51,79 @@ public class ResumeServiceImpl implements ResumeService {
                 .stream()
                 .map(this::toListItem)
                 .toList();
+    }
+
+    @Override
+    public List<CompanyResumeListItem> findPublicResumes(String role, String keyword) {
+        if (!"COMPANY".equals(role)) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED, "기업 회원만 공개 이력서를 조회할 수 있습니다.");
+        }
+
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+        return resumeMapper.findPublicResumes(normalizedKeyword)
+                .stream()
+                .map(this::toCompanyListItem)
+                .toList();
+    }
+
+    @Override
+    public CompanyResumeDetail findPublicResume(String role, Long resumeId) {
+        if (!"COMPANY".equals(role)) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED, "기업 회원만 공개 이력서를 조회할 수 있습니다.");
+        }
+
+        CompanyResumeDetailRow row = resumeMapper.findPublicResumeDetail(resumeId);
+        if (row == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "공개 이력서를 찾을 수 없습니다.");
+        }
+
+        List<ResumeSkillItem> skills = resumeMapper.findResumeSkills(resumeId)
+                .stream()
+                .map(this::toSkillItem)
+                .toList();
+        List<ResumeExperienceItem> experiences = resumeMapper.findResumeExperiences(resumeId)
+                .stream()
+                .map(this::toExperienceItem)
+                .toList();
+
+        int score = toPercent(row.getAiScore());
+        int moduleScore = row.getModuleScore() == null ? score : toPercent(row.getModuleScore());
+        int integrationScore = row.getIntegrationScore() == null ? Math.max(0, score - 8) : toPercent(row.getIntegrationScore());
+
+        return new CompanyResumeDetail(
+                row.getId(),
+                row.getTitle(),
+                row.getSummary(),
+                row.getApplicantName(),
+                row.getApplicantUserId(),
+                row.getApplicantEmail(),
+                row.getApplicantPhone(),
+                row.getApplicantProfileImageUrl(),
+                row.getProfessionalTitle(),
+                row.getProfileSummary(),
+                row.getLocation(),
+                row.getCareerYears(),
+                row.getDesiredSalary(),
+                row.getWorkType(),
+                row.getCoreCompetencies(),
+                row.getVisibility(),
+                formatVisibility(row.getVisibility()),
+                row.getCreatedAt() == null ? null : row.getCreatedAt().format(DATE_FORMATTER),
+                row.getUpdatedAt() == null ? null : row.getUpdatedAt().format(DATE_FORMATTER),
+                score,
+                row.getResumeFileId(),
+                row.getOriginalFileName(),
+                row.getPortfolioUrl(),
+                skills.stream().map(ResumeSkillItem::name).distinct().toList(),
+                skills,
+                experiences,
+                new ResumeAnalysis(
+                        moduleScore,
+                        integrationScore,
+                        defaultText(row.getAiSummary(), "AI 진단 데이터가 아직 없습니다."),
+                        parseSuggestions(row.getSuggestionComments())
+                )
+        );
     }
 
     @Override
@@ -319,6 +396,23 @@ public class ResumeServiceImpl implements ResumeService {
                         defaultText(row.getAiSummary(), "AI 진단 데이터가 아직 없습니다."),
                         parseSuggestions(row.getSuggestionComments())
                 )
+        );
+    }
+
+    private CompanyResumeListItem toCompanyListItem(CompanyResumeListRow row) {
+        return new CompanyResumeListItem(
+                row.getId(),
+                row.getTitle(),
+                row.getSummary(),
+                row.getApplicantName(),
+                row.getApplicantProfileImageUrl(),
+                row.getLocation(),
+                row.getCareerYears(),
+                row.getVisibility(),
+                formatVisibility(row.getVisibility()),
+                row.getUpdatedAt() == null ? null : row.getUpdatedAt().format(DATE_FORMATTER),
+                toPercent(row.getAiScore()),
+                parseCsv(row.getTagsCsv())
         );
     }
 

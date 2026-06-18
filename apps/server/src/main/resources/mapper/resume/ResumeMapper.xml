@@ -178,6 +178,112 @@
         ORDER BY r.is_primary DESC, r.updated_at DESC, r.id DESC
     </select>
 
+    <select id="findPublicResumes" resultType="com.sapphire.domain.resume.dto.CompanyResumeListRow">
+        SELECT
+            r.id,
+            r.title,
+            r.summary,
+            u.name AS applicant_name,
+            u.profile_image_url AS applicant_profile_image_url,
+            pp.location,
+            pp.career_years,
+            r.visibility,
+            r.updated_at,
+            latest_ai.overall_score AS ai_score,
+            COALESCE(skills.tags_csv, '') AS tags_csv
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        JOIN users u ON u.id = pp.user_id
+        LEFT JOIN LATERAL (
+            SELECT
+                ae.overall_score
+            FROM ai_evaluations ae
+            WHERE ae.resume_id = r.id
+            ORDER BY ae.created_at DESC, ae.id DESC
+            LIMIT 1
+        ) latest_ai ON TRUE
+        LEFT JOIN (
+            SELECT
+                rss.resume_id,
+                STRING_AGG(ss.name, ',' ORDER BY rss.is_primary DESC, rss.id) AS tags_csv
+            FROM resume_sap_skills rss
+            JOIN sap_skills ss ON ss.id = rss.sap_skill_id
+            GROUP BY rss.resume_id
+        ) skills ON skills.resume_id = r.id
+        WHERE r.deleted_at IS NULL
+          AND pp.is_public = TRUE
+          AND r.visibility IN ('PUBLIC', 'COMPANY_ONLY')
+          <if test="keyword != null and keyword != ''">
+              AND (
+                LOWER(r.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+                OR LOWER(COALESCE(r.summary, '')) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+                OR LOWER(COALESCE(u.name, '')) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+                OR LOWER(COALESCE(skills.tags_csv, '')) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+              )
+          </if>
+        ORDER BY r.updated_at DESC, r.id DESC
+    </select>
+
+    <select id="findPublicResumeDetail" resultType="com.sapphire.domain.resume.dto.CompanyResumeDetailRow">
+        SELECT
+            r.id,
+            r.title,
+            r.summary,
+            u.name AS applicant_name,
+            u.id AS applicant_user_id,
+            u.email AS applicant_email,
+            u.phone AS applicant_phone,
+            u.profile_image_url AS applicant_profile_image_url,
+            pp.professional_title,
+            pp.summary AS profile_summary,
+            pp.location,
+            pp.career_years,
+            pp.desired_salary,
+            pp.work_type,
+            pp.core_competencies,
+            r.visibility,
+            r.created_at,
+            r.updated_at,
+            latest_ai.overall_score AS ai_score,
+            latest_ai.summary AS ai_summary,
+            items.module_score,
+            items.integration_score,
+            COALESCE(items.suggestion_comments, '') AS suggestion_comments,
+            r.resume_file_id,
+            r.portfolio_url,
+            f.original_name AS original_file_name
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        JOIN users u ON u.id = pp.user_id
+        LEFT JOIN files f ON f.id = r.resume_file_id
+        LEFT JOIN LATERAL (
+            SELECT
+                ae.id,
+                ae.overall_score,
+                ae.summary
+            FROM ai_evaluations ae
+            WHERE ae.resume_id = r.id
+            ORDER BY ae.created_at DESC, ae.id DESC
+            LIMIT 1
+        ) latest_ai ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%module%' OR LOWER(aei.category) LIKE '%tech%' THEN aei.score
+                END) AS module_score,
+                MAX(CASE
+                    WHEN LOWER(aei.category) LIKE '%integration%' OR LOWER(aei.category) LIKE '%fico%' THEN aei.score
+                END) AS integration_score,
+                STRING_AGG(aei.comment, '||' ORDER BY aei.id) FILTER (WHERE aei.comment IS NOT NULL AND aei.comment != '') AS suggestion_comments
+            FROM ai_evaluation_items aei
+            WHERE aei.ai_evaluation_id = latest_ai.id
+        ) items ON TRUE
+        WHERE r.id = #{resumeId}
+          AND r.deleted_at IS NULL
+          AND pp.is_public = TRUE
+          AND r.visibility IN ('PUBLIC', 'COMPANY_ONLY')
+    </select>
+
     <select id="findMyResumeDetail" resultType="com.sapphire.domain.resume.dto.ResumeDetailRow">
         SELECT
             r.id,

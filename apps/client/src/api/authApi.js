@@ -6,6 +6,11 @@ const AUTH_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   'http://localhost:8080';
 
+const ROLE_LOGIN_MESSAGES = {
+  PERSONAL: '개인회원 계정으로 로그인해 주세요.',
+  COMPANY: '기업회원 계정으로 로그인해 주세요.',
+};
+
 export const authApi = {
   signup: ({
     email,
@@ -33,11 +38,15 @@ export const authApi = {
       },
     }),
 
-  login: async ({ email, password }) => {
+  login: async ({ email, password, expectedRole }) => {
     const data = await apiClient(API_PATHS.auth.login, {
       method: 'POST',
       body: { email, password },
     });
+    const userRole = data.user?.role || data.role;
+    if (expectedRole && userRole !== expectedRole) {
+      throw new Error(ROLE_LOGIN_MESSAGES[expectedRole] || '선택한 회원 유형과 계정 유형이 일치하지 않습니다.');
+    }
     setTokens(data);
     return data;
   },

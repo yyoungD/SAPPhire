@@ -19,6 +19,14 @@ public interface JobPostService {
 
     List<JobListItem> findOpenJobs(Integer limit);
 
+    List<JobListItem> findBookmarkedJobs(Long userId);
+
+    boolean isBookmarked(Long userId, Long jobPostId);
+
+    void bookmarkJob(Long userId, Long jobPostId);
+
+    void removeBookmark(Long userId, Long jobPostId);
+
     List<CompanyJobListItem> findCompanyJobs(Long userId);
 
     JobDetail findCompanyJob(Long userId, Long id);

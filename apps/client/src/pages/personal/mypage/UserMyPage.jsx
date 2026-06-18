@@ -3,6 +3,7 @@ import { ROUTES } from '../../../constanjs/routes.js';
 import PersonalMemberHeader from '../../../componenjs/layout/PersonalMemberHeader.jsx';
 import { userApi } from '../../../api/userApi.js';
 import { authApi } from '../../../api/authApi.js';
+import { jobApi } from '../../../api/jobApi.js';
 import { personalProfileApi } from '../../../api/personalProfileApi.js';
 import { getAccessToken } from '../../../api/apiClient.js';
 import { useAuth } from '../../../hooks/useAuth.js';
@@ -29,6 +30,7 @@ function splitSkills(skills = '') {
 export default function UserMyPage() {
   const { user, clearSession } = useAuth();
   const [careerProfile, setCareerProfile] = useState(null);
+  const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
   const displayName = user?.name || emptyText;
   const displayEmail = user?.email || emptyText;
   const displayPhone = user?.phone || emptyText;
@@ -45,6 +47,21 @@ export default function UserMyPage() {
       })
       .catch(() => {
         if (!ignore) setCareerProfile(null);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+    jobApi
+      .bookmarks()
+      .then((items) => {
+        if (!ignore) setBookmarkedJobs(Array.isArray(items) ? items : []);
+      })
+      .catch(() => {
+        if (!ignore) setBookmarkedJobs([]);
       });
     return () => {
       ignore = true;
@@ -255,6 +272,33 @@ export default function UserMyPage() {
               <button type="button" onClick={() => navigate(ROUTES.RECEIVED_OFFERS)}>
                 포지션 제안
               </button>
+            </section>
+            <section className="profile-card compact-card mypage-bookmark-card">
+              <div className="section-heading">
+                <h2>Saved jobs</h2>
+                <button type="button" className="section-edit-button" onClick={() => navigate(ROUTES.JOB_BOOKMARKS)}>
+                  View
+                </button>
+              </div>
+              <strong className="mypage-bookmark-count">{bookmarkedJobs.length}</strong>
+              {bookmarkedJobs.length === 0 ? (
+                <p className="empty-copy">No saved jobs yet.</p>
+              ) : (
+                <div className="mypage-job-list">
+                  {bookmarkedJobs.slice(0, 3).map((job) => (
+                    <button
+                      type="button"
+                      className="mypage-job-item"
+                      key={job.id}
+                      onClick={() => navigate(`${ROUTES.JOB_DETAIL}?id=${job.id}`)}
+                    >
+                      <strong>{job.title}</strong>
+                      <span>{job.company}</span>
+                      <time>{job.badge || job.posted}</time>
+                    </button>
+                  ))}
+                </div>
+              )}
             </section>
             <section className="profile-card compact-card logout-card">
               <button type="button" className="logout-button" onClick={handleLogout}>

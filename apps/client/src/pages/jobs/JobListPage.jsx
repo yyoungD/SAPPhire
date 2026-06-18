@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getAccessToken } from '../../api/apiClient.js';
 import { jobApi } from '../../api/jobApi.js';
 import { ROUTES } from '../../constanjs/routes.js';
 import PersonalMemberHeader from '../../componenjs/layout/PersonalMemberHeader.jsx';
@@ -19,54 +20,34 @@ const MARKET = {
 const domesticLocationKeywords = [
   'KR',
   'KOREA',
-  '대한민국',
-  '한국',
-  '서울',
-  '경기',
-  '인천',
-  '부산',
-  '대구',
-  '광주',
-  '대전',
-  '울산',
-  '세종',
-  '강원',
-  '충북',
-  '충남',
-  '전북',
-  '전남',
-  '경북',
-  '경남',
-  '제주',
+  'SEOUL',
+  'BUSAN',
+  'DAEGU',
+  'INCHEON',
+  'GWANGJU',
+  'DAEJEON',
+  'ULSAN',
+  'SEJONG',
+  'GYEONGGI',
+  'KOREA',
 ];
 
 const ignoredRoleTags = ['AI Recommended', 'Verified Company', 'Urgent'];
 
 const companyLogoDomains = {
-  '삼정KPMG': 'kpmg.com',
   KPMG: 'kpmg.com',
-  '딜로이트 안진회계법인': 'deloitte.com',
   'Deloitte Korea': 'deloitte.com',
   'SAP Korea Partner': 'sap.com',
   'LG CNS': 'lgcns.com',
-  삼성SDS: 'samsungsds.com',
   'Samsung SDS': 'samsungsds.com',
-  현대오토에버: 'hyundai-autoever.com',
   'SK C&C': 'skcc.co.kr',
-  포스코DX: 'poscodx.com',
-  롯데이노베이트: 'lotteinnovate.com',
-  한화시스템: 'hanwhasystems.com',
-  메가존클라우드: 'megazone.com',
-  CJ올리브네트웍스: 'cjolivenetworks.co.kr',
   'KT DS': 'ktds.com',
-  신세계아이앤씨: 'shinsegae-inc.com',
   'GS ITM': 'gsitm.com',
-  효성ITX: 'hyosungitx.com',
 };
 
 function isDomesticJob(job) {
   const location = (job.location || '').toUpperCase();
-  return domesticLocationKeywords.some((keyword) => location.includes(keyword.toUpperCase()));
+  return domesticLocationKeywords.some((keyword) => location.includes(keyword));
 }
 
 function isUrgentJob(job) {
@@ -95,11 +76,11 @@ function getInitial(company) {
 function getBundledCompanyLogoUrl(company) {
   const normalizedCompany = String(company || '').toUpperCase();
   if (normalizedCompany.includes('LG CNS')) return lgCnsLogoUrl;
-  if (normalizedCompany.includes('POSCO') || normalizedCompany.includes('포스코')) return poscoDxLogoUrl;
-  if (normalizedCompany.includes('HANWHA') || normalizedCompany.includes('한화')) return hanwhaSystemsLogoUrl;
+  if (normalizedCompany.includes('POSCO')) return poscoDxLogoUrl;
+  if (normalizedCompany.includes('HANWHA')) return hanwhaSystemsLogoUrl;
   if (normalizedCompany.includes('GS ITM')) return gsItmLogoUrl;
   if (normalizedCompany.includes('KT DS')) return ktDsLogoUrl;
-  if (normalizedCompany.includes('신세계') || normalizedCompany.includes('SHINSEGAE')) return shinsegaeIncLogoUrl;
+  if (normalizedCompany.includes('SHINSEGAE')) return shinsegaeIncLogoUrl;
   return '';
 }
 
@@ -113,7 +94,10 @@ function getDomainFromUrl(value) {
   try {
     return new URL(value).hostname.replace(/^www\./, '');
   } catch {
-    return String(value).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    return String(value)
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0];
   }
 }
 
@@ -151,8 +135,20 @@ function CompanyLogo({ job }) {
   }
 
   return (
-    <div className={`job-logo ${logoUrl ? 'has-image' : ''} ${hasBundledLogo ? 'bundled-image' : ''} ${logoIndex >= 3 ? 'favicon-image' : ''}`} aria-hidden="true">
-      {logoUrl && <img src={logoUrl} alt="" referrerPolicy="no-referrer" onError={() => setLogoIndex((current) => current + 1)} />}
+    <div
+      className={`job-logo ${logoUrl ? 'has-image' : ''} ${hasBundledLogo ? 'bundled-image' : ''} ${
+        logoIndex >= 3 ? 'favicon-image' : ''
+      }`}
+      aria-hidden="true"
+    >
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setLogoIndex((current) => current + 1)}
+        />
+      )}
       <span>{getInitial(job.company)}</span>
     </div>
   );
@@ -169,6 +165,11 @@ export default function JobListPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [fixedSalaryOnly, setFixedSalaryOnly] = useState(false);
+  const [bookmarkIds, setBookmarkIds] = useState(() => new Set());
+  const [bookmarkedJobs, setBookmarkedJobs] = useState([]);
+  const [bookmarkingId, setBookmarkingId] = useState(null);
+
+  const isSignedIn = Boolean(getAccessToken());
 
   const loadJobs = async () => {
     setLoading(true);
@@ -187,20 +188,45 @@ export default function JobListPage() {
     loadJobs();
   }, []);
 
+  useEffect(() => {
+    if (!isSignedIn) return;
+
+    let ignore = false;
+    jobApi
+      .bookmarks()
+      .then((items) => {
+        if (!ignore) {
+          const nextJobs = Array.isArray(items) ? items : [];
+          setBookmarkedJobs(nextJobs);
+          setBookmarkIds(new Set(nextJobs.map((job) => job.id)));
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setBookmarkedJobs([]);
+          setBookmarkIds(new Set());
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [isSignedIn]);
+
   const marketJobs = useMemo(
     () => jobs.filter((job) => (market === MARKET.DOMESTIC ? isDomesticJob(job) : !isDomesticJob(job))),
-    [jobs, market],
+    [jobs, market]
   );
 
   const locations = useMemo(() => {
-    const values = marketJobs
-      .map((job) => formatLocationFilterLabel(job.location))
-      .filter(Boolean);
-    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, 'ko'));
+    const values = marketJobs.map((job) => formatLocationFilterLabel(job.location)).filter(Boolean);
+    return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
   }, [marketJobs]);
 
   const roles = useMemo(() => {
-    const values = marketJobs.flatMap((job) => job.tags || []).filter((tag) => !ignoredRoleTags.includes(tag));
+    const values = marketJobs
+      .flatMap((job) => job.tags || [])
+      .filter((tag) => !ignoredRoleTags.includes(tag));
     return Array.from(new Set(values)).sort();
   }, [marketJobs]);
 
@@ -210,7 +236,8 @@ export default function JobListPage() {
     return marketJobs.filter((job) => {
       const tagText = (job.tags || []).join(' ');
       const matchesLocation = !locationFilter || formatLocationFilterLabel(job.location) === locationFilter;
-      const matchesRole = !roleFilter || (job.tags || []).includes(roleFilter) || includesText(job.title, roleFilter.toLowerCase());
+      const matchesRole =
+        !roleFilter || (job.tags || []).includes(roleFilter) || includesText(job.title, roleFilter.toLowerCase());
       const matchesKeyword =
         !normalizedKeyword ||
         includesText(job.title, normalizedKeyword) ||
@@ -218,14 +245,18 @@ export default function JobListPage() {
         includesText(job.location, normalizedKeyword) ||
         includesText(tagText, normalizedKeyword);
       const matchesUrgent = !urgentOnly || isUrgentJob(job);
-      const matchesSalary = !fixedSalaryOnly || job.salary !== '협의 후 결정';
+      const matchesSalary = !fixedSalaryOnly || job.salary !== 'Negotiable';
 
       return matchesLocation && matchesRole && matchesKeyword && matchesUrgent && matchesSalary;
     });
   }, [marketJobs, locationFilter, roleFilter, keyword, urgentOnly, fixedSalaryOnly]);
 
   const urgentCount = useMemo(() => marketJobs.filter(isUrgentJob).length, [marketJobs]);
-  const fixedSalaryCount = useMemo(() => marketJobs.filter((job) => job.salary && job.salary !== '협의 후 결정').length, [marketJobs]);
+  const fixedSalaryCount = useMemo(
+    () => marketJobs.filter((job) => job.salary && job.salary !== 'Negotiable').length,
+    [marketJobs]
+  );
+  const recentBookmarkedJobs = useMemo(() => bookmarkedJobs.slice(0, 3), [bookmarkedJobs]);
 
   const resetFilters = () => {
     setLocationFilter('');
@@ -252,6 +283,47 @@ export default function JobListPage() {
     }
   };
 
+  const toggleBookmark = async (event, job) => {
+    event.stopPropagation();
+    if (!isSignedIn) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
+    const jobId = job.id;
+    const wasBookmarked = bookmarkIds.has(jobId);
+    setBookmarkingId(jobId);
+    setBookmarkIds((current) => {
+      const next = new Set(current);
+      if (wasBookmarked) next.delete(jobId);
+      else next.add(jobId);
+      return next;
+    });
+    setBookmarkedJobs((current) => {
+      if (wasBookmarked) return current.filter((item) => item.id !== jobId);
+      return [job, ...current.filter((item) => item.id !== jobId)];
+    });
+
+    try {
+      if (wasBookmarked) await jobApi.removeBookmark(jobId);
+      else await jobApi.addBookmark(jobId);
+    } catch (err) {
+      setBookmarkIds((current) => {
+        const next = new Set(current);
+        if (wasBookmarked) next.add(jobId);
+        else next.delete(jobId);
+        return next;
+      });
+      setBookmarkedJobs((current) => {
+        if (wasBookmarked) return [job, ...current.filter((item) => item.id !== jobId)];
+        return current.filter((item) => item.id !== jobId);
+      });
+      window.alert(err.message || '북마크를 변경하지 못했습니다.');
+    } finally {
+      setBookmarkingId(null);
+    }
+  };
+
   return (
     <main className="member-page jobs-page">
       <PersonalMemberHeader active="jobs" />
@@ -263,9 +335,6 @@ export default function JobListPage() {
             <h1>채용 공고</h1>
             <p>SAP 전문가를 위한 최신 프로젝트와 채용 기회를 한눈에 탐색하세요. 지역, 직무, 급여 조건까지 빠르게 좁혀볼 수 있습니다.</p>
           </div>
-          <button type="button" className="primary-action jobs-hero-action" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
-            공고 등록하기
-          </button>
         </header>
 
         <section className="jobs-summary" aria-label="채용 공고 요약">
@@ -320,7 +389,12 @@ export default function JobListPage() {
               ))}
             </select>
 
-            <input aria-label="검색어" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="회사, 직무, SAP 모듈 검색" />
+            <input
+              aria-label="검색어"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="회사, 직무, SAP 모듈 검색"
+            />
 
             <button type="button" className="filter-submit" onClick={() => setShowAdvanced((current) => !current)}>
               상세조건
@@ -334,7 +408,11 @@ export default function JobListPage() {
                 <span>마감 임박만 보기</span>
               </label>
               <label>
-                <input type="checkbox" checked={fixedSalaryOnly} onChange={(event) => setFixedSalaryOnly(event.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={fixedSalaryOnly}
+                  onChange={(event) => setFixedSalaryOnly(event.target.checked)}
+                />
                 <span>급여 공개 공고</span>
               </label>
               <button type="button" onClick={resetFilters}>
@@ -344,23 +422,24 @@ export default function JobListPage() {
           )}
         </section>
 
-        <section className="job-list" aria-label="채용 공고 목록">
-          {loading && <p className="career-copy">채용 공고를 불러오는 중입니다.</p>}
+        <div className="jobs-content-layout">
+          <section className="job-list" aria-label="채용 공고 목록">
+            {loading && <p className="career-copy">채용 공고를 불러오는 중입니다.</p>}
 
-          {!loading && error && (
-            <article className="detail-section">
-              <p>{error}</p>
-              <button type="button" className="secondary" onClick={loadJobs}>
-                다시 불러오기
-              </button>
-            </article>
-          )}
+            {!loading && error && (
+              <article className="detail-section">
+                <p>{error}</p>
+                <button type="button" className="secondary" onClick={loadJobs}>
+                  다시 불러오기
+                </button>
+              </article>
+            )}
 
-          {!loading && !error && filteredJobs.length === 0 && <p className="career-copy">조건에 맞는 채용 공고가 없습니다.</p>}
+            {!loading && !error && filteredJobs.length === 0 && <p className="career-copy">조건에 맞는 채용 공고가 없습니다.</p>}
 
-          {!loading &&
-            !error &&
-            filteredJobs.map((job, index) => (
+            {!loading &&
+              !error &&
+              filteredJobs.map((job, index) => (
                 <article
                   className="job-card"
                   key={job.id}
@@ -398,10 +477,54 @@ export default function JobListPage() {
                   <div className="job-card-side">
                     <strong>{isUrgentJob(job) ? '마감 임박' : '채용중'}</strong>
                     <span>{job.employmentType || job.workType || '상세 보기'}</span>
+                    <button
+                      type="button"
+                      className={`job-bookmark-button ${bookmarkIds.has(job.id) ? 'active' : ''}`}
+                      aria-label={bookmarkIds.has(job.id) ? 'Remove bookmark' : 'Add bookmark'}
+                      aria-pressed={bookmarkIds.has(job.id)}
+                      disabled={bookmarkingId === job.id}
+                      onClick={(event) => toggleBookmark(event, job)}
+                    >
+                      {bookmarkIds.has(job.id) ? '저장됨' : '저장'}
+                    </button>
                   </div>
                 </article>
               ))}
-        </section>
+          </section>
+
+          <aside className="jobs-bookmark-sidebar" aria-label="관심 공고">
+            <header>
+              <div>
+                <span>SAVED JOBS</span>
+                <strong>관심공고</strong>
+              </div>
+              <button type="button" onClick={() => navigate(ROUTES.JOB_BOOKMARKS)}>
+                더보기
+              </button>
+            </header>
+
+            {!isSignedIn && <p className="jobs-bookmark-empty">로그인하면 관심공고를 저장하고 여기에서 바로 확인할 수 있습니다.</p>}
+
+            {isSignedIn && recentBookmarkedJobs.length === 0 && <p className="jobs-bookmark-empty">아직 저장한 공고가 없습니다.</p>}
+
+            {isSignedIn && recentBookmarkedJobs.length > 0 && (
+              <div className="jobs-bookmark-list">
+                {recentBookmarkedJobs.map((job) => (
+                  <button
+                    type="button"
+                    className="jobs-bookmark-item"
+                    key={job.id}
+                    onClick={() => navigate(`${ROUTES.JOB_DETAIL}?id=${job.id}`)}
+                  >
+                    <span>{job.company}</span>
+                    <strong>{job.title}</strong>
+                    <small>{job.badge || job.posted || 'Open'}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+          </aside>
+        </div>
       </section>
     </main>
   );

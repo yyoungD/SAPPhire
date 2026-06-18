@@ -110,8 +110,38 @@ public class JobPostServiceImpl implements JobPostService {
         int size = limit == null ? DEFAULT_LIMIT : Math.max(1, Math.min(limit, MAX_LIMIT));
         return jobPostMapper.findOpenJobs(size)
                 .stream()
-                .map(this::toListItem)
+                .map(row -> toListItem(row, false))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<JobListItem> findBookmarkedJobs(Long userId) {
+        return jobPostMapper.findBookmarkedJobs(userId)
+                .stream()
+                .map(row -> toListItem(row, true))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isBookmarked(Long userId, Long jobPostId) {
+        return jobPostMapper.existsJobBookmark(userId, jobPostId);
+    }
+
+    @Override
+    @Transactional
+    public void bookmarkJob(Long userId, Long jobPostId) {
+        if (!jobPostMapper.existsOpenJob(jobPostId)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Job post not found.");
+        }
+        jobPostMapper.insertJobBookmark(userId, jobPostId);
+    }
+
+    @Override
+    @Transactional
+    public void removeBookmark(Long userId, Long jobPostId) {
+        jobPostMapper.deleteJobBookmark(userId, jobPostId);
     }
 
     @Override
@@ -185,7 +215,7 @@ public class JobPostServiceImpl implements JobPostService {
         );
     }
 
-    private JobListItem toListItem(JobPostRow row) {
+    private JobListItem toListItem(JobPostRow row, boolean bookmarked) {
         return new JobListItem(
                 row.getId(),
                 row.getCompany(),
@@ -196,7 +226,8 @@ public class JobPostServiceImpl implements JobPostService {
                 parseCsv(row.getTagsCsv()),
                 formatPosted(row.getCreatedAt()),
                 formatSalary(row.getSalaryMin(), row.getSalaryMax(), row.getSalaryNegotiable()),
-                formatBadge(row.getDeadline())
+                formatBadge(row.getDeadline()),
+                bookmarked
         );
     }
 

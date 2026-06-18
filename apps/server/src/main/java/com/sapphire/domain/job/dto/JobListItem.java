@@ -12,6 +12,7 @@ public record JobListItem(
         List<String> tags,
         String posted,
         String salary,
-        String badge
+        String badge,
+        Boolean bookmarked
 ) {
 }

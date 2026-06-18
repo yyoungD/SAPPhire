@@ -31,6 +31,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [businessNumberVerified, setBusinessNumberVerified] = useState(false);
   const [businessVerifying, setBusinessVerifying] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState({
     password: false,
     passwordConfirm: false,
@@ -65,6 +66,8 @@ export default function SignupPage() {
   };
 
   const changeRole = (nextRole) => {
+    if (isSubmitting) return;
+
     setRole(nextRole);
     setError('');
     setBusinessNumberVerified(false);
@@ -76,6 +79,8 @@ export default function SignupPage() {
   };
 
   const verifyBusinessNumber = async () => {
+    if (isSubmitting) return;
+
     const normalizedBusinessNumber = form.businessNumber.replace(/\D/g, '');
     if (normalizedBusinessNumber.length !== 10) {
       setBusinessNumberVerified(false);
@@ -106,6 +111,8 @@ export default function SignupPage() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     setError('');
 
     if (form.password !== form.passwordConfirm) {
@@ -123,6 +130,7 @@ export default function SignupPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await signup({
         email: form.email,
@@ -138,6 +146,7 @@ export default function SignupPage() {
       navigate(`${ROUTES.LOGIN}?role=${role}`);
     } catch (err) {
       setError(err.message);
+      setIsSubmitting(false);
     }
   };
 
@@ -164,25 +173,33 @@ export default function SignupPage() {
           <h2>{pageCopy.title}</h2>
           <p>{pageCopy.description}</p>
           <div className="role-tabs" role="tablist" aria-label="회원 유형">
-            <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => changeRole('PERSONAL')}>
+            <button type="button" className={role === 'PERSONAL' ? 'active' : ''} onClick={() => changeRole('PERSONAL')} disabled={isSubmitting}>
               개인회원
             </button>
-            <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => changeRole('COMPANY')}>
+            <button type="button" className={role === 'COMPANY' ? 'active' : ''} onClick={() => changeRole('COMPANY')} disabled={isSubmitting}>
               기업회원
             </button>
           </div>
-          <form className="form-stack" onSubmit={onSubmit}>
+          <form className="form-stack" onSubmit={onSubmit} aria-busy={isSubmitting}>
             {isCompany && (
               <>
                 <label>
                   회사명
-                  <input name="companyName" value={form.companyName} onChange={update} placeholder="SAP Korea" required />
+                  <input name="companyName" value={form.companyName} onChange={update} placeholder="SAP Korea" required disabled={isSubmitting} />
                 </label>
                 <label>
                   사업자등록번호
                   <div className="inline-input">
-                    <input name="businessNumber" value={form.businessNumber} onChange={update} placeholder="1234567890" inputMode="numeric" required />
-                    <button type="button" onClick={verifyBusinessNumber} disabled={businessVerifying}>
+                    <input
+                      name="businessNumber"
+                      value={form.businessNumber}
+                      onChange={update}
+                      placeholder="1234567890"
+                      inputMode="numeric"
+                      required
+                      disabled={isSubmitting}
+                    />
+                    <button type="button" onClick={verifyBusinessNumber} disabled={businessVerifying || isSubmitting}>
                       {businessVerifying ? '인증중' : businessNumberVerified ? '인증완료' : '인증하기'}
                     </button>
                   </div>
@@ -191,16 +208,16 @@ export default function SignupPage() {
             )}
             <label>
               {pageCopy.nameLabel}
-              <input name="name" value={form.name} onChange={update} placeholder={pageCopy.namePlaceholder} required />
+              <input name="name" value={form.name} onChange={update} placeholder={pageCopy.namePlaceholder} required disabled={isSubmitting} />
             </label>
             <label>
               {pageCopy.emailLabel}
-              <input name="email" type="email" value={form.email} onChange={update} placeholder="name@company.com" required />
+              <input name="email" type="email" value={form.email} onChange={update} placeholder="name@company.com" required disabled={isSubmitting} />
             </label>
             {!isCompany && (
               <label>
                 전화번호
-                <input name="phone" value={form.phone} onChange={update} placeholder="010-0000-0000" />
+                <input name="phone" value={form.phone} onChange={update} placeholder="010-0000-0000" disabled={isSubmitting} />
               </label>
             )}
             <label>
@@ -214,8 +231,9 @@ export default function SignupPage() {
                   placeholder="8자 이상"
                   minLength="8"
                   required
+                  disabled={isSubmitting}
                 />
-                <button type="button" onClick={() => togglePassword('password')} aria-label={visiblePasswords.password ? '비밀번호 숨기기' : '비밀번호 보기'}>
+                <button type="button" onClick={() => togglePassword('password')} aria-label={visiblePasswords.password ? '비밀번호 숨기기' : '비밀번호 보기'} disabled={isSubmitting}>
                   <img src={visiblePasswords.password ? visibilityUrl : visibilityOffUrl} alt="" />
                 </button>
               </div>
@@ -230,30 +248,37 @@ export default function SignupPage() {
                   onChange={update}
                   placeholder="비밀번호 재입력"
                   required
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => togglePassword('passwordConfirm')}
                   aria-label={visiblePasswords.passwordConfirm ? '비밀번호 확인 숨기기' : '비밀번호 확인 보기'}
+                  disabled={isSubmitting}
                 >
                   <img src={visiblePasswords.passwordConfirm ? visibilityUrl : visibilityOffUrl} alt="" />
                 </button>
               </div>
             </label>
             {error && <p className="form-error">{error}</p>}
-            <button type="submit" className="primary-action">
-              시작하기
+            {isSubmitting && (
+              <p className="form-loading" role="status" aria-live="polite">
+                서버에서 회원가입을 처리 중입니다. 잠시만 기다려 주세요.
+              </p>
+            )}
+            <button type="submit" className="primary-action" disabled={isSubmitting}>
+              {isSubmitting ? '가입 처리 중...' : '시작하기'}
             </button>
           </form>
           <div className={`signup-social-area ${isCompany ? 'is-hidden' : ''}`} aria-hidden={isCompany}>
             <div className="divider">
               <span />또는<span />
             </div>
-            <button type="button" className="social-button" onClick={authApi.startGoogleLogin} disabled={isCompany}>
+            <button type="button" className="social-button" onClick={authApi.startGoogleLogin} disabled={isCompany || isSubmitting}>
               Google 계정으로 회원가입
             </button>
           </div>
-          <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.LOGIN}?role=${role}`)}>
+          <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.LOGIN}?role=${role}`)} disabled={isSubmitting}>
             이미 계정이 있으신가요? 로그인
           </button>
         </section>

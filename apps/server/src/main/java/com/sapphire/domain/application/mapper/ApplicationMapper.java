@@ -1,6 +1,7 @@
 package com.sapphire.domain.application.mapper;
 
 import com.sapphire.domain.application.dto.ApplicationCreateParam;
+import com.sapphire.domain.application.dto.ApplicationAttachment;
 import com.sapphire.domain.application.dto.ApplicationDetailRow;
 import com.sapphire.domain.application.dto.ApplicationListRow;
 import org.apache.ibatis.annotations.Mapper;
@@ -35,6 +36,8 @@ public interface ApplicationMapper {
     ApplicationDetailRow findMyApplicationDetail(@Param("userId") Long userId, @Param("id") Long id);
 
     ApplicationDetailRow findCompanyApplicationDetail(@Param("userId") Long userId, @Param("id") Long id);
+
+    List<ApplicationAttachment> findAttachments(@Param("applicationId") Long applicationId);
 
     int updateCompanyApplicationStatus(@Param("userId") Long userId, @Param("id") Long id, @Param("status") String status);
 }

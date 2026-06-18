@@ -125,6 +125,7 @@
         jp.experience_level AS job_position,
         cp.company_name,
         u.name AS applicant_name,
+        u.profile_image_url AS applicant_profile_image_url,
         r.title AS resume_title,
         pp.career_years,
         ja.status,
@@ -165,6 +166,7 @@
         <include refid="applicationListColumns" />,
         r.resume_file_id,
         f.original_name AS resume_original_file_name,
+        r.portfolio_url,
         ja.cover_letter,
         jp.location AS job_location,
         jp.employment_type,
@@ -197,5 +199,19 @@
         LEFT JOIN files f ON f.id = r.resume_file_id
         WHERE cp.user_id = #{userId}
           AND ja.id = #{id}
+    </select>
+
+    <select id="findAttachments" resultType="com.sapphire.domain.application.dto.ApplicationAttachment">
+        SELECT
+            f.id,
+            f.original_name,
+            f.content_type,
+            f.file_size,
+            f.file_category,
+            TO_CHAR(f.created_at, 'YYYY. MM. DD HH24:MI') AS created_at
+        FROM job_application_attachments jaa
+        JOIN files f ON f.id = jaa.file_id
+        WHERE jaa.application_id = #{applicationId}
+        ORDER BY f.created_at DESC, f.id DESC
     </select>
 </mapper>
