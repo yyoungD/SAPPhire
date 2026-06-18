@@ -9,6 +9,15 @@ import { navigate } from '../../../utils/authUtils.js';
 
 const emptyText = '-';
 
+const offerStatusClassNames = {
+  ACCEPTED: 'open',
+  CANCELED: 'hidden',
+  DECLINED: 'hidden',
+  REJECTED: 'hidden',
+  SENT: 'closed',
+  EXPIRED: 'closed',
+};
+
 function websiteHref(url) {
   if (!url) return '';
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -24,7 +33,7 @@ export default function CompanyMyPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(true);
-  const [offersSummary, setOffersSummary] = useState({ totalOffers: 0 });
+  const [offersSummary, setOffersSummary] = useState({ totalOffers: 0, offers: [] });
   const [offersLoading, setOffersLoading] = useState(true);
   const [error, setError] = useState('');
   const [jobsError, setJobsError] = useState('');
@@ -87,7 +96,7 @@ export default function CompanyMyPage() {
 
       try {
         const data = await positionOfferApi.list();
-        if (!ignore) setOffersSummary(data || { totalOffers: 0 });
+        if (!ignore) setOffersSummary(data || { totalOffers: 0, offers: [] });
       } catch (err) {
         if (!ignore) setOffersError(err.message || '보낸 제안 정보를 불러오지 못했습니다.');
       } finally {
@@ -103,9 +112,10 @@ export default function CompanyMyPage() {
   }, []);
 
   const websiteUrl = profile?.websiteUrl;
+  const offers = offersSummary?.offers || [];
   const openJobCount = countJobsByStatus(jobs, 'OPEN');
   const closedJobCount = countJobsByStatus(jobs, 'CLOSED');
-  const sentOfferCount = offersSummary?.totalOffers ?? offersSummary?.offers?.length ?? 0;
+  const sentOfferCount = offersSummary?.totalOffers ?? offers.length;
 
   const handleLogout = () => {
     clearSession();
@@ -225,7 +235,35 @@ export default function CompanyMyPage() {
                   더보기
                 </button>
               </div>
-              <div className="skill-cloud" />
+              <div className="mypage-job-list" aria-label="보낸 포지션 제안 목록">
+                {offersLoading && (
+                  <p className="career-copy">포지션 제안 목록을 불러오는 중입니다.</p>
+                )}
+                {!offersLoading && offersError && <p className="form-error">{offersError}</p>}
+                {!offersLoading && !offersError && offers.length === 0 && (
+                  <p className="career-copy">보낸 포지션 제안이 없습니다.</p>
+                )}
+                {!offersLoading &&
+                  !offersError &&
+                  offers.map((offer) => (
+                    <button
+                      type="button"
+                      className="mypage-job-item mypage-offer-item"
+                      key={offer.id}
+                      onClick={() => navigate(`${ROUTES.POSITION_OFFER_DETAIL}?id=${offer.id}`)}
+                    >
+                      <strong>{offer.title || '-'}</strong>
+                      <span>{offer.receiverName || offer.resumeTitle || '-'}</span>
+                      <time>
+                        <span
+                          className={`company-job-status ${offerStatusClassNames[offer.status] || 'closed'}`}
+                        >
+                          {offer.statusLabel || offer.status || '-'}
+                        </span>
+                      </time>
+                    </button>
+                  ))}
+              </div>
             </article>
           </section>
 
@@ -271,7 +309,7 @@ export default function CompanyMyPage() {
                 지원자 현황
               </button>
               <button type="button" onClick={() => navigate(ROUTES.POSITION_OFFERS)}>
-                포지션 제안
+                인재 제안
               </button>
             </section>
             <section className="profile-card compact-card logout-card">

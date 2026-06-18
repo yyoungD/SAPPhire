@@ -4,11 +4,14 @@ import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
-function statusClassName(status) {
-  if (status === 'ACCEPTED') return 'accepted';
-  if (status === 'CANCELED' || status === 'EXPIRED' || status === 'REJECTED') return 'ended';
-  return 'waiting';
-}
+const offerStatusClassNames = {
+  ACCEPTED: 'open',
+  CANCELED: 'hidden',
+  DECLINED: 'hidden',
+  REJECTED: 'hidden',
+  SENT: 'closed',
+  EXPIRED: 'closed',
+};
 
 function DocumentIcon() {
   return (
@@ -124,9 +127,9 @@ export default function PositionOfferListPage() {
                 <div className="offer-card-side">
                   <span>MATCH SCORE</span>
                   <strong>{offer.matchScore || 0}%</strong>
-                  <em className={statusClassName(offer.status)}>
+                  <span className={`company-job-status ${offerStatusClassNames[offer.status] || 'closed'}`}>
                     {offer.statusLabel || offer.status}
-                  </em>
+                  </span>
                 </div>
               </article>
             ))}
