@@ -50,7 +50,10 @@ function BriefcaseIcon() {
 }
 
 function normalizeSkillName(value = '') {
-  return value.replace(/^SAP\s+/i, '').replace(/\s+/g, '').toUpperCase();
+  return value
+    .replace(/^SAP\s+/i, '')
+    .replace(/\s+/g, '')
+    .toUpperCase();
 }
 
 function getInitialStatus() {
@@ -89,24 +92,38 @@ export default function CompanyJobListPage() {
     loadJobs();
   }, []);
 
-  const selectedSkills = useMemo(() => skills.filter((skill) => selectedSkillIds.includes(skill.id)), [selectedSkillIds, skills]);
+  const selectedSkills = useMemo(
+    () => skills.filter((skill) => selectedSkillIds.includes(skill.id)),
+    [selectedSkillIds, skills]
+  );
 
   const filteredJobs = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
     const selectedNames = selectedSkills.map((skill) => normalizeSkillName(skill.name));
     return jobs.filter((job) => {
       const jobSkillNames = (job.tags || []).map((tag) => normalizeSkillName(tag));
-      const matchesSkills = selectedNames.length === 0 || selectedNames.every((skillName) => jobSkillNames.includes(skillName));
+      const matchesSkills =
+        selectedNames.length === 0 ||
+        selectedNames.every((skillName) => jobSkillNames.includes(skillName));
       const matchesStatus = !status || job.status === status;
-      const matchesKeyword = !normalizedKeyword || String(job.title || '').toLowerCase().includes(normalizedKeyword);
+      const matchesKeyword =
+        !normalizedKeyword ||
+        String(job.title || '')
+          .toLowerCase()
+          .includes(normalizedKeyword);
       return matchesSkills && matchesStatus && matchesKeyword;
     });
   }, [jobs, keyword, selectedSkills, status]);
 
-  const totalViews = useMemo(() => jobs.reduce((sum, job) => sum + (job.viewCount || 0), 0), [jobs]);
+  const totalViews = useMemo(
+    () => jobs.reduce((sum, job) => sum + (job.viewCount || 0), 0),
+    [jobs]
+  );
 
   const toggleSkill = (skillId) => {
-    setSelectedSkillIds((current) => (current.includes(skillId) ? current.filter((id) => id !== skillId) : [...current, skillId]));
+    setSelectedSkillIds((current) =>
+      current.includes(skillId) ? current.filter((id) => id !== skillId) : [...current, skillId]
+    );
   };
 
   const clearSkills = () => {
@@ -139,10 +156,11 @@ export default function CompanyJobListPage() {
             ? {
                 ...job,
                 status: nextStatus,
-                statusLabel: statusMenuOptions.find((item) => item.value === nextStatus)?.label || nextStatus,
+                statusLabel:
+                  statusMenuOptions.find((item) => item.value === nextStatus)?.label || nextStatus,
               }
-            : job,
-        ),
+            : job
+        )
       );
     } catch (err) {
       alert(err.message || '공고 상태 변경에 실패했습니다.');
@@ -158,26 +176,46 @@ export default function CompanyJobListPage() {
             <p className="eyebrow">JOB POSTING MANAGEMENT</p>
             <h1 className="company-page-title">채용 공고 목록</h1>
           </div>
-          <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
+          <button
+            type="button"
+            className="primary-action company-job-create-button"
+            onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}
+          >
             공고 등록하기
           </button>
         </div>
 
         <div className="company-job-list-layout">
           <section className="company-job-main-column">
-            <section className={`company-job-filter-panel ${filterOpen ? 'expanded' : ''}`} aria-label="공고 필터">
-              <button type="button" className="company-job-filter-trigger" onClick={() => setFilterOpen((current) => !current)}>
+            <section
+              className={`company-job-filter-panel ${filterOpen ? 'expanded' : ''}`}
+              aria-label="공고 필터"
+            >
+              <button
+                type="button"
+                className="company-job-filter-trigger"
+                onClick={() => setFilterOpen((current) => !current)}
+              >
                 직군
                 {selectedSkills.length > 0 && <strong>{selectedSkills.length}</strong>}
               </button>
-              <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="공고 상태">
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+                aria-label="공고 상태"
+              >
                 {statusOptions.map((item) => (
                   <option value={item.value} key={item.label}>
                     {item.label}
                   </option>
                 ))}
               </select>
-              <SearchBar value={keyword} onChange={setKeyword} placeholder="제목으로 검색" label="공고 제목 검색" />
+              <SearchBar
+                value={keyword}
+                onChange={setKeyword}
+                placeholder="제목으로 검색"
+                label="공고 제목 검색"
+              />
 
               {filterOpen && (
                 <SapSkillFilter
@@ -203,7 +241,9 @@ export default function CompanyJobListPage() {
                 </button>
               </article>
             )}
-            {!loading && !error && filteredJobs.length === 0 && <p className="career-copy">조건에 맞는 공고가 없습니다.</p>}
+            {!loading && !error && filteredJobs.length === 0 && (
+              <p className="career-copy">조건에 맞는 공고가 없습니다.</p>
+            )}
 
             {!loading &&
               !error &&
@@ -247,7 +287,13 @@ export default function CompanyJobListPage() {
                     <h2>{job.title}</h2>
                     <div className="company-job-tags">
                       {(job.tags || []).slice(0, 4).map((tag) => (
-                        <span key={tag}>#{tag.replace(/^SAP\s+/i, 'SAP_').replace(/\s+/g, '_').toUpperCase()}</span>
+                        <span key={tag}>
+                          #
+                          {tag
+                            .replace(/^SAP\s+/i, 'SAP_')
+                            .replace(/\s+/g, '_')
+                            .toUpperCase()}
+                        </span>
                       ))}
                     </div>
                     <div className="company-job-meta">
@@ -256,7 +302,9 @@ export default function CompanyJobListPage() {
                     </div>
                   </div>
                   <div className="company-job-card-side">
-                    <span className={`company-job-status ${statusClassNames[job.status] || ''}`}>{job.statusLabel || job.status}</span>
+                    <span className={`company-job-status ${statusClassNames[job.status] || ''}`}>
+                      {job.statusLabel || job.status}
+                    </span>
                     <button
                       type="button"
                       onClick={(event) => {
@@ -274,6 +322,9 @@ export default function CompanyJobListPage() {
           <aside className="company-job-side-column">
             <section className="company-job-todo-card">
               <h2>To-Do / 알림</h2>
+              <p>
+                오늘 신규 지원자가 <strong>1명</strong> 있습니다.
+              </p>
               <p>
                 현재 미열람 지원자가 <strong>12명</strong> 있습니다.
               </p>

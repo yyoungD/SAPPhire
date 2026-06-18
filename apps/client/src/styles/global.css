@@ -99,6 +99,64 @@ button {
   background: #003c90;
 }
 
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 28, 48, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-modal {
+  width: min(420px, 100%);
+  padding: 28px;
+  border: 1px solid #d6e0ee;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.confirm-modal h2 {
+  margin: 0;
+  color: #0b1c30;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.confirm-modal p {
+  margin: 12px 0 0;
+  color: #52637a;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.confirm-modal-actions {
+  margin-top: 26px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-modal-actions button {
+  min-width: 96px;
+  min-height: 42px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.confirm-modal-danger {
+  background: #b91c1c;
+}
+
+.confirm-modal-danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
 .landing-page {
   min-height: 100vh;
   background: #eef3fb;
@@ -3356,7 +3414,7 @@ dd {
 .detail-section h2,
 .profile-card h2,
 .apply-panel strong {
-  margin: 0;
+  margin-bottom: 10px;
   color: #0b1c30;
   font-size: 20px;
 }
@@ -4043,15 +4101,16 @@ dd {
 
 .application-status-summary {
   display: grid;
-  align-items: start;
+  align-content: center;
+  align-items: center;
   color: #0b1c30;
+  gap: 10px;
 }
 
 .application-status-summary strong {
   color: #0b1c30;
   font-size: 16px;
   font-weight: 600;
-  padding-top: 8px;
 }
 
 .application-status-summary.new strong {
@@ -4316,6 +4375,16 @@ dd {
   color: #64748b;
   font-size: 13px;
   font-weight: 700;
+}
+
+.mypage-offer-item time {
+  justify-self: end;
+}
+
+.mypage-offer-item .company-job-status {
+  min-width: 68px;
+  min-height: 30px;
+  font-size: 12px;
 }
 
 .resume-print-sheet {
@@ -5245,6 +5314,12 @@ dd {
   min-height: 46px;
 }
 
+.offer-detail-action-card button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .offer-resume-link-button {
   width: 100%;
   min-height: 46px;
@@ -5255,6 +5330,14 @@ dd {
   border-color: #fecaca;
   color: #b91c1c;
   background: #fef2f2;
+}
+
+.offer-cancel-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: #94a3b8;
+  background: #f8fafc;
+  box-shadow: none;
 }
 
 .offer-list-button {
@@ -5374,6 +5457,10 @@ dd {
 
 .company-position-page .offer-card-side strong {
   color: #003c90;
+}
+
+.company-position-page .offer-card-side .company-job-status {
+  font-style: normal;
 }
 
 .company-position-page .offer-create-form {
@@ -5931,6 +6018,7 @@ dd {
   color: #1f3248;
   background: #dfe3eb;
   font-size: 13px;
+  font-style: normal;
   font-weight: 900;
 }
 
@@ -5948,6 +6036,14 @@ dd {
 
 .company-job-status.hidden {
   background: #ffb0ad;
+}
+
+.company-job-status.review {
+  background: #ffd8a8;
+}
+
+.company-job-status.interview {
+  background: #b7ead4;
 }
 
 .company-job-card-side button {

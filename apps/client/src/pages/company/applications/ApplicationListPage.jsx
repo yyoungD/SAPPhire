@@ -6,13 +6,13 @@ import SiteFooter from '../../../componenjs/layout/SiteFooter.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
-const statusClassNames = {
-  APPLIED: 'new',
+const applicationStatusClassNames = {
+  APPLIED: 'open',
   REVIEWING: 'review',
   INTERVIEW: 'interview',
-  ACCEPTED: 'offer',
-  REJECTED: 'rejected',
-  CANCELED: 'withdrawn',
+  ACCEPTED: 'draft',
+  REJECTED: 'hidden',
+  CANCELED: 'closed',
 };
 
 function UserIcon() {
@@ -192,7 +192,9 @@ export default function ApplicationListPage() {
                       : `경력 ${application.careerYears}년`}
                   </span>
                   <span>
-                    <em className={`candidate-status ${statusClassNames[application.status] || ''}`}>{application.statusLabel || application.status || '-'}</em>
+                    <span className={`company-job-status ${applicationStatusClassNames[application.status] || 'closed'}`}>
+                      {application.statusLabel || application.status || '-'}
+                    </span>
                   </span>
                   <span className="candidate-row-arrow">›</span>
                 </button>

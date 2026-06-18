@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { positionOfferApi } from '../../../api/positionOfferApi.js';
+import ConfirmModal from '../../../componenjs/common/ConfirmModal.jsx';
 import CompanyMemberHeader from '../../../componenjs/layout/CompanyMemberHeader.jsx';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
@@ -8,11 +9,21 @@ function canCancelOffer(status) {
   return status === 'SENT' || status === 'EXPIRED';
 }
 
+const offerStatusClassNames = {
+  ACCEPTED: 'open',
+  CANCELED: 'hidden',
+  DECLINED: 'hidden',
+  REJECTED: 'hidden',
+  SENT: 'closed',
+  EXPIRED: 'closed',
+};
+
 export default function PositionOfferDetailPage() {
   const [offer, setOffer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const id = new URLSearchParams(window.location.search).get('id');
 
   const loadOffer = async () => {
@@ -35,6 +46,15 @@ export default function PositionOfferDetailPage() {
     }
   }, [id]);
 
+  const openCancelModal = () => {
+    if (!canCancelOffer(offer?.status) || saving) return;
+    setCancelModalOpen(true);
+  };
+
+  const closeCancelModal = () => {
+    if (!saving) setCancelModalOpen(false);
+  };
+
   const cancelOffer = async () => {
     if (!canCancelOffer(offer?.status)) return;
 
@@ -42,6 +62,7 @@ export default function PositionOfferDetailPage() {
     setError('');
     try {
       setOffer(await positionOfferApi.updateStatus(id, 'CANCELED'));
+      setCancelModalOpen(false);
     } catch (err) {
       setError(err.message || '제안을 취소하지 못했습니다.');
     } finally {
@@ -102,7 +123,11 @@ export default function PositionOfferDetailPage() {
                   </div>
                   <div>
                     <dt>상태</dt>
-                    <dd>{offer.statusLabel || offer.status || '-'}</dd>
+                    <dd>
+                      <span className={`company-job-status ${offerStatusClassNames[offer.status] || 'closed'}`}>
+                        {offer.statusLabel || offer.status || '-'}
+                      </span>
+                    </dd>
                   </div>
                   <div>
                     <dt>AI 매칭률</dt>
@@ -124,7 +149,7 @@ export default function PositionOfferDetailPage() {
                   type="button"
                   className="secondary offer-cancel-button"
                   disabled={!canCancelOffer(offer.status) || saving}
-                  onClick={cancelOffer}
+                  onClick={openCancelModal}
                 >
                   {saving ? '취소 중...' : '제안 취소하기'}
                 </button>
@@ -136,6 +161,18 @@ export default function PositionOfferDetailPage() {
           </div>
         )}
       </section>
+
+      <ConfirmModal
+        open={cancelModalOpen}
+        title="포지션 제안을 취소하시겠습니까?"
+        message="취소한 제안은 다시 진행 상태로 되돌릴 수 없습니다."
+        confirmText="제안 취소하기"
+        cancelText="닫기"
+        variant="danger"
+        loading={saving}
+        onCancel={closeCancelModal}
+        onConfirm={cancelOffer}
+      />
     </main>
   );
 }

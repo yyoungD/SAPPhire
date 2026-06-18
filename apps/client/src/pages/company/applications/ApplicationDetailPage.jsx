@@ -6,12 +6,12 @@ import { ROUTES } from '../../../constanjs/routes.js';
 import { navigate } from '../../../utils/authUtils.js';
 
 const statusClassNames = {
-  APPLIED: 'new',
+  APPLIED: 'open',
   REVIEWING: 'review',
   INTERVIEW: 'interview',
-  ACCEPTED: 'offer',
-  REJECTED: 'rejected',
-  CANCELED: 'withdrawn',
+  ACCEPTED: 'draft',
+  REJECTED: 'hidden',
+  CANCELED: 'closed',
 };
 
 const statusOptions = [
@@ -233,10 +233,12 @@ export default function ApplicationDetailPage() {
               <section>
                 <h2>지원 상태</h2>
                 <div
-                  className={`apply-summary-score application-status-summary ${statusClassNames[application.status] || ''}`}
+                  className="apply-summary-score application-status-summary"
                 >
                   <span>현재 단계</span>
-                  <strong>{application.statusLabel || '-'}</strong>
+                  <strong className={`company-job-status ${statusClassNames[application.status] || 'closed'}`}>
+                    {application.statusLabel || '-'}
+                  </strong>
                 </div>
               </section>
               <label className="application-status-select">
