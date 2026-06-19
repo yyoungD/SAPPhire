@@ -2,6 +2,7 @@ package com.sapphire.domain.job.service;
 
 import com.sapphire.domain.job.dto.CompanyJobListItem;
 import com.sapphire.domain.job.dto.CompanyJobPostRow;
+import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.JobCreateParam;
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
@@ -32,6 +33,12 @@ public class JobPostServiceImpl implements JobPostService {
 
     public JobPostServiceImpl(JobPostMapper jobPostMapper) {
         this.jobPostMapper = jobPostMapper;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminJobPostResponse> findAdminJobs() {
+        return jobPostMapper.findAdminJobs();
     }
 
     @Override

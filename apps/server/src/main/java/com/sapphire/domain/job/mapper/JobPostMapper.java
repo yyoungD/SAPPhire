@@ -1,6 +1,7 @@
 package com.sapphire.domain.job.mapper;
 
 import com.sapphire.domain.job.dto.JobCreateParam;
+import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.CompanyJobPostRow;
 import com.sapphire.domain.job.dto.JobAttachmentResponse;
 import com.sapphire.domain.job.dto.JobPostRow;
@@ -12,6 +13,8 @@ import java.util.List;
 
 @Mapper
 public interface JobPostMapper {
+    List<AdminJobPostResponse> findAdminJobs();
+
     List<JobPostRow> findOpenJobs(@Param("limit") int limit);
 
     List<JobPostRow> findBookmarkedJobs(@Param("userId") Long userId);

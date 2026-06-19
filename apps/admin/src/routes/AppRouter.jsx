@@ -5,6 +5,10 @@ import AdminLayout from '../components/layout/AdminLayout.jsx';
 import { ROUTES } from '../constanjs/routes.js';
 import AdminDashboardPage from '../pages/AdminDashboardPage.jsx';
 import AdminLoginPage from '../pages/AdminLoginPage.jsx';
+import AdminCompanyDetailPage from '../pages/companies/AdminCompanyDetailPage.jsx';
+import AdminCompanyManagePage from '../pages/companies/AdminCompanyManagePage.jsx';
+import AdminJobManagePage from '../pages/jobs/AdminJobManagePage.jsx';
+import AdminResumeManagePage from '../pages/resumes/AdminResumeManagePage.jsx';
 import AdminUserDetailPage from '../pages/users/AdminUserDetailPage.jsx';
 import AdminUserEditPage from '../pages/users/AdminUserEditPage.jsx';
 import AdminUserManagePage from '../pages/users/AdminUserManagePage.jsx';
@@ -52,6 +56,10 @@ export default function AppRouter() {
       [ROUTES.ADMIN_USERS]: <AdminUserManagePage />,
       [ROUTES.ADMIN_USER_DETAIL]: <AdminUserDetailPage />,
       [ROUTES.ADMIN_USER_EDIT]: <AdminUserEditPage />,
+      [ROUTES.ADMIN_COMPANIES]: <AdminCompanyManagePage />,
+      [ROUTES.ADMIN_COMPANY_DETAIL]: <AdminCompanyDetailPage />,
+      [ROUTES.ADMIN_JOBS]: <AdminJobManagePage />,
+      [ROUTES.ADMIN_APPLICATIONS]: <AdminResumeManagePage />,
     }),
     []
   );

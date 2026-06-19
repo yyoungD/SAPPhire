@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  BriefcaseBusiness,
   ChevronDown,
   Download,
   Filter,
@@ -8,9 +9,8 @@ import {
   SlidersHorizontal,
   TrendingUp,
   UserRoundCheck,
-  Users,
 } from 'lucide-react';
-import { adminUserApi } from '../../api/adminUserApi.js';
+import { adminJobApi } from '../../api/adminJobApi.js';
 import ListTable from '../../components/ListTable.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import SearchBar from '../../components/SearchBar.jsx';
@@ -42,18 +42,22 @@ function includesKeyword(row, keyword) {
   const normalizedKeyword = keyword.trim().toLowerCase();
   if (!normalizedKeyword) return true;
 
-  return [row.name, row.email, row.phone, row.status]
+  return [row.title, row.companyName, row.companyEmail, row.location, row.status]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedKeyword));
 }
 
-function navigateToUserDetail(userId) {
-  window.history.pushState(null, '', `/admin/users/detail?id=${userId}`);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+function toTableRow(job) {
+  return {
+    ...job,
+    name: job.title,
+    email: [job.companyName, job.companyEmail].filter(Boolean).join(' · '),
+    logoUrl: job.logoUrl,
+  };
 }
 
-export default function AdminUserManagePage() {
-  const [users, setUsers] = useState([]);
+export default function AdminJobManagePage() {
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -62,21 +66,21 @@ export default function AdminUserManagePage() {
   useEffect(() => {
     let ignore = false;
 
-    async function loadUsers() {
+    async function loadJobs() {
       setLoading(true);
       setError('');
 
       try {
-        const data = await adminUserApi.list();
-        if (!ignore) setUsers(data || []);
+        const data = await adminJobApi.list();
+        if (!ignore) setJobs(data || []);
       } catch (exception) {
-        if (!ignore) setError(exception.message || '회원 데이터를 불러오지 못했습니다.');
+        if (!ignore) setError(exception.message || '공고 데이터를 불러오지 못했습니다.');
       } finally {
         if (!ignore) setLoading(false);
       }
     }
 
-    loadUsers();
+    loadJobs();
 
     return () => {
       ignore = true;
@@ -87,38 +91,39 @@ export default function AdminUserManagePage() {
     setPage(1);
   }, [keyword]);
 
-  const filteredUsers = useMemo(
-    () => users.filter((user) => includesKeyword(user, keyword)),
-    [keyword, users]
+  const filteredJobs = useMemo(
+    () => jobs.filter((job) => includesKeyword(job, keyword)),
+    [jobs, keyword]
   );
 
-  const pagedUsers = useMemo(() => {
+  const pagedJobs = useMemo(() => {
     const startIndex = (page - 1) * PAGE_SIZE;
-    return filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [filteredUsers, page]);
+    return filteredJobs.slice(startIndex, startIndex + PAGE_SIZE).map(toTableRow);
+  }, [filteredJobs, page]);
 
   const summaryItems = useMemo(() => {
-    const activeCount = users.filter((user) => user.status === 'ACTIVE').length;
-    const pendingCount = users.filter((user) => user.status === 'INACTIVE' || user.status === 'BANNED').length;
+    const openCount = jobs.filter((job) => job.status === 'OPEN').length;
+    const draftCount = jobs.filter((job) => job.status === 'DRAFT').length;
+    const closedCount = jobs.filter((job) => job.status === 'CLOSED' || job.status === 'HIDDEN').length;
 
     return [
-      { label: '전체 회원', value: users.length.toLocaleString(), note: 'DB 기준 회원 수', icon: Users, tone: 'blue' },
-      { label: '활성 회원', value: activeCount.toLocaleString(), note: '현재 이용 가능', icon: TrendingUp, tone: 'blue' },
-      { label: '검토 필요', value: pendingCount.toLocaleString(), note: '비활성 또는 정지', icon: UserRoundCheck, tone: 'red' },
-      { label: '목록 표시', value: filteredUsers.length.toLocaleString(), note: '검색 결과', icon: Settings, tone: 'indigo' },
+      { label: '전체 공고', value: jobs.length.toLocaleString(), note: 'DB 기준 공고 수', icon: BriefcaseBusiness, tone: 'blue' },
+      { label: '모집중', value: openCount.toLocaleString(), note: '현재 공개 모집', icon: TrendingUp, tone: 'blue' },
+      { label: '검토 필요', value: draftCount.toLocaleString(), note: '임시저장 공고', icon: UserRoundCheck, tone: 'red' },
+      { label: '마감/숨김', value: closedCount.toLocaleString(), note: '비공개 또는 종료', icon: Settings, tone: 'indigo' },
     ];
-  }, [filteredUsers.length, users]);
+  }, [jobs]);
 
   return (
     <>
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="mb-3 text-[11px] font-bold tracking-[0.08em] text-[#1d59c1]">
-            MEMBER OPERATIONS
+            JOB OPERATIONS
           </p>
-          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">회원관리</h1>
+          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">공고관리</h1>
           <p className="m-0 max-w-2xl text-sm leading-6 text-[#57657a]">
-            SAPPhire에 등록된 개인회원 계정을 실제 DB 데이터 기준으로 확인하고 관리합니다.
+            SAPPhire에 등록된 모든 회원의 채용 공고를 실제 DB 데이터 기준으로 확인하고 관리합니다.
           </p>
         </div>
         <button
@@ -126,11 +131,11 @@ export default function AdminUserManagePage() {
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-gradient-to-br from-[#003c90] to-[#0f52ba] px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(0,60,144,0.14)]"
         >
           <Plus size={17} />
-          신규 회원 추가
+          신규 공고 추가
         </button>
       </section>
 
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="회원 요약">
+      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="공고 요약">
         {summaryItems.map((item) => (
           <SummaryCard key={item.label} {...item} />
         ))}
@@ -141,7 +146,7 @@ export default function AdminUserManagePage() {
           className="flex-1"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
-          placeholder="이름 또는 이메일 검색"
+          placeholder="공고 제목 또는 기업명 검색"
         />
         <button
           type="button"
@@ -164,13 +169,16 @@ export default function AdminUserManagePage() {
       </section>
 
       <ListTable
-        rows={pagedUsers}
+        rows={pagedJobs}
         loading={loading}
         error={error}
-        emptyMessage="표시할 회원이 없습니다."
-        onRowClick={(user) => navigateToUserDetail(user.id)}
+        emptyMessage="표시할 공고가 없습니다."
+        avatarType="company"
+        nameLabel="공고명"
+        emailLabel="기업"
+        dateLabel="등록일"
       />
-      <Pagination page={page} totalItems={filteredUsers.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
+      <Pagination page={page} totalItems={filteredJobs.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
     </>
   );
 }

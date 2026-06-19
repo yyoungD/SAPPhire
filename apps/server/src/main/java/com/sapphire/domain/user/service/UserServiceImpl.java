@@ -3,6 +3,9 @@ package com.sapphire.domain.user.service;
 import com.sapphire.domain.auth.dto.LoginResponse;
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
 import com.sapphire.domain.file.dto.FileRecord;
+import com.sapphire.domain.user.dto.AdminCompanyDetailResponse;
+import com.sapphire.domain.user.dto.AdminCompanyResponse;
+import com.sapphire.domain.user.dto.AdminUserDetailResponse;
 import com.sapphire.domain.user.dto.AdminUserResponse;
 import com.sapphire.domain.user.dto.OAuthLinkRequest;
 import com.sapphire.domain.user.dto.User;
@@ -35,6 +38,50 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<AdminUserResponse> findAdminUsers() {
         return userMapper.findAdminUsers();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminUserDetailResponse findAdminUserDetail(Long id) {
+        AdminUserDetailResponse detail = userMapper.findAdminUserDetail(id);
+        if (detail == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+        return detail;
+    }
+
+    @Override
+    @Transactional
+    public AdminUserDetailResponse createAdminUserMemo(Long id, Long adminUserId, String content) {
+        AdminUserDetailResponse detail = findAdminUserDetail(id);
+        String trimmedContent = requiredText(content, "Please enter admin memo.");
+        userMapper.insertAdminUserMemo(detail.getId(), adminUserId, trimmedContent);
+        return findAdminUserDetail(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminCompanyResponse> findAdminCompanies() {
+        return userMapper.findAdminCompanies();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminCompanyDetailResponse findAdminCompanyDetail(Long id) {
+        AdminCompanyDetailResponse detail = userMapper.findAdminCompanyDetail(id);
+        if (detail == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+        return detail;
+    }
+
+    @Override
+    @Transactional
+    public AdminCompanyDetailResponse createAdminCompanyMemo(Long id, Long adminUserId, String content) {
+        AdminCompanyDetailResponse detail = findAdminCompanyDetail(id);
+        String trimmedContent = requiredText(content, "Please enter admin memo.");
+        userMapper.insertAdminUserMemo(detail.getId(), adminUserId, trimmedContent);
+        return findAdminCompanyDetail(id);
     }
 
     @Override
