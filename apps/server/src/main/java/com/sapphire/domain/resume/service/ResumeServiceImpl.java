@@ -1,6 +1,7 @@
 package com.sapphire.domain.resume.service;
 
 import com.sapphire.domain.resume.dto.ResumeAnalysis;
+import com.sapphire.domain.resume.dto.AdminResumeResponse;
 import com.sapphire.domain.resume.dto.CompanyResumeDetail;
 import com.sapphire.domain.resume.dto.CompanyResumeDetailRow;
 import com.sapphire.domain.resume.dto.CompanyResumeListItem;
@@ -43,6 +44,12 @@ public class ResumeServiceImpl implements ResumeService {
 
     public ResumeServiceImpl(ResumeMapper resumeMapper) {
         this.resumeMapper = resumeMapper;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminResumeResponse> findAdminResumes() {
+        return resumeMapper.findAdminResumes();
     }
 
     @Override

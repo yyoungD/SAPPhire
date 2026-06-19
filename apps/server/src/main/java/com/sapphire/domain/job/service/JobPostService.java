@@ -2,6 +2,7 @@ package com.sapphire.domain.job.service;
 
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
+import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.CompanyJobListItem;
 import com.sapphire.domain.job.dto.JobDetail;
 import com.sapphire.domain.job.dto.JobListItem;
@@ -9,6 +10,8 @@ import com.sapphire.domain.job.dto.JobListItem;
 import java.util.List;
 
 public interface JobPostService {
+    List<AdminJobPostResponse> findAdminJobs();
+
     JobCreateResponse createJob(Long userId, JobCreateRequest request);
 
     JobCreateResponse updateJob(Long userId, Long id, JobCreateRequest request);

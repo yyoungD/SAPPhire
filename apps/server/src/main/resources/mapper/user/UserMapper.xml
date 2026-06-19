@@ -121,6 +121,250 @@
         ORDER BY created_at DESC, id DESC
     </select>
 
+    <select id="findAdminUserDetail" resultType="com.sapphire.domain.user.dto.AdminUserDetailResponse">
+        SELECT
+            u.id,
+            u.email,
+            u.name,
+            u.phone,
+            u.status,
+            u.oauth_provider,
+            u.profile_image_url,
+            u.created_at,
+            u.updated_at,
+            login_stats.recent_login_at,
+            pp.location,
+            pp.career_years,
+            pp.work_type,
+            pp.is_public AS profile_public,
+            COALESCE(resume_stats.resume_count, 0) AS resume_count,
+            resume_stats.primary_resume_title,
+            COALESCE(resume_stats.public_resume_count, 0) AS public_resume_count,
+            resume_stats.latest_resume_updated_at,
+            COALESCE(application_stats.application_count, 0) AS application_count,
+            COALESCE(application_stats.reviewing_application_count, 0) AS reviewing_application_count,
+            COALESCE(application_stats.accepted_application_count, 0) AS accepted_application_count,
+            COALESCE(application_stats.rejected_application_count, 0) AS rejected_application_count,
+            COALESCE(application_stats.canceled_application_count, 0) AS canceled_application_count,
+            COALESCE(bookmark_stats.bookmark_count, 0) AS bookmark_count,
+            COALESCE(offer_stats.offer_count, 0) AS offer_count,
+            COALESCE(offer_stats.accepted_offer_count, 0) AS accepted_offer_count,
+            COALESCE(offer_stats.declined_offer_count, 0) AS declined_offer_count,
+            COALESCE(offer_stats.pending_offer_count, 0) AS pending_offer_count,
+            0 AS report_count,
+            0 AS sanction_count,
+            memo_stats.admin_memo
+        FROM users u
+        LEFT JOIN personal_profiles pp ON pp.user_id = u.id
+        LEFT JOIN (
+            SELECT
+                ull.user_id,
+                MAX(ull.created_at) AS recent_login_at
+            FROM user_login_logs ull
+            WHERE ull.success = TRUE
+            GROUP BY ull.user_id
+        ) login_stats ON login_stats.user_id = u.id
+        LEFT JOIN (
+            SELECT
+                r.personal_profile_id,
+                COUNT(*)::INT AS resume_count,
+                MAX(CASE WHEN r.is_primary THEN r.title END) AS primary_resume_title,
+                COUNT(*) FILTER (WHERE r.visibility IN ('PUBLIC', 'COMPANY_ONLY'))::INT AS public_resume_count,
+                MAX(r.updated_at) AS latest_resume_updated_at
+            FROM resumes r
+            WHERE r.deleted_at IS NULL
+            GROUP BY r.personal_profile_id
+        ) resume_stats ON resume_stats.personal_profile_id = pp.id
+        LEFT JOIN (
+            SELECT
+                ja.user_id,
+                COUNT(*)::INT AS application_count,
+                COUNT(*) FILTER (WHERE ja.status IN ('APPLIED', 'REVIEWING', 'INTERVIEW'))::INT AS reviewing_application_count,
+                COUNT(*) FILTER (WHERE ja.status = 'ACCEPTED')::INT AS accepted_application_count,
+                COUNT(*) FILTER (WHERE ja.status = 'REJECTED')::INT AS rejected_application_count,
+                COUNT(*) FILTER (WHERE ja.status = 'CANCELED')::INT AS canceled_application_count
+            FROM job_applications ja
+            GROUP BY ja.user_id
+        ) application_stats ON application_stats.user_id = u.id
+        LEFT JOIN (
+            SELECT
+                jb.user_id,
+                COUNT(*)::INT AS bookmark_count
+            FROM job_bookmarks jb
+            GROUP BY jb.user_id
+        ) bookmark_stats ON bookmark_stats.user_id = u.id
+        LEFT JOIN (
+            SELECT
+                po.receiver_user_id,
+                COUNT(*)::INT AS offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'ACCEPTED')::INT AS accepted_offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'DECLINED')::INT AS declined_offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'SENT')::INT AS pending_offer_count
+            FROM position_offers po
+            GROUP BY po.receiver_user_id
+        ) offer_stats ON offer_stats.receiver_user_id = u.id
+        LEFT JOIN LATERAL (
+            SELECT
+                aum.content AS admin_memo
+            FROM admin_user_memos aum
+            WHERE aum.user_id = u.id
+            ORDER BY aum.created_at DESC, aum.id DESC
+            LIMIT 1
+        ) memo_stats ON TRUE
+        WHERE u.id = #{id}
+          AND u.role = 'PERSONAL'
+          AND u.deleted_at IS NULL
+    </select>
+
+    <insert id="insertAdminUserMemo">
+        INSERT INTO admin_user_memos (
+            user_id,
+            admin_user_id,
+            content
+        )
+        VALUES (
+            #{userId},
+            #{adminUserId},
+            #{content}
+        )
+    </insert>
+
+    <select id="findAdminCompanies" resultType="com.sapphire.domain.user.dto.AdminCompanyResponse">
+        SELECT
+            u.id,
+            cp.id AS company_profile_id,
+            u.email,
+            COALESCE(cp.company_name, u.name) AS name,
+            u.phone,
+            u.role,
+            u.status,
+            cp.company_name,
+            cp.business_number,
+            cp.industry,
+            cp.verification_status,
+            cp.logo_file_id,
+            f.file_url AS logo_url,
+            u.created_at,
+            u.updated_at,
+            u.deleted_at
+        FROM users u
+        LEFT JOIN company_profiles cp ON cp.user_id = u.id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
+        WHERE u.deleted_at IS NULL
+          AND u.role = 'COMPANY'
+        ORDER BY u.created_at DESC, u.id DESC
+    </select>
+
+    <select id="findAdminCompanyDetail" resultType="com.sapphire.domain.user.dto.AdminCompanyDetailResponse">
+        SELECT
+            u.id,
+            cp.id AS company_profile_id,
+            u.email,
+            COALESCE(cp.company_name, u.name) AS name,
+            u.phone,
+            u.status,
+            u.created_at,
+            u.updated_at,
+            login_stats.recent_login_at,
+            cp.company_name,
+            cp.business_number,
+            cp.verification_status,
+            cp.website_url,
+            f.file_url AS logo_url,
+            cp.address,
+            cp.description,
+            cp.industry,
+            cp.company_size,
+            COALESCE(job_stats.job_count, 0) AS job_count,
+            COALESCE(job_stats.open_job_count, 0) AS open_job_count,
+            COALESCE(job_stats.closed_job_count, 0) AS closed_job_count,
+            COALESCE(job_stats.hidden_job_count, 0) AS hidden_job_count,
+            COALESCE(job_stats.draft_job_count, 0) AS draft_job_count,
+            COALESCE(application_stats.applicant_count, 0) AS applicant_count,
+            COALESCE(application_stats.unread_applicant_count, 0) AS unread_applicant_count,
+            COALESCE(application_stats.progressing_application_count, 0) AS progressing_application_count,
+            COALESCE(offer_stats.offer_count, 0) AS offer_count,
+            COALESCE(offer_stats.accepted_offer_count, 0) AS accepted_offer_count,
+            COALESCE(offer_stats.declined_offer_count, 0) AS declined_offer_count,
+            COALESCE(offer_stats.pending_offer_count, 0) AS pending_offer_count,
+            COALESCE(offer_stats.canceled_offer_count, 0) AS canceled_offer_count,
+            COALESCE(attachment_stats.attachment_count, 0) AS attachment_count,
+            0 AS report_count,
+            0 AS sanction_count,
+            memo_stats.admin_memo,
+            job_stats.latest_job_created_at,
+            application_stats.latest_application_at,
+            offer_stats.latest_offer_created_at
+        FROM users u
+        LEFT JOIN company_profiles cp ON cp.user_id = u.id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
+        LEFT JOIN (
+            SELECT
+                ull.user_id,
+                MAX(ull.created_at) AS recent_login_at
+            FROM user_login_logs ull
+            WHERE ull.success = TRUE
+            GROUP BY ull.user_id
+        ) login_stats ON login_stats.user_id = u.id
+        LEFT JOIN (
+            SELECT
+                jp.company_profile_id,
+                COUNT(*)::INT AS job_count,
+                COUNT(*) FILTER (WHERE jp.status = 'OPEN')::INT AS open_job_count,
+                COUNT(*) FILTER (WHERE jp.status = 'CLOSED')::INT AS closed_job_count,
+                COUNT(*) FILTER (WHERE jp.status = 'HIDDEN')::INT AS hidden_job_count,
+                COUNT(*) FILTER (WHERE jp.status = 'DRAFT')::INT AS draft_job_count,
+                MAX(jp.created_at) AS latest_job_created_at
+            FROM job_posts jp
+            WHERE jp.deleted_at IS NULL
+            GROUP BY jp.company_profile_id
+        ) job_stats ON job_stats.company_profile_id = cp.id
+        LEFT JOIN (
+            SELECT
+                jp.company_profile_id,
+                COUNT(*)::INT AS applicant_count,
+                COUNT(*) FILTER (WHERE ja.status = 'APPLIED')::INT AS unread_applicant_count,
+                COUNT(*) FILTER (WHERE ja.status IN ('APPLIED', 'REVIEWING', 'INTERVIEW'))::INT AS progressing_application_count,
+                MAX(ja.applied_at) AS latest_application_at
+            FROM job_applications ja
+            JOIN job_posts jp ON jp.id = ja.job_post_id
+            WHERE jp.deleted_at IS NULL
+            GROUP BY jp.company_profile_id
+        ) application_stats ON application_stats.company_profile_id = cp.id
+        LEFT JOIN (
+            SELECT
+                po.company_profile_id,
+                COUNT(*)::INT AS offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'ACCEPTED')::INT AS accepted_offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'DECLINED')::INT AS declined_offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'SENT')::INT AS pending_offer_count,
+                COUNT(*) FILTER (WHERE po.status = 'CANCELED')::INT AS canceled_offer_count,
+                MAX(po.created_at) AS latest_offer_created_at
+            FROM position_offers po
+            GROUP BY po.company_profile_id
+        ) offer_stats ON offer_stats.company_profile_id = cp.id
+        LEFT JOIN (
+            SELECT
+                jp.company_profile_id,
+                COUNT(jpa.id)::INT AS attachment_count
+            FROM job_posts jp
+            JOIN job_post_attachments jpa ON jpa.job_post_id = jp.id
+            WHERE jp.deleted_at IS NULL
+            GROUP BY jp.company_profile_id
+        ) attachment_stats ON attachment_stats.company_profile_id = cp.id
+        LEFT JOIN LATERAL (
+            SELECT
+                aum.content AS admin_memo
+            FROM admin_user_memos aum
+            WHERE aum.user_id = u.id
+            ORDER BY aum.created_at DESC, aum.id DESC
+            LIMIT 1
+        ) memo_stats ON TRUE
+        WHERE u.id = #{id}
+          AND u.role = 'COMPANY'
+          AND u.deleted_at IS NULL
+    </select>
+
     <insert id="insert" parameterType="com.sapphire.domain.user.dto.User"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO users (

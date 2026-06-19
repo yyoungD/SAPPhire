@@ -42,7 +42,7 @@ export default function AdminSidebar({ user, onLogout, currentPath }) {
           <button
             type="button"
             onClick={() => navigateTo(ROUTES.ADMIN_DASHBOARD)}
-            className="text-left focus:outline-none cursor-pointer"
+            className="cursor-pointer text-left focus:outline-none"
             aria-label="대시보드로 이동"
           >
             <img className="h-auto w-[150px]" src={sapphireLogo} alt="SAPPhire" />

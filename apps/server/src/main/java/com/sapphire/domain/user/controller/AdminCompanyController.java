@@ -1,8 +1,8 @@
 package com.sapphire.domain.user.controller;
 
-import com.sapphire.domain.user.dto.AdminUserDetailResponse;
+import com.sapphire.domain.user.dto.AdminCompanyDetailResponse;
+import com.sapphire.domain.user.dto.AdminCompanyResponse;
 import com.sapphire.domain.user.dto.AdminUserMemoRequest;
-import com.sapphire.domain.user.dto.AdminUserResponse;
 import com.sapphire.domain.user.service.UserService;
 import com.sapphire.global.response.ApiResponse;
 import com.sapphire.global.security.auth.CustomUserDetails;
@@ -19,32 +19,32 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/admin/users")
-public class AdminUserController {
+@RequestMapping("/api/v1/admin/companies")
+public class AdminCompanyController {
     private final UserService userService;
 
-    public AdminUserController(UserService userService) {
+    public AdminCompanyController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AdminUserResponse>>> findUsers() {
-        return ResponseEntity.ok(ApiResponse.success(userService.findAdminUsers()));
+    public ResponseEntity<ApiResponse<List<AdminCompanyResponse>>> findCompanies() {
+        return ResponseEntity.ok(ApiResponse.success(userService.findAdminCompanies()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AdminUserDetailResponse>> findUser(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(userService.findAdminUserDetail(id)));
+    public ResponseEntity<ApiResponse<AdminCompanyDetailResponse>> findCompany(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(userService.findAdminCompanyDetail(id)));
     }
 
     @PostMapping("/{id}/memos")
-    public ResponseEntity<ApiResponse<AdminUserDetailResponse>> createMemo(
+    public ResponseEntity<ApiResponse<AdminCompanyDetailResponse>> createMemo(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @Valid @RequestBody AdminUserMemoRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(
-                userService.createAdminUserMemo(id, userDetails.getId(), request.content())
+                userService.createAdminCompanyMemo(id, userDetails.getId(), request.content())
         ));
     }
 }
