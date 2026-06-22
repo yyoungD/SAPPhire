@@ -1,6 +1,7 @@
 package com.sapphire.domain.resume.mapper;
 
 import com.sapphire.domain.resume.dto.ResumeCreateParam;
+import com.sapphire.domain.resume.dto.AdminResumeResponse;
 import com.sapphire.domain.resume.dto.CompanyResumeDetailRow;
 import com.sapphire.domain.resume.dto.CompanyResumeListRow;
 import com.sapphire.domain.resume.dto.ResumeDetailRow;
@@ -18,6 +19,8 @@ import java.util.List;
 
 @Mapper
 public interface ResumeMapper {
+    List<AdminResumeResponse> findAdminResumes();
+
     List<ResumeListRow> findMyResumes(@Param("userId") Long userId);
 
     List<CompanyResumeListRow> findPublicResumes(@Param("keyword") String keyword);

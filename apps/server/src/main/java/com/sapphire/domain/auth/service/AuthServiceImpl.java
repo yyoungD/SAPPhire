@@ -9,7 +9,9 @@ import com.sapphire.domain.auth.dto.ReissueRequest;
 import com.sapphire.domain.auth.dto.ReissueResponse;
 import com.sapphire.domain.auth.dto.SignupRequest;
 import com.sapphire.domain.auth.dto.SignupResponse;
+import com.sapphire.domain.auth.dto.UserLoginLog;
 import com.sapphire.domain.auth.mapper.RefreshTokenMapper;
+import com.sapphire.domain.auth.mapper.UserLoginLogMapper;
 import com.sapphire.domain.consent.dto.UserConsent;
 import com.sapphire.domain.consent.mapper.ConsentMapper;
 import com.sapphire.domain.file.dto.FileRecord;
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final CompanyProfileMapper companyProfileMapper;
     private final ConsentMapper consentMapper;
     private final RefreshTokenMapper refreshTokenMapper;
+    private final UserLoginLogMapper userLoginLogMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final ProfileImageStorageService profileImageStorageService;
@@ -52,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
             CompanyProfileMapper companyProfileMapper,
             ConsentMapper consentMapper,
             RefreshTokenMapper refreshTokenMapper,
+            UserLoginLogMapper userLoginLogMapper,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider,
             ProfileImageStorageService profileImageStorageService
@@ -61,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
         this.companyProfileMapper = companyProfileMapper;
         this.consentMapper = consentMapper;
         this.refreshTokenMapper = refreshTokenMapper;
+        this.userLoginLogMapper = userLoginLogMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.profileImageStorageService = profileImageStorageService;
@@ -149,6 +154,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshTokenValue = jwtTokenProvider.createRefreshToken(user);
         saveRefreshToken(user.getId(), refreshTokenValue);
+        saveLoginSuccess(user);
         log.info("Login success. userId={}, email={}, role={}", user.getId(), user.getEmail(), user.getRole());
 
         return new LoginResponse(
@@ -222,6 +228,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshTokenValue = jwtTokenProvider.createRefreshToken(user);
         saveRefreshToken(user.getId(), refreshTokenValue);
+        saveLoginSuccess(user);
 
         return new LoginResponse(accessToken, refreshTokenValue, "Bearer", toUserInfo(user));
     }
@@ -310,6 +317,14 @@ public class AuthServiceImpl implements AuthService {
         refreshToken.setExpiresAt(jwtTokenProvider.getRefreshTokenExpiresAt());
         refreshTokenMapper.upsert(refreshToken);
         log.debug("Refresh token 저장 완료. userId={}, expiresAt={}", userId, refreshToken.getExpiresAt());
+    }
+
+    private void saveLoginSuccess(User user) {
+        UserLoginLog loginLog = new UserLoginLog();
+        loginLog.setUserId(user.getId());
+        loginLog.setEmail(user.getEmail());
+        loginLog.setSuccess(true);
+        userLoginLogMapper.insert(loginLog);
     }
 
     private LoginResponse.UserInfo toUserInfo(User user) {

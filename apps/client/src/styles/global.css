@@ -408,7 +408,7 @@ p {
 .signup-layout > .login-card {
   align-self: center;
   justify-self: center;
-  height: 650px;
+  min-height: 650px;
   display: flex;
   flex-direction: column;
 }
@@ -940,6 +940,10 @@ p {
     width: calc(100vw - 28px);
     height: auto;
     padding: 28px 20px;
+  }
+
+  .signup-layout > .login-card {
+    min-height: 0;
   }
 
   .hero-actions {

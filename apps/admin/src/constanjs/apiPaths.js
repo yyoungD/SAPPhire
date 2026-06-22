@@ -6,4 +6,7 @@ export const API_PATHS = {
     logout: '/api/v1/auth/logout',
   },
   adminUsers: '/api/v1/admin/users',
+  adminCompanies: '/api/v1/admin/companies',
+  adminJobs: '/api/v1/admin/jobs',
+  adminResumes: '/api/v1/admin/resumes',
 };

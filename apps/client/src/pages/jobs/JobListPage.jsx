@@ -34,17 +34,6 @@ const domesticLocationKeywords = [
 
 const ignoredRoleTags = ['AI Recommended', 'Verified Company', 'Urgent'];
 
-const companyLogoDomains = {
-  KPMG: 'kpmg.com',
-  'Deloitte Korea': 'deloitte.com',
-  'SAP Korea Partner': 'sap.com',
-  'LG CNS': 'lgcns.com',
-  'Samsung SDS': 'samsungsds.com',
-  'SK C&C': 'skcc.co.kr',
-  'KT DS': 'ktds.com',
-  'GS ITM': 'gsitm.com',
-};
-
 function isDomesticJob(job) {
   const location = (job.location || '').toUpperCase();
   return domesticLocationKeywords.some((keyword) => location.includes(keyword));
@@ -76,11 +65,11 @@ function getInitial(company) {
 function getBundledCompanyLogoUrl(company) {
   const normalizedCompany = String(company || '').toUpperCase();
   if (normalizedCompany.includes('LG CNS')) return lgCnsLogoUrl;
-  if (normalizedCompany.includes('POSCO')) return poscoDxLogoUrl;
-  if (normalizedCompany.includes('HANWHA')) return hanwhaSystemsLogoUrl;
+  if (normalizedCompany.includes('POSCO') || normalizedCompany.includes('포스코')) return poscoDxLogoUrl;
+  if (normalizedCompany.includes('HANWHA') || normalizedCompany.includes('한화')) return hanwhaSystemsLogoUrl;
   if (normalizedCompany.includes('GS ITM')) return gsItmLogoUrl;
   if (normalizedCompany.includes('KT DS')) return ktDsLogoUrl;
-  if (normalizedCompany.includes('SHINSEGAE')) return shinsegaeIncLogoUrl;
+  if (normalizedCompany.includes('SHINSEGAE') || normalizedCompany.includes('신세계')) return shinsegaeIncLogoUrl;
   return '';
 }
 
@@ -88,31 +77,11 @@ function isKpmgCompany(company) {
   return String(company || '').toUpperCase().includes('KPMG');
 }
 
-function getDomainFromUrl(value) {
-  if (!value) return '';
-
-  try {
-    return new URL(value).hostname.replace(/^www\./, '');
-  } catch {
-    return String(value)
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .split('/')[0];
-  }
-}
-
 function getCompanyLogoUrls(job) {
-  const domain = getDomainFromUrl(job.websiteUrl) || companyLogoDomains[job.company] || '';
   const bundledLogo = getBundledCompanyLogoUrl(job.company);
   const uploadedLogo = job.logoUrl || job.companyLogoUrl || job.logoImageUrl;
 
-  return [
-    bundledLogo,
-    uploadedLogo,
-    domain ? `https://logo.clearbit.com/${domain}` : '',
-    domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '',
-    domain ? `https://icons.duckduckgo.com/ip3/${domain}.ico` : '',
-  ].filter(Boolean);
+  return [bundledLogo, uploadedLogo].filter(Boolean);
 }
 
 function CompanyLogo({ job }) {
@@ -124,7 +93,7 @@ function CompanyLogo({ job }) {
 
   useEffect(() => {
     setLogoIndex(0);
-  }, [job.id, job.logoUrl, job.companyLogoUrl, job.logoImageUrl, job.websiteUrl]);
+  }, [job.id, job.logoUrl, job.companyLogoUrl, job.logoImageUrl]);
 
   if (useKpmgLogo) {
     return (

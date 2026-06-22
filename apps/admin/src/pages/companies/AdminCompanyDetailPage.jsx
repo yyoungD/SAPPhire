@@ -4,21 +4,21 @@ import {
   AlertTriangle,
   ArrowLeft,
   Ban,
-  Bookmark,
   BriefcaseBusiness,
+  Building2,
   ClipboardList,
   FileText,
+  Globe,
   History,
   LockKeyhole,
   Mail,
   MapPin,
   MessageSquareText,
+  Paperclip,
   Power,
   ShieldCheck,
-  User,
 } from 'lucide-react';
-import { adminUserApi } from '../../api/adminUserApi.js';
-import { API_BASE_URL } from '../../constanjs/apiPaths.js';
+import { adminCompanyApi } from '../../api/adminCompanyApi.js';
 import { ROUTES } from '../../constanjs/routes.js';
 
 const statusLabels = {
@@ -28,10 +28,10 @@ const statusLabels = {
   DELETED: '삭제',
 };
 
-const workTypeLabels = {
-  ONSITE: '상주',
-  REMOTE: '원격',
-  HYBRID: '하이브리드',
+const verificationLabels = {
+  PENDING: '승인 대기',
+  APPROVED: '승인',
+  REJECTED: '반려',
 };
 
 function navigateTo(path) {
@@ -39,7 +39,7 @@ function navigateTo(path) {
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
-function getUserIdFromUrl() {
+function getCompanyIdFromUrl() {
   return new URLSearchParams(window.location.search).get('id');
 }
 
@@ -57,13 +57,6 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
-}
-
-function resolveImageUrl(value) {
-  if (!value) return '';
-  if (/^https?:\/\//i.test(value)) return value;
-  if (value.startsWith('/profileImg/')) return `${API_BASE_URL}${value}`;
-  return value;
 }
 
 function SectionCard({ title, icon: Icon, children, className = '' }) {
@@ -84,7 +77,7 @@ function InfoGrid({ items }) {
       {items.map((item) => (
         <div key={item.label} className="rounded-md bg-[#f8f9ff] p-4">
           <dt className="mb-1 text-xs font-bold text-[#57657a]">{item.label}</dt>
-          <dd className="m-0 text-sm font-semibold text-[#0b1c30]">{item.value || '-'}</dd>
+          <dd className="m-0 break-words text-sm font-semibold text-[#0b1c30]">{item.value || '-'}</dd>
         </div>
       ))}
     </dl>
@@ -108,12 +101,15 @@ function MetricCard({ label, value, note, icon: Icon, tone = 'blue' }) {
   );
 }
 
-function StatusBadge({ status }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-[#dce9ff] px-3 py-1 text-xs font-bold text-[#003c90]">
-      {statusLabels[status] || status || '-'}
-    </span>
-  );
+function StatusBadge({ children, tone = 'blue' }) {
+  const toneClass =
+    tone === 'green'
+      ? 'bg-[#e6f7ef] text-[#087443]'
+      : tone === 'red'
+        ? 'bg-[#ffe1df] text-[#b42318]'
+        : 'bg-[#dce9ff] text-[#003c90]';
+
+  return <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${toneClass}`}>{children}</span>;
 }
 
 function ActionButton({ icon: Icon, children, tone = 'default' }) {
@@ -123,17 +119,14 @@ function ActionButton({ icon: Icon, children, tone = 'default' }) {
       : 'border-[#d7e0ef] text-[#33445a] hover:bg-[#eff4ff] hover:text-[#003c90]';
 
   return (
-    <button
-      type="button"
-      className={`flex min-h-11 items-center justify-center gap-2 rounded-md border bg-white px-3 text-sm font-semibold transition ${toneClass}`}
-    >
+    <button type="button" className={`flex min-h-11 items-center justify-center gap-2 rounded-md border bg-white px-3 text-sm font-semibold transition ${toneClass}`}>
       <Icon size={16} />
       {children}
     </button>
   );
 }
 
-export default function AdminUserDetailPage() {
+export default function AdminCompanyDetailPage() {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -141,14 +134,14 @@ export default function AdminUserDetailPage() {
   const [memoSaving, setMemoSaving] = useState(false);
   const [memoError, setMemoError] = useState('');
 
-  const userId = getUserIdFromUrl();
+  const companyId = getCompanyIdFromUrl();
 
   useEffect(() => {
     let ignore = false;
 
     async function loadDetail() {
-      if (!userId) {
-        setError('조회할 회원 ID가 없습니다.');
+      if (!companyId) {
+        setError('조회할 기업회원 ID가 없습니다.');
         setLoading(false);
         return;
       }
@@ -157,13 +150,13 @@ export default function AdminUserDetailPage() {
       setError('');
 
       try {
-        const data = await adminUserApi.detail(userId);
+        const data = await adminCompanyApi.detail(companyId);
         if (!ignore) {
           setDetail(data);
           setMemo(data?.adminMemo || '');
         }
       } catch (exception) {
-        if (!ignore) setError(exception.message || '회원 상세 정보를 불러오지 못했습니다.');
+        if (!ignore) setError(exception.message || '기업회원 상세 정보를 불러오지 못했습니다.');
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -174,29 +167,27 @@ export default function AdminUserDetailPage() {
     return () => {
       ignore = true;
     };
-  }, [userId]);
-
-  const profileImageUrl = resolveImageUrl(detail?.profileImageUrl);
+  }, [companyId]);
 
   const recentActivities = useMemo(
     () => [
       { label: '로그인', value: detail?.recentLoginAt ? formatDateTime(detail.recentLoginAt) : '기록 없음' },
-      { label: '이력서 수정', value: detail?.latestResumeUpdatedAt ? formatDateTime(detail.latestResumeUpdatedAt) : '기록 없음' },
-      { label: '지원', value: `${detail?.applicationCount || 0}건` },
-      { label: '제안 수신', value: `${detail?.offerCount || 0}건` },
-      { label: '계정 수정', value: detail?.updatedAt ? formatDateTime(detail.updatedAt) : '기록 없음' },
+      { label: '공고 등록', value: detail?.latestJobCreatedAt ? formatDateTime(detail.latestJobCreatedAt) : '기록 없음' },
+      { label: '지원자 접수', value: detail?.latestApplicationAt ? formatDateTime(detail.latestApplicationAt) : '기록 없음' },
+      { label: '제안 발송', value: detail?.latestOfferCreatedAt ? formatDateTime(detail.latestOfferCreatedAt) : '기록 없음' },
+      { label: '기업정보 수정', value: detail?.updatedAt ? formatDateTime(detail.updatedAt) : '기록 없음' },
     ],
     [detail]
   );
 
   async function handleSaveMemo() {
-    if (!userId || !memo.trim()) return;
+    if (!companyId || !memo.trim()) return;
 
     setMemoSaving(true);
     setMemoError('');
 
     try {
-      const data = await adminUserApi.createMemo(userId, memo.trim());
+      const data = await adminCompanyApi.createMemo(companyId, memo.trim());
       setDetail(data);
       setMemo(data?.adminMemo || '');
     } catch (exception) {
@@ -207,7 +198,7 @@ export default function AdminUserDetailPage() {
   }
 
   if (loading) {
-    return <p className="rounded-lg bg-white p-8 text-sm text-[#57657a]">회원 상세 정보를 불러오는 중입니다.</p>;
+    return <p className="rounded-lg bg-white p-8 text-sm text-[#57657a]">기업회원 상세 정보를 불러오는 중입니다.</p>;
   }
 
   if (error) {
@@ -218,36 +209,39 @@ export default function AdminUserDetailPage() {
     <>
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="mb-3 text-[11px] font-bold tracking-[0.08em] text-[#1d59c1]">MEMBER DETAIL</p>
-          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">회원 상세</h1>
+          <p className="mb-3 text-[11px] font-bold tracking-[0.08em] text-[#1d59c1]">COMPANY DETAIL</p>
+          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">기업회원 상세</h1>
           <p className="m-0 max-w-2xl text-sm leading-6 text-[#57657a]">
-            개인회원의 기본 정보, 활동 요약, 이력서와 지원 현황을 확인하고 계정 관리 작업을 수행합니다.
+            기업회원의 기본 정보, 기업 프로필, 공고와 지원자 현황을 확인하고 계정 관리 작업을 수행합니다.
           </p>
         </div>
         <button
           type="button"
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#d7e0ef] bg-white px-4 text-sm font-bold text-[#33445a] transition hover:bg-[#eff4ff]"
-          onClick={() => navigateTo(ROUTES.ADMIN_USERS)}
+          onClick={() => navigateTo(ROUTES.ADMIN_COMPANIES)}
         >
           <ArrowLeft size={17} />
-          회원 목록
+          기업 목록
         </button>
       </section>
 
       <section className="mb-8 rounded-lg bg-white p-6 shadow-[0_12px_32px_rgba(11,28,48,0.05)]">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
-            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dce9ff] text-2xl font-bold text-[#003c90]">
-              {profileImageUrl ? (
-                <img src={profileImageUrl} alt="" className="h-full w-full object-cover" />
+            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#dce9ff] text-2xl font-bold text-[#003c90]">
+              {detail?.logoUrl ? (
+                <img src={detail.logoUrl} alt="" className="h-full w-full object-cover" />
               ) : (
-                detail?.name?.charAt(0) || <User size={28} />
+                detail?.companyName?.charAt(0) || <Building2 size={28} />
               )}
             </div>
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-3">
-                <h2 className="m-0 text-2xl font-bold text-[#0b1c30]">{detail?.name || '-'}</h2>
-                <StatusBadge status={detail?.status} />
+                <h2 className="m-0 text-2xl font-bold text-[#0b1c30]">{detail?.companyName || detail?.name || '-'}</h2>
+                <StatusBadge>{statusLabels[detail?.status] || detail?.status || '-'}</StatusBadge>
+                <StatusBadge tone={detail?.verificationStatus === 'APPROVED' ? 'green' : detail?.verificationStatus === 'REJECTED' ? 'red' : 'blue'}>
+                  {verificationLabels[detail?.verificationStatus] || detail?.verificationStatus || '-'}
+                </StatusBadge>
               </div>
               <p className="m-0 flex items-center gap-2 text-sm font-semibold text-[#57657a]">
                 <Mail size={15} />
@@ -256,8 +250,8 @@ export default function AdminUserDetailPage() {
             </div>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <ActionButton icon={ShieldCheck}>인증 승인/반려</ActionButton>
             <ActionButton icon={ShieldCheck}>상태 변경</ActionButton>
-            <ActionButton icon={LockKeyhole}>비밀번호 초기화</ActionButton>
             <ActionButton icon={Power}>강제 로그아웃</ActionButton>
             <ActionButton icon={Ban} tone="danger">탈퇴 처리</ActionButton>
           </div>
@@ -265,18 +259,18 @@ export default function AdminUserDetailPage() {
       </section>
 
       <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="등록 이력서" value={detail?.resumeCount || 0} note="전체 이력서 수" icon={FileText} />
-        <MetricCard label="지원 현황" value={detail?.applicationCount || 0} note="총 지원 건수" icon={ClipboardList} />
-        <MetricCard label="스크랩" value={detail?.bookmarkCount || 0} note="북마크한 공고" icon={Bookmark} />
-        <MetricCard label="포지션 제안" value={detail?.offerCount || 0} note="받은 제안 수" icon={BriefcaseBusiness} />
+        <MetricCard label="등록 공고" value={detail?.jobCount || 0} note="전체 공고 수" icon={BriefcaseBusiness} />
+        <MetricCard label="지원자" value={detail?.applicantCount || 0} note="전체 지원자 수" icon={ClipboardList} />
+        <MetricCard label="포지션 제안" value={detail?.offerCount || 0} note="보낸 제안 수" icon={MessageSquareText} />
+        <MetricCard label="첨부 파일" value={detail?.attachmentCount || 0} note="공고 첨부파일 수" icon={Paperclip} />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="space-y-5">
-          <SectionCard title="기본 정보" icon={User}>
+          <SectionCard title="기본 정보" icon={Building2}>
             <InfoGrid
               items={[
-                { label: '이름', value: detail?.name },
+                { label: '기업명', value: detail?.companyName || detail?.name },
                 { label: '이메일', value: detail?.email },
                 { label: '전화번호', value: detail?.phone },
                 { label: '가입일', value: formatDate(detail?.createdAt) },
@@ -286,36 +280,41 @@ export default function AdminUserDetailPage() {
             />
           </SectionCard>
 
-          <SectionCard title="프로필 정보" icon={MapPin}>
+          <SectionCard title="기업 프로필" icon={Globe}>
             <InfoGrid
               items={[
-                { label: '지역', value: detail?.location },
-                { label: '경력연차', value: detail?.careerYears == null ? '-' : `${detail.careerYears}년` },
-                { label: '희망 근무형태', value: workTypeLabels[detail?.workType] || detail?.workType },
-                { label: '공개 여부', value: detail?.profilePublic ? '공개' : '비공개' },
+                { label: '사업자등록번호', value: detail?.businessNumber },
+                { label: '인증 상태', value: verificationLabels[detail?.verificationStatus] || detail?.verificationStatus },
+                { label: '웹사이트', value: detail?.websiteUrl },
+                { label: '주소', value: detail?.address },
+                { label: '업종', value: detail?.industry },
+                { label: '기업 규모', value: detail?.companySize },
+              ]}
+            />
+            <div className="mt-3 rounded-md bg-[#f8f9ff] p-4">
+              <p className="mb-1 text-xs font-bold text-[#57657a]">기업 설명</p>
+              <p className="m-0 whitespace-pre-wrap text-sm font-semibold leading-6 text-[#0b1c30]">{detail?.description || '-'}</p>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="공고 현황" icon={BriefcaseBusiness}>
+            <InfoGrid
+              items={[
+                { label: '전체 공고 수', value: `${detail?.jobCount || 0}건` },
+                { label: '모집중', value: `${detail?.openJobCount || 0}건` },
+                { label: '마감', value: `${detail?.closedJobCount || 0}건` },
+                { label: '숨김', value: `${detail?.hiddenJobCount || 0}건` },
+                { label: '임시저장', value: `${detail?.draftJobCount || 0}건` },
               ]}
             />
           </SectionCard>
 
-          <SectionCard title="이력서 현황" icon={FileText}>
+          <SectionCard title="지원자 현황" icon={ClipboardList}>
             <InfoGrid
               items={[
-                { label: '등록 이력서 수', value: `${detail?.resumeCount || 0}개` },
-                { label: '대표 이력서', value: detail?.primaryResumeTitle },
-                { label: '공개 이력서 수', value: `${detail?.publicResumeCount || 0}개` },
-                { label: '최근 수정일', value: formatDateTime(detail?.latestResumeUpdatedAt) },
-              ]}
-            />
-          </SectionCard>
-
-          <SectionCard title="지원 현황" icon={ClipboardList}>
-            <InfoGrid
-              items={[
-                { label: '총 지원 수', value: `${detail?.applicationCount || 0}건` },
-                { label: '진행중', value: `${detail?.reviewingApplicationCount || 0}건` },
-                { label: '합격', value: `${detail?.acceptedApplicationCount || 0}건` },
-                { label: '불합격', value: `${detail?.rejectedApplicationCount || 0}건` },
-                { label: '취소', value: `${detail?.canceledApplicationCount || 0}건` },
+                { label: '전체 지원자 수', value: `${detail?.applicantCount || 0}명` },
+                { label: '미열람 지원자 수', value: `${detail?.unreadApplicantCount || 0}명` },
+                { label: '진행중 전형 수', value: `${detail?.progressingApplicationCount || 0}건` },
               ]}
             />
           </SectionCard>
@@ -333,13 +332,23 @@ export default function AdminUserDetailPage() {
         </div>
 
         <aside className="space-y-5">
-          <SectionCard title="포지션 제안" icon={BriefcaseBusiness}>
+          <SectionCard title="포지션 제안" icon={MessageSquareText}>
             <InfoGrid
               items={[
-                { label: '받은 제안 수', value: `${detail?.offerCount || 0}건` },
+                { label: '보낸 제안 수', value: `${detail?.offerCount || 0}건` },
                 { label: '수락', value: `${detail?.acceptedOfferCount || 0}건` },
                 { label: '거절', value: `${detail?.declinedOfferCount || 0}건` },
                 { label: '대기', value: `${detail?.pendingOfferCount || 0}건` },
+                { label: '취소', value: `${detail?.canceledOfferCount || 0}건` },
+              ]}
+            />
+          </SectionCard>
+
+          <SectionCard title="첨부/파일" icon={Paperclip}>
+            <InfoGrid
+              items={[
+                { label: '기업 로고', value: detail?.logoUrl ? '등록됨' : '미등록' },
+                { label: '공고 첨부파일 수', value: `${detail?.attachmentCount || 0}개` },
               ]}
             />
           </SectionCard>
@@ -357,7 +366,20 @@ export default function AdminUserDetailPage() {
               type="button"
               className="mt-3 flex min-h-10 w-full items-center justify-center rounded-md bg-[#003c90] px-3 text-sm font-bold text-white transition hover:bg-[#002f72] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={memoSaving || !memo.trim()}
-              onClick={handleSaveMemo}
+              onClick={async () => {
+                if (!companyId || !memo.trim()) return;
+                setMemoSaving(true);
+                setMemoError('');
+                try {
+                  const data = await adminCompanyApi.createMemo(companyId, memo.trim());
+                  setDetail(data);
+                  setMemo(data?.adminMemo || '');
+                } catch (exception) {
+                  setMemoError(exception.message || '관리자 메모 저장에 실패했습니다.');
+                } finally {
+                  setMemoSaving(false);
+                }
+              }}
             >
               {memoSaving ? '저장 중...' : '메모 저장'}
             </button>
@@ -387,6 +409,20 @@ export default function AdminUserDetailPage() {
             <p className="m-0 rounded-md bg-[#f8f9ff] p-3 text-sm font-semibold text-[#57657a]">
               상태 변경 로그 테이블 추가 후 이 영역에 관리자 변경 이력을 표시합니다.
             </p>
+          </SectionCard>
+
+          <SectionCard title="관련 데이터 바로가기" icon={FileText}>
+            <div className="grid gap-2">
+              <button type="button" className="rounded-md bg-[#eff4ff] px-3 py-3 text-sm font-semibold text-[#003c90] transition hover:bg-[#dce9ff]">
+                이 기업의 공고 보기
+              </button>
+              <button type="button" className="rounded-md bg-[#eff4ff] px-3 py-3 text-sm font-semibold text-[#003c90] transition hover:bg-[#dce9ff]">
+                지원자 현황 보기
+              </button>
+              <button type="button" className="rounded-md bg-[#eff4ff] px-3 py-3 text-sm font-semibold text-[#003c90] transition hover:bg-[#dce9ff]">
+                포지션 제안 보기
+              </button>
+            </div>
           </SectionCard>
         </aside>
       </div>

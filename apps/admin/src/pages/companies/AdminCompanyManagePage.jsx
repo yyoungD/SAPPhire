@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Building2,
   ChevronDown,
   Download,
   Filter,
@@ -8,9 +9,8 @@ import {
   SlidersHorizontal,
   TrendingUp,
   UserRoundCheck,
-  Users,
 } from 'lucide-react';
-import { adminUserApi } from '../../api/adminUserApi.js';
+import { adminCompanyApi } from '../../api/adminCompanyApi.js';
 import ListTable from '../../components/ListTable.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import SearchBar from '../../components/SearchBar.jsx';
@@ -42,18 +42,27 @@ function includesKeyword(row, keyword) {
   const normalizedKeyword = keyword.trim().toLowerCase();
   if (!normalizedKeyword) return true;
 
-  return [row.name, row.email, row.phone, row.status]
+  return [
+    row.name,
+    row.email,
+    row.phone,
+    row.companyName,
+    row.businessNumber,
+    row.industry,
+    row.verificationStatus,
+    row.status,
+  ]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedKeyword));
 }
 
-function navigateToUserDetail(userId) {
-  window.history.pushState(null, '', `/admin/users/detail?id=${userId}`);
+function navigateToCompanyDetail(companyId) {
+  window.history.pushState(null, '', `/admin/companies/detail?id=${companyId}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
-export default function AdminUserManagePage() {
-  const [users, setUsers] = useState([]);
+export default function AdminCompanyManagePage() {
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -62,21 +71,21 @@ export default function AdminUserManagePage() {
   useEffect(() => {
     let ignore = false;
 
-    async function loadUsers() {
+    async function loadCompanies() {
       setLoading(true);
       setError('');
 
       try {
-        const data = await adminUserApi.list();
-        if (!ignore) setUsers(data || []);
+        const data = await adminCompanyApi.list();
+        if (!ignore) setCompanies(data || []);
       } catch (exception) {
-        if (!ignore) setError(exception.message || '회원 데이터를 불러오지 못했습니다.');
+        if (!ignore) setError(exception.message || '기업회원 데이터를 불러오지 못했습니다.');
       } finally {
         if (!ignore) setLoading(false);
       }
     }
 
-    loadUsers();
+    loadCompanies();
 
     return () => {
       ignore = true;
@@ -87,38 +96,40 @@ export default function AdminUserManagePage() {
     setPage(1);
   }, [keyword]);
 
-  const filteredUsers = useMemo(
-    () => users.filter((user) => includesKeyword(user, keyword)),
-    [keyword, users]
+  const filteredCompanies = useMemo(
+    () => companies.filter((company) => includesKeyword(company, keyword)),
+    [companies, keyword]
   );
 
-  const pagedUsers = useMemo(() => {
+  const pagedCompanies = useMemo(() => {
     const startIndex = (page - 1) * PAGE_SIZE;
-    return filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [filteredUsers, page]);
+    return filteredCompanies.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredCompanies, page]);
 
   const summaryItems = useMemo(() => {
-    const activeCount = users.filter((user) => user.status === 'ACTIVE').length;
-    const pendingCount = users.filter((user) => user.status === 'INACTIVE' || user.status === 'BANNED').length;
+    const activeCount = companies.filter((company) => company.status === 'ACTIVE').length;
+    const pendingCount = companies.filter(
+      (company) => company.verificationStatus === 'PENDING' || company.status === 'INACTIVE' || company.status === 'BANNED'
+    ).length;
 
     return [
-      { label: '전체 회원', value: users.length.toLocaleString(), note: 'DB 기준 회원 수', icon: Users, tone: 'blue' },
-      { label: '활성 회원', value: activeCount.toLocaleString(), note: '현재 이용 가능', icon: TrendingUp, tone: 'blue' },
-      { label: '검토 필요', value: pendingCount.toLocaleString(), note: '비활성 또는 정지', icon: UserRoundCheck, tone: 'red' },
-      { label: '목록 표시', value: filteredUsers.length.toLocaleString(), note: '검색 결과', icon: Settings, tone: 'indigo' },
+      { label: '전체 기업', value: companies.length.toLocaleString(), note: 'DB 기준 기업회원 수', icon: Building2, tone: 'blue' },
+      { label: '활성 기업', value: activeCount.toLocaleString(), note: '현재 이용 가능', icon: TrendingUp, tone: 'blue' },
+      { label: '검토 필요', value: pendingCount.toLocaleString(), note: '승인 대기 또는 정지', icon: UserRoundCheck, tone: 'red' },
+      { label: '목록 표시', value: filteredCompanies.length.toLocaleString(), note: '검색 결과', icon: Settings, tone: 'indigo' },
     ];
-  }, [filteredUsers.length, users]);
+  }, [companies, filteredCompanies.length]);
 
   return (
     <>
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="mb-3 text-[11px] font-bold tracking-[0.08em] text-[#1d59c1]">
-            MEMBER OPERATIONS
+            COMPANY OPERATIONS
           </p>
-          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">회원관리</h1>
+          <h1 className="mb-3 text-4xl leading-tight font-bold sm:text-[44px]">기업관리</h1>
           <p className="m-0 max-w-2xl text-sm leading-6 text-[#57657a]">
-            SAPPhire에 등록된 개인회원 계정을 실제 DB 데이터 기준으로 확인하고 관리합니다.
+            SAPPhire에 등록된 기업회원 계정을 실제 DB 데이터 기준으로 확인하고 관리합니다.
           </p>
         </div>
         <button
@@ -126,11 +137,11 @@ export default function AdminUserManagePage() {
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-gradient-to-br from-[#003c90] to-[#0f52ba] px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(0,60,144,0.14)]"
         >
           <Plus size={17} />
-          신규 회원 추가
+          신규 기업 추가
         </button>
       </section>
 
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="회원 요약">
+      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="기업회원 요약">
         {summaryItems.map((item) => (
           <SummaryCard key={item.label} {...item} />
         ))}
@@ -141,7 +152,7 @@ export default function AdminUserManagePage() {
           className="flex-1"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
-          placeholder="이름 또는 이메일 검색"
+          placeholder="기업명 또는 이메일 검색"
         />
         <button
           type="button"
@@ -164,13 +175,14 @@ export default function AdminUserManagePage() {
       </section>
 
       <ListTable
-        rows={pagedUsers}
+        rows={pagedCompanies}
         loading={loading}
         error={error}
-        emptyMessage="표시할 회원이 없습니다."
-        onRowClick={(user) => navigateToUserDetail(user.id)}
+        emptyMessage="표시할 기업회원이 없습니다."
+        avatarType="company"
+        onRowClick={(company) => navigateToCompanyDetail(company.id)}
       />
-      <Pagination page={page} totalItems={filteredUsers.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
+      <Pagination page={page} totalItems={filteredCompanies.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
     </>
   );
 }

@@ -3,6 +3,28 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sapphire.domain.job.mapper.JobPostMapper">
+    <select id="findAdminJobs" resultType="com.sapphire.domain.job.dto.AdminJobPostResponse">
+        SELECT
+            jp.id,
+            jp.company_profile_id AS companyProfileId,
+            jp.title,
+            cp.company_name AS companyName,
+            u.email AS companyEmail,
+            jp.location,
+            jp.status,
+            jp.view_count AS viewCount,
+            f.file_url AS logoUrl,
+            jp.created_at AS createdAt,
+            jp.updated_at AS updatedAt
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        JOIN users u ON u.id = cp.user_id
+        LEFT JOIN files f ON f.id = cp.logo_file_id
+        WHERE jp.deleted_at IS NULL
+          AND u.deleted_at IS NULL
+        ORDER BY jp.created_at DESC, jp.id DESC
+    </select>
+
     <select id="findCompanyProfileIdByUserId" resultType="long">
         SELECT id
         FROM company_profiles

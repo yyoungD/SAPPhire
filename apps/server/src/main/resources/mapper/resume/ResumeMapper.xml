@@ -3,6 +3,25 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sapphire.domain.resume.mapper.ResumeMapper">
+    <select id="findAdminResumes" resultType="com.sapphire.domain.resume.dto.AdminResumeResponse">
+        SELECT
+            r.id,
+            u.id AS userId,
+            r.title,
+            u.name AS applicantName,
+            u.email AS applicantEmail,
+            u.profile_image_url AS profileImageUrl,
+            r.visibility AS status,
+            r.created_at AS createdAt,
+            r.updated_at AS updatedAt
+        FROM resumes r
+        JOIN personal_profiles pp ON pp.id = r.personal_profile_id
+        JOIN users u ON u.id = pp.user_id
+        WHERE r.deleted_at IS NULL
+          AND u.deleted_at IS NULL
+        ORDER BY r.updated_at DESC, r.id DESC
+    </select>
+
     <select id="findPersonalProfileIdByUserId" resultType="long">
         SELECT id
         FROM personal_profiles

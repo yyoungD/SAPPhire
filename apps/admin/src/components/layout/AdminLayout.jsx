@@ -9,7 +9,10 @@ export default function AdminLayout({ user, onLogout, currentPath, children }) {
       <div className="lg:pl-[260px]">
         <AdminHeader user={user} />
 
-        <main className="mx-auto max-w-[1560px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <main
+          key={currentPath}
+          className="mx-auto max-w-[1560px] animate-[admin-page-enter_180ms_ease-out] px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
+        >
           {children}
         </main>
       </div>
