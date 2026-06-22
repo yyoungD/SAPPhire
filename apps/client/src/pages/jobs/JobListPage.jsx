@@ -17,7 +17,23 @@ const megazoneCloudLogoUrl = new URL('../../assejs/images/company-logos/megazone
 const lotteInnovateLogoUrl = new URL('../../assejs/images/company-logos/lotte-innovate-logo.svg', import.meta.url).href;
 const samsungSdsLogoUrl = new URL('../../assejs/images/company-logos/samsung-sds-logo.svg', import.meta.url).href;
 const hyundaiAutoeverLogoUrl = new URL('../../assejs/images/company-logos/hyundai-autoever-logo.svg', import.meta.url).href;
-const skCcLogoUrl = new URL('../../assejs/images/company-logos/sk-cc-logo.svg', import.meta.url).href;
+const skCcLogoUrl = new URL('../../assejs/images/company-logos/sk-cc-logo.png', import.meta.url).href;
+
+const seededCompanyLogoUrls = {
+  3: lgCnsLogoUrl,
+  4: samsungSdsLogoUrl,
+  5: hyundaiAutoeverLogoUrl,
+  6: skCcLogoUrl,
+  7: poscoDxLogoUrl,
+  8: lotteInnovateLogoUrl,
+  9: hanwhaSystemsLogoUrl,
+  10: megazoneCloudLogoUrl,
+  11: cjOliveNetworksLogoUrl,
+  12: ktDsLogoUrl,
+  13: shinsegaeIncLogoUrl,
+  14: gsItmLogoUrl,
+  15: hyosungItxLogoUrl,
+};
 
 const MARKET = {
   DOMESTIC: 'domestic',
@@ -69,7 +85,16 @@ function getInitial(company) {
   return (company || 'S').trim().slice(0, 1).toUpperCase();
 }
 
-function getBundledCompanyLogoUrl(company) {
+function getSeededCompanyIndex(jobId) {
+  const numericId = Number(jobId);
+  if (!Number.isInteger(numericId) || numericId < 900001 || numericId > 900200) return null;
+  return 1 + ((numericId - 900001) % 15);
+}
+
+function getBundledCompanyLogoUrl(company, jobId) {
+  const seededLogoUrl = seededCompanyLogoUrls[getSeededCompanyIndex(jobId)];
+  if (seededLogoUrl) return seededLogoUrl;
+
   const normalizedCompany = String(company || '').toUpperCase();
   if (normalizedCompany.includes('LG CNS')) return lgCnsLogoUrl;
   if (normalizedCompany.includes('POSCO') || normalizedCompany.includes('포스코')) return poscoDxLogoUrl;
@@ -92,10 +117,10 @@ function isKpmgCompany(company) {
 }
 
 function getCompanyLogoUrls(job) {
-  const bundledLogo = getBundledCompanyLogoUrl(job.company);
   const uploadedLogo = job.logoUrl || job.companyLogoUrl || job.logoImageUrl;
+  const bundledLogo = getBundledCompanyLogoUrl(job.company, job.id);
 
-  return [bundledLogo, uploadedLogo].filter(Boolean);
+  return [uploadedLogo, bundledLogo].filter(Boolean);
 }
 
 function CompanyLogo({ job }) {
@@ -103,7 +128,7 @@ function CompanyLogo({ job }) {
   const logoUrls = useMemo(() => getCompanyLogoUrls(job), [job]);
   const [logoIndex, setLogoIndex] = useState(0);
   const logoUrl = logoUrls[logoIndex] || '';
-  const hasBundledLogo = Boolean(getBundledCompanyLogoUrl(job.company));
+  const hasBundledLogo = Boolean(getBundledCompanyLogoUrl(job.company, job.id));
 
   useEffect(() => {
     setLogoIndex(0);

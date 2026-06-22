@@ -5,7 +5,11 @@
 <mapper namespace="com.sapphire.domain.profile.mapper.PersonalProfileMapper">
     <insert id="insertDefault">
         INSERT INTO personal_profiles (user_id)
-        VALUES (#{userId})
+        SELECT id
+        FROM users
+        WHERE id = #{userId}
+          AND role = 'PERSONAL'
+          AND deleted_at IS NULL
     </insert>
 
     <select id="findByUserId" resultType="com.sapphire.domain.profile.dto.PersonalProfile">
@@ -22,8 +26,11 @@
             summary,
             is_public,
             is_offer_available
-        FROM personal_profiles
-        WHERE user_id = #{userId}
+        FROM personal_profiles pp
+        JOIN users u ON u.id = pp.user_id
+        WHERE pp.user_id = #{userId}
+          AND u.role = 'PERSONAL'
+          AND u.deleted_at IS NULL
     </select>
 
     <update id="updateByUserId" parameterType="com.sapphire.domain.profile.dto.PersonalProfile">
@@ -40,5 +47,12 @@
             is_offer_available = COALESCE(#{isOfferAvailable}, TRUE),
             updated_at = NOW()
         WHERE user_id = #{userId}
+          AND EXISTS (
+              SELECT 1
+              FROM users u
+              WHERE u.id = #{userId}
+                AND u.role = 'PERSONAL'
+                AND u.deleted_at IS NULL
+          )
     </update>
 </mapper>

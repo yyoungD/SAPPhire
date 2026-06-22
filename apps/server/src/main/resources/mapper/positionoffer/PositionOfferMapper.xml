@@ -4,9 +4,12 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sapphire.domain.positionoffer.mapper.PositionOfferMapper">
     <select id="findCompanyProfileIdByUserId" resultType="long">
-        SELECT id
-        FROM company_profiles
-        WHERE user_id = #{userId}
+        SELECT cp.id
+        FROM company_profiles cp
+        JOIN users u ON u.id = cp.user_id
+        WHERE cp.user_id = #{userId}
+          AND u.role = 'COMPANY'
+          AND u.deleted_at IS NULL
     </select>
 
     <select id="existsReceiver" resultType="boolean">
