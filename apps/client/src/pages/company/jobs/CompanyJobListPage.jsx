@@ -64,6 +64,11 @@ function getInitialStatus() {
 export default function CompanyJobListPage() {
   const [jobs, setJobs] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [summary, setSummary] = useState({
+    newApplicantCount: 0,
+    unreadApplicantCount: 0,
+    tomorrowDeadlineJobCount: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeSkillType, setActiveSkillType] = useState('MODULE');
@@ -78,9 +83,18 @@ export default function CompanyJobListPage() {
     setLoading(true);
     setError('');
     try {
-      const [jobData, skillData] = await Promise.all([jobApi.myCompanyJobs(), sapSkillApi.list()]);
+      const [jobData, skillData, summaryData] = await Promise.all([
+        jobApi.myCompanyJobs(),
+        sapSkillApi.list(),
+        jobApi.myCompanyJobSummary(),
+      ]);
       setJobs(Array.isArray(jobData) ? jobData : []);
       setSkills(Array.isArray(skillData) ? skillData : []);
+      setSummary({
+        newApplicantCount: summaryData?.newApplicantCount || 0,
+        unreadApplicantCount: summaryData?.unreadApplicantCount || 0,
+        tomorrowDeadlineJobCount: summaryData?.tomorrowDeadlineJobCount || 0,
+      });
     } catch (err) {
       setError(err.message || '공고 목록을 불러오지 못했습니다.');
     } finally {
@@ -323,13 +337,13 @@ export default function CompanyJobListPage() {
             <section className="company-job-todo-card">
               <h2>To-Do / 알림</h2>
               <p>
-                오늘 신규 지원자가 <strong>1명</strong> 있습니다.
+                오늘 신규 지원자가 <strong>{summary.newApplicantCount}명</strong> 있습니다.
               </p>
               <p>
-                현재 미열람 지원자가 <strong>12명</strong> 있습니다.
+                현재 미열람 지원자가 <strong>{summary.unreadApplicantCount}명</strong> 있습니다.
               </p>
               <p>
-                내일 마감되는 공고가 <strong>1건</strong> 있습니다.
+                내일 마감되는 공고가 <strong>{summary.tomorrowDeadlineJobCount}건</strong> 있습니다.
               </p>
             </section>
 

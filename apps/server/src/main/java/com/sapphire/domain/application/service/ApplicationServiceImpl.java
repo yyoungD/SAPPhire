@@ -63,12 +63,16 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional
     public ApplicationDetail findApplication(Long userId, String role, Long id) {
         ApplicationDetailRow row = "COMPANY".equals(role)
                 ? applicationMapper.findCompanyApplicationDetail(userId, id)
                 : applicationMapper.findMyApplicationDetail(userId, id);
         if (row == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "지원 정보를 찾을 수 없습니다.");
+        }
+        if ("COMPANY".equals(role)) {
+            applicationMapper.markCompanyApplicationViewed(userId, id);
         }
         return toDetail(row);
     }

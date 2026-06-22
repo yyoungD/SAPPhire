@@ -125,19 +125,25 @@ export default function LoginPage() {
               {isSubmitting ? '로그인 중...' : '로그인'}
             </button>
           </form>
-          <div className="login-social-area">
-              <div className="divider">
-                <span />또는<span />
-              </div>
-              {role === 'PERSONAL' && (
-                <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
-                  Google 계정으로 계속하기
-                </button>
-              )}
+          <div className={`login-social-area ${role === 'COMPANY' ? 'is-company' : ''}`}>
+            <div className="divider">
+              <span />또는<span />
+            </div>
+            {role === 'PERSONAL' ? (
+              <button type="button" className="social-button" onClick={authApi.startGoogleLogin}>
+                Google 계정으로 계속하기
+              </button>
+            ) : (
+              <button type="button" className="link-button social-slot-link" onClick={() => navigate(`${ROUTES.SIGNUP}?role=${role}`)}>
+                계정이 없으신가요? 계정 만들기
+              </button>
+            )}
           </div>
-          <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.SIGNUP}?role=${role}`)}>
-            계정이 없으신가요? 계정 만들기
-          </button>
+          {role === 'PERSONAL' && (
+            <button type="button" className="link-button" onClick={() => navigate(`${ROUTES.SIGNUP}?role=${role}`)}>
+              계정이 없으신가요? 계정 만들기
+            </button>
+          )}
         </section>
       </div>
     </main>

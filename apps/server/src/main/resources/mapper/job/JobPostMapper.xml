@@ -312,6 +312,36 @@
         ORDER BY jp.created_at DESC, jp.id DESC
     </select>
 
+    <select id="findCompanyJobSummary" resultType="com.sapphire.domain.job.dto.CompanyJobSummary">
+        SELECT
+            COALESCE(applications.new_applicant_count, 0) AS newApplicantCount,
+            COALESCE(applications.unread_applicant_count, 0) AS unreadApplicantCount,
+            COALESCE(deadlines.tomorrow_deadline_job_count, 0) AS tomorrowDeadlineJobCount
+        FROM company_profiles cp
+        LEFT JOIN (
+            SELECT
+                jp.company_profile_id,
+                COUNT(*) FILTER (WHERE ja.applied_at &gt;= CURRENT_DATE) AS new_applicant_count,
+                COUNT(*) FILTER (WHERE ja.viewed_at IS NULL) AS unread_applicant_count
+            FROM job_applications ja
+            JOIN job_posts jp ON jp.id = ja.job_post_id
+            WHERE jp.deleted_at IS NULL
+              AND ja.status != 'CANCELED'
+            GROUP BY jp.company_profile_id
+        ) applications ON applications.company_profile_id = cp.id
+        LEFT JOIN (
+            SELECT
+                company_profile_id,
+                COUNT(*) AS tomorrow_deadline_job_count
+            FROM job_posts
+            WHERE deleted_at IS NULL
+              AND status = 'OPEN'
+              AND deadline = CURRENT_DATE + 1
+            GROUP BY company_profile_id
+        ) deadlines ON deadlines.company_profile_id = cp.id
+        WHERE cp.id = #{companyProfileId}
+    </select>
+
     <select id="findOpenJobById" resultType="com.sapphire.domain.job.dto.JobDetailRow">
         SELECT
             jp.id,
