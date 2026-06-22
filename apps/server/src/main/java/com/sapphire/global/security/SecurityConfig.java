@@ -78,7 +78,28 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/profileImg/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/jobs").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs/me", "/api/v1/jobs/me/*").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/jobs/me/*").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/jobs/me/*/status").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/jobs/me/*").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs/bookmarks", "/api/v1/jobs/bookmarks/*").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/jobs/*/bookmark").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/jobs/*/bookmark").hasRole("PERSONAL")
                         .requestMatchers(HttpMethod.GET, "/api/v1/jobs", "/api/v1/jobs/*", "/api/v1/sap-skills").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/company-profiles/me").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/company-profiles/me").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/personal-profiles/me").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/personal-profiles/me").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/resumes/public", "/api/v1/resumes/public/*").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/resumes", "/api/v1/resumes/*").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/resumes", "/api/v1/resumes/*/analysis").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/resumes/*").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/applications").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/applications/*/status").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/position-offers").hasRole("COMPANY")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/recommendations/jobs").hasRole("PERSONAL")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/recommendations/candidates").hasRole("COMPANY")
                         .requestMatchers(
                                 "/api/v1/auth/signup",
                                 "/api/v1/auth/login",

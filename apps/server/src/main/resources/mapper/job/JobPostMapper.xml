@@ -26,9 +26,12 @@
     </select>
 
     <select id="findCompanyProfileIdByUserId" resultType="long">
-        SELECT id
-        FROM company_profiles
-        WHERE user_id = #{userId}
+        SELECT cp.id
+        FROM company_profiles cp
+        JOIN users u ON u.id = cp.user_id
+        WHERE cp.user_id = #{userId}
+          AND u.role = 'COMPANY'
+          AND u.deleted_at IS NULL
     </select>
 
     <insert id="insertJob" parameterType="com.sapphire.domain.job.dto.JobCreateParam"

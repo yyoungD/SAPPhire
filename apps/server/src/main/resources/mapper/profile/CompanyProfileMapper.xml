@@ -5,7 +5,11 @@
 <mapper namespace="com.sapphire.domain.profile.mapper.CompanyProfileMapper">
     <insert id="insertDefault">
         INSERT INTO company_profiles (user_id)
-        VALUES (#{userId})
+        SELECT id
+        FROM users
+        WHERE id = #{userId}
+          AND role = 'COMPANY'
+          AND deleted_at IS NULL
     </insert>
 
     <select id="findByUserId" resultType="com.sapphire.domain.profile.dto.CompanyProfile">
@@ -28,6 +32,7 @@
         JOIN users u ON u.id = cp.user_id
         LEFT JOIN files f ON f.id = cp.logo_file_id
         WHERE cp.user_id = #{userId}
+          AND u.role = 'COMPANY'
           AND u.deleted_at IS NULL
     </select>
 
@@ -44,5 +49,12 @@
             address = #{request.address},
             updated_at = NOW()
         WHERE user_id = #{userId}
+          AND EXISTS (
+              SELECT 1
+              FROM users u
+              WHERE u.id = #{userId}
+                AND u.role = 'COMPANY'
+                AND u.deleted_at IS NULL
+          )
     </update>
 </mapper>
