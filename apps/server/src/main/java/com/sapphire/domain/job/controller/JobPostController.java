@@ -3,6 +3,7 @@ package com.sapphire.domain.job.controller;
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
 import com.sapphire.domain.job.dto.CompanyJobListItem;
+import com.sapphire.domain.job.dto.CompanyJobSummary;
 import com.sapphire.domain.job.dto.JobListItem;
 import com.sapphire.domain.job.dto.JobDetail;
 import com.sapphire.domain.job.dto.JobStatusUpdateRequest;
@@ -14,6 +15,7 @@ import com.sapphire.global.security.auth.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,11 +41,23 @@ public class JobPostController {
     @PostMapping
     public ResponseEntity<ApiResponse<JobCreateResponse>> createJob(
             Authentication authentication,
-            @Valid @RequestBody JobCreateRequest request
+            @Valid @RequestBody JobCreateRequest request,
+            BindingResult bindingResult
     ) {
-        CustomUserDetails userDetails = requireUser(authentication);
-        if (!"COMPANY".equals(userDetails.getRole())) {
-            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        CustomUserDetails userDetails = requireCompany(authentication);
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    null,
+                    new ApiResponse.ErrorResponse(
+                    ErrorCode.INVALID_REQUEST.name(),
+                    ErrorCode.INVALID_REQUEST.getMessage(),
+                    bindingResult.getFieldErrors()
+                            .stream()
+                            .map(error -> new ApiResponse.FieldError(error.getField(), error.getDefaultMessage()))
+                            .toList()
+                    )
+            ));
         }
         return ResponseEntity.ok(ApiResponse.success(jobPostService.createJob(userDetails.getId(), request)));
     }
@@ -96,6 +110,14 @@ public class JobPostController {
     ) {
         CustomUserDetails userDetails = requireCompany(authentication);
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJobs(userDetails.getId())));
+    }
+
+    @GetMapping("/me/summary")
+    public ResponseEntity<ApiResponse<CompanyJobSummary>> findMyCompanyJobSummary(
+            Authentication authentication
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJobSummary(userDetails.getId())));
     }
 
     @GetMapping("/me/{id}")

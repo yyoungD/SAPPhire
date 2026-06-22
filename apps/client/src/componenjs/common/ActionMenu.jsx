@@ -13,6 +13,14 @@ function MoreHorizontalIcon() {
 export default function ActionMenu({ open, onOpenChange, items = [], className = '', label = '관리 메뉴' }) {
   const [openSubmenuKey, setOpenSubmenuKey] = useState(null);
 
+  const getItemClassName = (item) => {
+    const labelText = String(item.label || '');
+    const isDanger = labelText.includes('삭제') || labelText.includes('젣');
+    return [item.children?.length ? 'has-submenu' : '', isDanger ? 'danger-menu-item' : '', item.className || '']
+      .filter(Boolean)
+      .join(' ');
+  };
+
   const closeMenu = () => {
     onOpenChange(false);
     setOpenSubmenuKey(null);
@@ -74,7 +82,7 @@ export default function ActionMenu({ open, onOpenChange, items = [], className =
               <span className="action-menu-item" key={itemKey}>
                 <button
                   type="button"
-                  className={item.children?.length ? `has-submenu ${item.className || ''}` : item.className || ''}
+                  className={getItemClassName(item)}
                   disabled={item.disabled}
                   aria-expanded={item.children?.length ? isSubmenuOpen : undefined}
                   onClick={(event) => handleItemClick(event, item)}

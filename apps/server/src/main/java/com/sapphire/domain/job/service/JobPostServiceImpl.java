@@ -2,6 +2,7 @@ package com.sapphire.domain.job.service;
 
 import com.sapphire.domain.job.dto.CompanyJobListItem;
 import com.sapphire.domain.job.dto.CompanyJobPostRow;
+import com.sapphire.domain.job.dto.CompanyJobSummary;
 import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.JobCreateParam;
 import com.sapphire.domain.job.dto.JobCreateRequest;
@@ -162,6 +163,17 @@ public class JobPostServiceImpl implements JobPostService {
                 .stream()
                 .map(this::toCompanyListItem)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CompanyJobSummary findCompanyJobSummary(Long userId) {
+        Long companyProfileId = jobPostMapper.findCompanyProfileIdByUserId(userId);
+        if (companyProfileId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Company profile is required.");
+        }
+        CompanyJobSummary summary = jobPostMapper.findCompanyJobSummary(companyProfileId);
+        return summary == null ? new CompanyJobSummary() : summary;
     }
 
     @Override

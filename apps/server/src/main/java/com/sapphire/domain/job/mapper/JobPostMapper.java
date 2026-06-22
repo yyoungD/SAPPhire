@@ -3,6 +3,7 @@ package com.sapphire.domain.job.mapper;
 import com.sapphire.domain.job.dto.JobCreateParam;
 import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.CompanyJobPostRow;
+import com.sapphire.domain.job.dto.CompanyJobSummary;
 import com.sapphire.domain.job.dto.JobAttachmentResponse;
 import com.sapphire.domain.job.dto.JobPostRow;
 import com.sapphire.domain.job.dto.JobDetailRow;
@@ -28,6 +29,8 @@ public interface JobPostMapper {
     int deleteJobBookmark(@Param("userId") Long userId, @Param("jobPostId") Long jobPostId);
 
     List<CompanyJobPostRow> findCompanyJobs(@Param("companyProfileId") Long companyProfileId);
+
+    CompanyJobSummary findCompanyJobSummary(@Param("companyProfileId") Long companyProfileId);
 
     JobDetailRow findOpenJobById(@Param("id") Long id);
 
