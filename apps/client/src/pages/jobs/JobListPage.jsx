@@ -11,6 +11,13 @@ const shinsegaeIncLogoUrl = new URL('../../assejs/images/company-logos/shinsegae
 const lgCnsLogoUrl = new URL('../../assejs/images/company-logos/lg-cns.png', import.meta.url).href;
 const poscoDxLogoUrl = new URL('../../assejs/images/company-logos/posco-dx.png', import.meta.url).href;
 const hanwhaSystemsLogoUrl = new URL('../../assejs/images/company-logos/hanwha-systems.svg', import.meta.url).href;
+const hyosungItxLogoUrl = new URL('../../assejs/images/company-logos/hyosung-itx-logo.svg', import.meta.url).href;
+const cjOliveNetworksLogoUrl = new URL('../../assejs/images/company-logos/cj-olive-networks-logo.svg', import.meta.url).href;
+const megazoneCloudLogoUrl = new URL('../../assejs/images/company-logos/megazone-cloud-logo.svg', import.meta.url).href;
+const lotteInnovateLogoUrl = new URL('../../assejs/images/company-logos/lotte-innovate-logo.svg', import.meta.url).href;
+const samsungSdsLogoUrl = new URL('../../assejs/images/company-logos/samsung-sds-logo.svg', import.meta.url).href;
+const hyundaiAutoeverLogoUrl = new URL('../../assejs/images/company-logos/hyundai-autoever-logo.svg', import.meta.url).href;
+const skCcLogoUrl = new URL('../../assejs/images/company-logos/sk-cc-logo.svg', import.meta.url).href;
 
 const MARKET = {
   DOMESTIC: 'domestic',
@@ -69,6 +76,13 @@ function getBundledCompanyLogoUrl(company) {
   if (normalizedCompany.includes('HANWHA') || normalizedCompany.includes('한화')) return hanwhaSystemsLogoUrl;
   if (normalizedCompany.includes('GS ITM')) return gsItmLogoUrl;
   if (normalizedCompany.includes('KT DS')) return ktDsLogoUrl;
+  if (normalizedCompany.includes('HYOSUNG') || normalizedCompany.includes('ITX')) return hyosungItxLogoUrl;
+  if (normalizedCompany.includes('CJ') || normalizedCompany.includes('OLIVE')) return cjOliveNetworksLogoUrl;
+  if (normalizedCompany.includes('MEGAZONE')) return megazoneCloudLogoUrl;
+  if (normalizedCompany.includes('LOTTE')) return lotteInnovateLogoUrl;
+  if (normalizedCompany.includes('SAMSUNG')) return samsungSdsLogoUrl;
+  if (normalizedCompany.includes('HYUNDAI') || normalizedCompany.includes('AUTOEVER')) return hyundaiAutoeverLogoUrl;
+  if (normalizedCompany.includes('SK C') || normalizedCompany.includes('SK C&C')) return skCcLogoUrl;
   if (normalizedCompany.includes('SHINSEGAE') || normalizedCompany.includes('신세계')) return shinsegaeIncLogoUrl;
   return '';
 }

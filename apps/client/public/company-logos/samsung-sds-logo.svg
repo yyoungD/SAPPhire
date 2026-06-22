@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="title">
+  <title id="title">Samsung SDS</title>
+  <rect width="900" height="420" fill="#fff"/>
+  <ellipse cx="450" cy="136" rx="246" ry="62" transform="rotate(-8 450 136)" fill="#0b5cab"/>
+  <text x="282" y="157" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" letter-spacing="6">SAMSUNG</text>
+  <text x="156" y="300" fill="#0b5cab" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="900" letter-spacing="4">SAMSUNG SDS</text>
+</svg>

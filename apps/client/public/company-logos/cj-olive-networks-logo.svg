@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="title">
+  <title id="title">CJ OliveNetworks</title>
+  <rect width="900" height="420" fill="#fff"/>
+  <ellipse cx="166" cy="134" rx="44" ry="76" transform="rotate(-26 166 134)" fill="#0077b8"/>
+  <ellipse cx="190" cy="241" rx="44" ry="76" transform="rotate(14 190 241)" fill="#e6002d"/>
+  <ellipse cx="275" cy="196" rx="76" ry="44" transform="rotate(31 275 196)" fill="#f58200"/>
+  <text x="46" y="231" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="900">CJ</text>
+  <text x="342" y="231" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="900">OLIVENETWORKS</text>
+</svg>

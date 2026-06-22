@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-labelledby="title">
+  <title id="title">SK C&amp;C</title>
+  <rect width="900" height="620" fill="#fff"/>
+  <path d="M410 98 C530 118 638 190 710 284 C610 274 554 318 524 397 C492 284 408 222 410 98Z" fill="#f58200"/>
+  <path d="M515 164 C592 218 640 282 670 352 C590 330 525 344 474 402 C450 328 454 246 515 164Z" fill="#e6002d"/>
+  <text x="92" y="438" fill="#e6002d" font-family="Arial, Helvetica, sans-serif" font-size="192" font-weight="900">SK</text>
+  <text x="466" y="436" fill="#f58200" font-family="Arial, Helvetica, sans-serif" font-size="138" font-weight="900">Inc.</text>
+  <text x="492" y="558" fill="#f58200" font-family="Arial, Helvetica, sans-serif" font-size="106" font-weight="900">C&amp;C</text>
+</svg>
