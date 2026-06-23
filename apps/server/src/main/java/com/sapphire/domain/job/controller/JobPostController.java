@@ -15,7 +15,6 @@ import com.sapphire.global.security.auth.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,24 +40,9 @@ public class JobPostController {
     @PostMapping
     public ResponseEntity<ApiResponse<JobCreateResponse>> createJob(
             Authentication authentication,
-            @Valid @RequestBody JobCreateRequest request,
-            BindingResult bindingResult
+            @Valid @RequestBody JobCreateRequest request
     ) {
         CustomUserDetails userDetails = requireCompany(authentication);
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    null,
-                    new ApiResponse.ErrorResponse(
-                    ErrorCode.INVALID_REQUEST.name(),
-                    ErrorCode.INVALID_REQUEST.getMessage(),
-                    bindingResult.getFieldErrors()
-                            .stream()
-                            .map(error -> new ApiResponse.FieldError(error.getField(), error.getDefaultMessage()))
-                            .toList()
-                    )
-            ));
-        }
         return ResponseEntity.ok(ApiResponse.success(jobPostService.createJob(userDetails.getId(), request)));
     }
 
