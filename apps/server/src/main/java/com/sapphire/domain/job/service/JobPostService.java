@@ -4,6 +4,7 @@ import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
 import com.sapphire.domain.job.dto.AdminJobPostResponse;
 import com.sapphire.domain.job.dto.CompanyJobListItem;
+import com.sapphire.domain.job.dto.CompanyJobSummary;
 import com.sapphire.domain.job.dto.JobDetail;
 import com.sapphire.domain.job.dto.JobListItem;
 
@@ -31,6 +32,8 @@ public interface JobPostService {
     void removeBookmark(Long userId, Long jobPostId);
 
     List<CompanyJobListItem> findCompanyJobs(Long userId);
+
+    CompanyJobSummary findCompanyJobSummary(Long userId);
 
     JobDetail findCompanyJob(Long userId, Long id);
 

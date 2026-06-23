@@ -3,6 +3,7 @@ package com.sapphire.domain.job.controller;
 import com.sapphire.domain.job.dto.JobCreateRequest;
 import com.sapphire.domain.job.dto.JobCreateResponse;
 import com.sapphire.domain.job.dto.CompanyJobListItem;
+import com.sapphire.domain.job.dto.CompanyJobSummary;
 import com.sapphire.domain.job.dto.JobListItem;
 import com.sapphire.domain.job.dto.JobDetail;
 import com.sapphire.domain.job.dto.JobStatusUpdateRequest;
@@ -41,10 +42,7 @@ public class JobPostController {
             Authentication authentication,
             @Valid @RequestBody JobCreateRequest request
     ) {
-        CustomUserDetails userDetails = requireUser(authentication);
-        if (!"COMPANY".equals(userDetails.getRole())) {
-            throw new CustomException(ErrorCode.ACCESS_DENIED);
-        }
+        CustomUserDetails userDetails = requireCompany(authentication);
         return ResponseEntity.ok(ApiResponse.success(jobPostService.createJob(userDetails.getId(), request)));
     }
 
@@ -96,6 +94,14 @@ public class JobPostController {
     ) {
         CustomUserDetails userDetails = requireCompany(authentication);
         return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJobs(userDetails.getId())));
+    }
+
+    @GetMapping("/me/summary")
+    public ResponseEntity<ApiResponse<CompanyJobSummary>> findMyCompanyJobSummary(
+            Authentication authentication
+    ) {
+        CustomUserDetails userDetails = requireCompany(authentication);
+        return ResponseEntity.ok(ApiResponse.success(jobPostService.findCompanyJobSummary(userDetails.getId())));
     }
 
     @GetMapping("/me/{id}")

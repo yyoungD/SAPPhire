@@ -668,6 +668,18 @@ p {
   pointer-events: none;
 }
 
+.login-social-area.is-company + .link-button {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.social-slot-link {
+  min-height: 50px;
+  margin-top: 0;
+  display: grid;
+  place-items: center;
+}
+
 .signup-social-area.is-hidden {
   visibility: hidden;
   pointer-events: none;
@@ -5940,12 +5952,28 @@ dd {
   content: '›';
   position: absolute;
   right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #64748b;
+}
+
+.company-job-card-menu-list button.has-submenu::after {
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .company-job-card-menu-list button:hover {
   color: #003c90;
   background: #eff4ff;
+}
+
+.company-job-card-menu-list button.danger-menu-item:hover {
+  color: #dc2626;
+  background: #fef2f2;
 }
 
 .company-job-card-menu-list button:disabled {
@@ -5966,6 +5994,40 @@ dd {
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 16px 32px -24px rgba(0, 39, 100, 0.42);
+}
+
+@media (max-width: 620px) {
+  .company-job-card-menu-list button.has-submenu::after {
+    content: '⌄';
+    line-height: 1;
+    top: 37%;
+  }
+
+  .company-job-card-menu-list button.has-submenu[aria-expanded='true'] {
+    background: #f1f5f9;
+  }
+
+  .company-job-card-menu-list button.has-submenu::after {
+    content: '';
+    top: 50%;
+    transform: translateY(-50%) rotate(135deg);
+  }
+
+  .action-submenu-list {
+    position: static;
+    min-width: 100%;
+    margin-top: 2px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .action-submenu-list button {
+    padding-left: 18px;
+    color: #526071;
+  }
 }
 
 .company-job-card-main h2 {

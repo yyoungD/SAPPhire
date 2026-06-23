@@ -99,6 +99,16 @@
           AND ja.id = #{id}
     </update>
 
+    <update id="markCompanyApplicationViewed">
+        UPDATE job_applications ja
+        SET viewed_at = COALESCE(ja.viewed_at, NOW())
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        WHERE ja.job_post_id = jp.id
+          AND cp.user_id = #{userId}
+          AND ja.id = #{id}
+    </update>
+
     <insert id="insertAttachments">
         INSERT INTO job_application_attachments (
             application_id,

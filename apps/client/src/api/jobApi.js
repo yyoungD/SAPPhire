@@ -4,6 +4,7 @@ import { apiClient, createResourceApi } from './apiClient.js';
 export const jobApi = {
   ...createResourceApi(API_PATHS.jobs),
   myCompanyJobs: () => apiClient(`${API_PATHS.jobs}/me`),
+  myCompanyJobSummary: () => apiClient(`${API_PATHS.jobs}/me/summary`),
   myCompanyJobDetail: (id) => apiClient(`${API_PATHS.jobs}/me/${id}`),
   updateMyCompanyJob: (id, body) => apiClient(`${API_PATHS.jobs}/me/${id}`, { method: 'PUT', body }),
   updateMyCompanyJobStatus: (id, status) => apiClient(`${API_PATHS.jobs}/me/${id}/status`, { method: 'PATCH', body: { status } }),
