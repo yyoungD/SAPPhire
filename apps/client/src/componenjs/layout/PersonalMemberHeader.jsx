@@ -1,3 +1,4 @@
+import NotificationBell from '../common/NotificationBell.jsx';
 import { ROUTES } from '../../constanjs/routes.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { navigate } from '../../utils/authUtils.js';
@@ -24,7 +25,12 @@ export default function PersonalMemberHeader({ active = 'jobs' }) {
         </button>
         <nav aria-label="개인회원 메뉴">
           {navItems.map((item) => (
-            <button type="button" key={item.key} className={active === item.key ? 'active' : ''} onClick={() => navigate(item.path)}>
+            <button
+              type="button"
+              key={item.key}
+              className={active === item.key ? 'active' : ''}
+              onClick={() => navigate(item.path)}
+            >
               {item.label}
             </button>
           ))}
@@ -33,13 +39,20 @@ export default function PersonalMemberHeader({ active = 'jobs' }) {
       <div className="member-actions">
         <label className="member-search">
           <span>검색</span>
-          <input placeholder="공고 이름, 회사 이름 검색.." />
+          <input placeholder="공고 이름, 회사 이름 검색..." />
         </label>
-        <div className="member-icon-button" aria-hidden="true">
-          <span />
-        </div>
-        <button type="button" className="avatar-button" onClick={() => navigate(ROUTES.USER_MY_PAGE)} aria-label="마이페이지">
-          {profileImageUrl ? <img src={profileImageUrl} alt="" /> : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
+        <NotificationBell />
+        <button
+          type="button"
+          className="avatar-button"
+          onClick={() => navigate(ROUTES.USER_MY_PAGE)}
+          aria-label="마이페이지"
+        >
+          {profileImageUrl ? (
+            <img src={profileImageUrl} alt="" />
+          ) : (
+            <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>
+          )}
         </button>
       </div>
     </header>

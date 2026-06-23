@@ -1,11 +1,14 @@
 package com.sapphire.domain.positionoffer.service;
 
+import com.sapphire.domain.notification.dto.NotificationCreateParam;
+import com.sapphire.domain.notification.service.NotificationService;
 import com.sapphire.domain.positionoffer.dto.PositionOfferCreateParam;
 import com.sapphire.domain.positionoffer.dto.PositionOfferCreateRequest;
 import com.sapphire.domain.positionoffer.dto.PositionOfferDetail;
 import com.sapphire.domain.positionoffer.dto.PositionOfferInsight;
 import com.sapphire.domain.positionoffer.dto.PositionOfferListItem;
 import com.sapphire.domain.positionoffer.dto.PositionOfferListResponse;
+import com.sapphire.domain.positionoffer.dto.PositionOfferNotificationTarget;
 import com.sapphire.domain.positionoffer.dto.PositionOfferRow;
 import com.sapphire.domain.positionoffer.mapper.PositionOfferMapper;
 import com.sapphire.global.exception.CustomException;
@@ -26,9 +29,11 @@ public class PositionOfferServiceImpl implements PositionOfferService {
     private static final Set<String> COMPANY_STATUSES = Set.of("CANCELED");
 
     private final PositionOfferMapper positionOfferMapper;
+    private final NotificationService notificationService;
 
-    public PositionOfferServiceImpl(PositionOfferMapper positionOfferMapper) {
+    public PositionOfferServiceImpl(PositionOfferMapper positionOfferMapper, NotificationService notificationService) {
         this.positionOfferMapper = positionOfferMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -81,6 +86,7 @@ public class PositionOfferServiceImpl implements PositionOfferService {
         param.setMessage(normalizeText(request.message()));
         param.setExpiresAt(request.expiresAt());
         positionOfferMapper.insert(param);
+        createPositionOfferReceivedNotification(param.getId());
         return findOffer(userId, "COMPANY", param.getId());
     }
 
@@ -99,7 +105,50 @@ public class PositionOfferServiceImpl implements PositionOfferService {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "대기 중인 제안만 상태를 변경할 수 있습니다.");
         }
         positionOfferMapper.updateStatus(id, normalizedStatus);
+        if (!"COMPANY".equals(role)) {
+            createPositionOfferAnswerNotification(id, normalizedStatus);
+        }
         return findOffer(userId, role, id);
+    }
+
+    private void createPositionOfferAnswerNotification(Long offerId, String status) {
+        PositionOfferNotificationTarget target = positionOfferMapper.findNotificationTarget(offerId);
+        if (target == null || target.getCompanyUserId() == null) {
+            return;
+        }
+
+        String offerTitle = normalizeNotificationTitle(target.getTitle(), "포지션 제안");
+        NotificationCreateParam notification = new NotificationCreateParam();
+        notification.setUserId(target.getCompanyUserId());
+        notification.setType("POSITION_OFFER");
+        notification.setTitle("포지션 제안 \"" + offerTitle + "\"에 답변이 도착했습니다.");
+        notification.setMessage("ACCEPTED".equals(status) ? "지원자가 제안을 수락했습니다." : "지원자가 제안을 거절했습니다.");
+        notification.setTargetUrl("/company/position-offers/detail?id=" + offerId);
+        notificationService.create(notification);
+    }
+
+    private void createPositionOfferReceivedNotification(Long offerId) {
+        PositionOfferNotificationTarget target = positionOfferMapper.findCreateNotificationTarget(offerId);
+        if (target == null || target.getReceiverUserId() == null) {
+            return;
+        }
+
+        String companyName = normalizeNotificationTitle(target.getCompanyName(), "기업");
+        String offerTitle = normalizeNotificationTitle(target.getTitle(), "포지션 제안");
+        NotificationCreateParam notification = new NotificationCreateParam();
+        notification.setUserId(target.getReceiverUserId());
+        notification.setType("POSITION_OFFER");
+        notification.setTitle(companyName + "에서 포지션 제안을 보냈습니다.");
+        notification.setMessage(offerTitle);
+        notification.setTargetUrl("/personal/position-offers/detail?id=" + offerId);
+        notificationService.create(notification);
+    }
+
+    private String normalizeNotificationTitle(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        return value.trim();
     }
 
     private PositionOfferRow findAccessibleRow(Long userId, String role, Long id) {

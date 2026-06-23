@@ -6,7 +6,10 @@ import com.sapphire.domain.application.dto.ApplicationDetail;
 import com.sapphire.domain.application.dto.ApplicationDetailRow;
 import com.sapphire.domain.application.dto.ApplicationListItem;
 import com.sapphire.domain.application.dto.ApplicationListRow;
+import com.sapphire.domain.application.dto.ApplicationNotificationTarget;
 import com.sapphire.domain.application.mapper.ApplicationMapper;
+import com.sapphire.domain.notification.dto.NotificationCreateParam;
+import com.sapphire.domain.notification.service.NotificationService;
 import com.sapphire.global.exception.CustomException;
 import com.sapphire.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -22,9 +25,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Set<String> APPLICATION_STATUSES = Set.of("APPLIED", "REVIEWING", "INTERVIEW", "ACCEPTED", "REJECTED", "CANCELED");
 
     private final ApplicationMapper applicationMapper;
+    private final NotificationService notificationService;
 
-    public ApplicationServiceImpl(ApplicationMapper applicationMapper) {
+    public ApplicationServiceImpl(ApplicationMapper applicationMapper, NotificationService notificationService) {
         this.applicationMapper = applicationMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -47,11 +52,35 @@ public class ApplicationServiceImpl implements ApplicationService {
         param.setCoverLetter(normalizeText(request.coverLetter()));
         applicationMapper.insert(param);
         applicationMapper.insertStatusLog(param.getId(), userId);
+        createNewApplicationNotification(param);
         if (request.attachmentFileIds() != null && !request.attachmentFileIds().isEmpty()) {
             applicationMapper.insertAttachments(param.getId(), userId, request.attachmentFileIds());
         }
 
         return findApplication(userId, "PERSONAL", param.getId());
+    }
+
+    private void createNewApplicationNotification(ApplicationCreateParam param) {
+        ApplicationNotificationTarget target = applicationMapper.findNotificationTargetByJobPostId(param.getJobPostId());
+        if (target == null || target.getCompanyUserId() == null) {
+            return;
+        }
+
+        String jobTitle = normalizeNotificationTitle(target.getJobTitle(), "등록한 공고");
+        NotificationCreateParam notification = new NotificationCreateParam();
+        notification.setUserId(target.getCompanyUserId());
+        notification.setType("NEW_APPLICATION");
+        notification.setTitle(jobTitle + "에 신규 지원자가 있습니다.");
+        notification.setMessage("지원자 상세를 확인해 주세요.");
+        notification.setTargetUrl("/company/applications/detail?id=" + param.getId());
+        notificationService.create(notification);
+    }
+
+    private String normalizeNotificationTitle(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        return value.trim();
     }
 
     @Override
@@ -94,8 +123,25 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (updated == 0) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "Application not found.");
         }
+        createApplicationStatusNotification(id, normalizedStatus);
 
         return findApplication(userId, role, id);
+    }
+
+    private void createApplicationStatusNotification(Long applicationId, String status) {
+        ApplicationNotificationTarget target = applicationMapper.findStatusNotificationTarget(applicationId);
+        if (target == null || target.getApplicantUserId() == null) {
+            return;
+        }
+
+        String companyName = normalizeNotificationTitle(target.getCompanyName(), "지원한 기업");
+        NotificationCreateParam notification = new NotificationCreateParam();
+        notification.setUserId(target.getApplicantUserId());
+        notification.setType("SYSTEM");
+        notification.setTitle(companyName + "에 지원한 이력서 상태가 변경되었습니다.");
+        notification.setMessage("현재 상태: " + formatStatus(status));
+        notification.setTargetUrl("/personal/applications/detail?id=" + applicationId);
+        notificationService.create(notification);
     }
 
     private ApplicationListItem toListItem(ApplicationListRow row) {

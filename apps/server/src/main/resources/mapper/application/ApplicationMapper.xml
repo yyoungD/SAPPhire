@@ -34,6 +34,29 @@
         )
     </select>
 
+    <select id="findNotificationTargetByJobPostId" resultType="com.sapphire.domain.application.dto.ApplicationNotificationTarget">
+        SELECT
+            cp.user_id AS company_user_id,
+            cp.company_name,
+            jp.title AS job_title
+        FROM job_posts jp
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        WHERE jp.id = #{jobPostId}
+          AND jp.deleted_at IS NULL
+    </select>
+
+    <select id="findStatusNotificationTarget" resultType="com.sapphire.domain.application.dto.ApplicationNotificationTarget">
+        SELECT
+            cp.user_id AS company_user_id,
+            ja.user_id AS applicant_user_id,
+            cp.company_name,
+            jp.title AS job_title
+        FROM job_applications ja
+        JOIN job_posts jp ON jp.id = ja.job_post_id
+        JOIN company_profiles cp ON cp.id = jp.company_profile_id
+        WHERE ja.id = #{id}
+    </select>
+
     <insert id="insert" parameterType="com.sapphire.domain.application.dto.ApplicationCreateParam"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO job_applications (
