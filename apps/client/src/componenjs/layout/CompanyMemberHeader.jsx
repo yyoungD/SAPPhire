@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { companyProfileApi } from '../../api/companyProfileApi.js';
+import NotificationBell from '../common/NotificationBell.jsx';
 import { ROUTES } from '../../constanjs/routes.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { navigate } from '../../utils/authUtils.js';
@@ -62,13 +63,7 @@ export default function CompanyMemberHeader({ active = 'jobs' }) {
         </nav>
       </div>
       <div className="member-actions company-member-actions">
-        <button
-          type="button"
-          className="member-icon-button company-notification-button"
-          aria-label="알림"
-        >
-          <span />
-        </button>
+        <NotificationBell />
         <button
           type="button"
           className="member-profile-button"

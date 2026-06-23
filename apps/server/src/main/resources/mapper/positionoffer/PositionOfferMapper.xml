@@ -58,6 +58,17 @@
         )
     </insert>
 
+    <select id="findCreateNotificationTarget" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferNotificationTarget">
+        SELECT
+            cp.user_id AS company_user_id,
+            po.receiver_user_id,
+            cp.company_name,
+            po.title
+        FROM position_offers po
+        JOIN company_profiles cp ON cp.id = po.company_profile_id
+        WHERE po.id = #{id}
+    </select>
+
     <sql id="offerColumns">
         po.id,
         po.receiver_user_id,
@@ -129,6 +140,17 @@
         <include refid="offerJoins" />
         WHERE cp.user_id = #{userId}
           AND po.id = #{id}
+    </select>
+
+    <select id="findNotificationTarget" resultType="com.sapphire.domain.positionoffer.dto.PositionOfferNotificationTarget">
+        SELECT
+            cp.user_id AS company_user_id,
+            po.receiver_user_id,
+            cp.company_name,
+            po.title
+        FROM position_offers po
+        JOIN company_profiles cp ON cp.id = po.company_profile_id
+        WHERE po.id = #{id}
     </select>
 
     <update id="updateStatus">
