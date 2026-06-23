@@ -17,6 +17,7 @@ export const API_PATHS = {
   resumes: '/api/v1/resumes',
   jobs: '/api/v1/jobs',
   applications: '/api/v1/applications',
+  notifications: '/api/v1/notifications',
   recommendations: '/api/v1/recommendations',
   positionOffers: '/api/v1/position-offers',
   files: '/api/v1/files',
