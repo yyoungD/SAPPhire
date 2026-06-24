@@ -7,6 +7,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @Configuration
 public class OAuth2ClientConfig {
+    private static final Logger log = LoggerFactory.getLogger(OAuth2ClientConfig.class);
+
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
         Map<String, String> env = new HashMap<>(System.getenv());
@@ -26,6 +30,7 @@ public class OAuth2ClientConfig {
         String redirectUri = env.getOrDefault("GOOGLE_REDIRECT_URI", "").trim();
 
         if (clientId.isBlank() || clientSecret.isBlank()) {
+            log.warn("Google OAuth is disabled because GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing.");
             return null;
         }
 
@@ -40,6 +45,7 @@ public class OAuth2ClientConfig {
         }
 
         ClientRegistration google = googleBuilder.build();
+        log.info("Google OAuth redirect URI: {}", google.getRedirectUri());
 
         return new InMemoryClientRegistrationRepository(google);
     }

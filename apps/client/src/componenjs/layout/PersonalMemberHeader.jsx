@@ -2,6 +2,7 @@ import NotificationBell from '../common/NotificationBell.jsx';
 import { ROUTES } from '../../constanjs/routes.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { navigate } from '../../utils/authUtils.js';
+import { resolveMediaUrl } from '../../utils/mediaUrl.js';
 
 const logoUrl = new URL('../../assejs/images/ci-10.png', import.meta.url).href;
 
@@ -15,7 +16,7 @@ const navItems = [
 
 export default function PersonalMemberHeader({ active = 'jobs' }) {
   const { user } = useAuth();
-  const profileImageUrl = user?.profileImageUrl;
+  const profileImageUrl = resolveMediaUrl(user?.profileImageUrl);
 
   return (
     <header className="member-header">

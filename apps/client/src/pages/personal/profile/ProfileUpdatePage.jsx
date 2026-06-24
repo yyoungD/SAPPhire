@@ -4,6 +4,7 @@ import { userApi } from '../../../api/userApi.js';
 import { ROUTES } from '../../../constanjs/routes.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
+import { resolveMediaUrl } from '../../../utils/mediaUrl.js';
 
 const languages = [
   { value: 'KO', label: '한국어' },
@@ -27,7 +28,7 @@ function createInitialForm(user) {
     email: user?.email || '',
     language: normalizeLanguage(user?.language),
     profileImageUrl: user?.profileImageUrl || '',
-    profileImagePreviewUrl: user?.profileImageUrl || '',
+    profileImagePreviewUrl: resolveMediaUrl(user?.profileImageUrl),
     profileImageFile: null,
     removeProfileImage: false,
     marketingConsent: false,
@@ -119,7 +120,7 @@ export default function ProfileUpdatePage() {
       setForm((current) => ({
         ...current,
         profileImageUrl: updatedUser.profileImageUrl || '',
-        profileImagePreviewUrl: updatedUser.profileImageUrl || '',
+        profileImagePreviewUrl: resolveMediaUrl(updatedUser.profileImageUrl),
         profileImageFile: null,
         removeProfileImage: false,
       }));
