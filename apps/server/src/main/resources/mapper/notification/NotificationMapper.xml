@@ -32,6 +32,10 @@
             created_at AS created_at
         FROM notifications
         WHERE user_id = #{userId}
+          AND (
+            read_at IS NULL
+            OR read_at &gt;= NOW() - INTERVAL '7 days'
+          )
         ORDER BY created_at DESC, id DESC
     </select>
 

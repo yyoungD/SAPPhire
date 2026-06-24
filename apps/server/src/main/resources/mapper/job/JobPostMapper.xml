@@ -316,11 +316,13 @@
         SELECT
             COALESCE(applications.new_applicant_count, 0) AS newApplicantCount,
             COALESCE(applications.unread_applicant_count, 0) AS unreadApplicantCount,
-            COALESCE(deadlines.tomorrow_deadline_job_count, 0) AS tomorrowDeadlineJobCount
+            COALESCE(deadlines.tomorrow_deadline_job_count, 0) AS tomorrowDeadlineJobCount,
+            COALESCE(applications.applicant_count, 0) AS applicantCount
         FROM company_profiles cp
         LEFT JOIN (
             SELECT
                 jp.company_profile_id,
+                COUNT(*) AS applicant_count,
                 COUNT(*) FILTER (WHERE ja.applied_at &gt;= CURRENT_DATE) AS new_applicant_count,
                 COUNT(*) FILTER (WHERE ja.viewed_at IS NULL) AS unread_applicant_count
             FROM job_applications ja
