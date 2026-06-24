@@ -68,6 +68,7 @@ export default function CompanyJobListPage() {
     newApplicantCount: 0,
     unreadApplicantCount: 0,
     tomorrowDeadlineJobCount: 0,
+    applicantCount: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -94,6 +95,7 @@ export default function CompanyJobListPage() {
         newApplicantCount: summaryData?.newApplicantCount || 0,
         unreadApplicantCount: summaryData?.unreadApplicantCount || 0,
         tomorrowDeadlineJobCount: summaryData?.tomorrowDeadlineJobCount || 0,
+        applicantCount: summaryData?.applicantCount || 0,
       });
     } catch (err) {
       setError(err.message || '공고 목록을 불러오지 못했습니다.');
@@ -130,7 +132,10 @@ export default function CompanyJobListPage() {
   }, [jobs, keyword, selectedSkills, status]);
 
   const totalViews = useMemo(
-    () => jobs.reduce((sum, job) => sum + (job.viewCount || 0), 0),
+    () =>
+      jobs
+        .filter((job) => job.status === 'OPEN')
+        .reduce((sum, job) => sum + (job.viewCount || 0), 0),
     [jobs]
   );
 
@@ -352,11 +357,11 @@ export default function CompanyJobListPage() {
               <dl>
                 <div>
                   <dt>전체 진행 중인 공고의 누적 조회수</dt>
-                  <dd>{totalViews}회</dd>
+                  <dd>{totalViews.toLocaleString()}회</dd>
                 </div>
                 <div>
                   <dt>누적 지원자 수</dt>
-                  <dd>123명</dd>
+                  <dd>{summary.applicantCount.toLocaleString()}명</dd>
                 </div>
                 <div>
                   <dt>지원자 평균 AI 매칭률</dt>
