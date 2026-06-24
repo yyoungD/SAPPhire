@@ -8,6 +8,7 @@ import { personalProfileApi } from '../../../api/personalProfileApi.js';
 import { getAccessToken } from '../../../api/apiClient.js';
 import { useAuth } from '../../../hooks/useAuth.js';
 import { navigate } from '../../../utils/authUtils.js';
+import { resolveMediaUrl } from '../../../utils/mediaUrl.js';
 
 const emptyText = '등록 전';
 const workTypeLabels = {
@@ -35,7 +36,7 @@ export default function UserMyPage() {
   const displayEmail = user?.email || emptyText;
   const displayPhone = user?.phone || emptyText;
   const displayRole = user?.role === 'PERSONAL' ? '개인회원' : user?.role || emptyText;
-  const profileImageUrl = user?.profileImageUrl;
+  const profileImageUrl = resolveMediaUrl(user?.profileImageUrl);
   const loginProvider = user?.oauthProvider ? `${user.oauthProvider} 로그인` : '이메일 로그인';
 
   useEffect(() => {
