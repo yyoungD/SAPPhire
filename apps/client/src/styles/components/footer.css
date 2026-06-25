@@ -1,0 +1,179 @@
+.site-footer {
+  width: 100%;
+  border-top: 1px solid #cbd5e1;
+  background: #ffffff;
+}
+
+.site-footer-inner {
+  width: min(1792px, 100%);
+  margin: 0 auto;
+  padding: 80px 64px;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.5fr) minmax(520px, 2fr);
+  gap: 72px;
+  border-top: 1px solid #d4d4d4;
+}
+
+.footer-brand h2 {
+  margin: 0 0 24px;
+  color: #082f49;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 800;
+}
+
+.footer-brand p {
+  width: min(384px, 100%);
+  margin: 0;
+  color: #3f3f46;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.footer-badges {
+  margin-top: 32px;
+  display: grid;
+  gap: 8px;
+}
+
+.footer-badges span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #3f3f46;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.footer-badges span:last-child {
+  color: #1d4ed8;
+}
+
+.footer-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 48px;
+}
+
+.footer-section h3 {
+  margin: 0 0 16px;
+  color: #082f49;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.footer-section ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.footer-section button {
+  padding: 0;
+  border: 0;
+  color: #3f3f46;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+  transition: color 160ms ease;
+}
+
+.footer-section button:hover {
+  color: #1d4ed8;
+}
+
+.footer-bottom {
+  grid-column: 1 / -1;
+  padding-top: 32px;
+  border-top: 1px solid #d4d4d4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: #3f3f46;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-social button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+  color: #3f3f46;
+  background: #ffffff;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.footer-social button:hover {
+  border-color: #1d4ed8;
+  color: #ffffff;
+  background: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+  .site-footer-inner {
+      padding: 56px 24px;
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+}
+
+@media (max-width: 900px) {
+  .footer-nav {
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+  .footer-bottom {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+}
+
+@media (max-width: 560px) {
+  .site-footer-inner {
+      padding: 44px 20px;
+    }
+}
+
+@media (max-width: 560px) {
+  .footer-nav {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+}
