@@ -17,7 +17,17 @@ const applicationStatusClassNames = {
 
 function UserIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M20 21a8 8 0 0 0-16 0" />
       <circle cx="12" cy="8" r="4" />
     </svg>
@@ -78,7 +88,7 @@ export default function ApplicationListPage() {
     return applications.filter((application) =>
       [application.applicantName, application.jobTitle, application.jobPosition]
         .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(normalized)),
+        .some((value) => value.toLowerCase().includes(normalized))
     );
   }, [applications, keyword]);
 
@@ -98,8 +108,13 @@ export default function ApplicationListPage() {
           <div>
             <p className="eyebrow">CANDIDATE MANAGEMENT</p>
             <h1 className="company-page-title">지원자 현황</h1>
+            <p>관심 인재에게 보낸 직접 제안과 응답 상태를 확인하세요.</p>
           </div>
-          <button type="button" className="primary-action company-job-create-button" onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}>
+          <button
+            type="button"
+            className="primary-action company-job-create-button"
+            onClick={() => navigate(ROUTES.COMPANY_JOB_CREATE)}
+          >
             공고 등록하기
           </button>
         </div>
@@ -124,7 +139,11 @@ export default function ApplicationListPage() {
         </div>
 
         <section className="candidate-filter-card" aria-label="지원자 필터">
-          <select value={selectedJobId} onChange={(event) => setSelectedJobId(event.target.value)} aria-label="공고 선택">
+          <select
+            value={selectedJobId}
+            onChange={(event) => setSelectedJobId(event.target.value)}
+            aria-label="공고 선택"
+          >
             <option value="">전체 공고</option>
             {jobs.map((job) => (
               <option value={job.id} key={job.id}>
@@ -134,7 +153,11 @@ export default function ApplicationListPage() {
           </select>
           <label>
             <span>검색</span>
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="지원자, 공고, 직무 검색..." />
+            <input
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="지원자, 공고, 직무 검색..."
+            />
           </label>
           <button type="button" aria-label="필터">
             ≡
@@ -163,7 +186,9 @@ export default function ApplicationListPage() {
 
             {loading && <p className="candidate-empty">지원자 목록을 불러오는 중입니다.</p>}
             {!loading && error && <p className="candidate-empty error">{error}</p>}
-            {!loading && !error && filteredApplications.length === 0 && <p className="candidate-empty">표시할 지원자가 없습니다.</p>}
+            {!loading && !error && filteredApplications.length === 0 && (
+              <p className="candidate-empty">표시할 지원자가 없습니다.</p>
+            )}
 
             {!loading &&
               !error &&
@@ -172,7 +197,9 @@ export default function ApplicationListPage() {
                   type="button"
                   className="candidate-row"
                   key={application.id}
-                  onClick={() => navigate(`${ROUTES.COMPANY_APPLICATION_DETAIL}?id=${application.id}`)}
+                  onClick={() =>
+                    navigate(`${ROUTES.COMPANY_APPLICATION_DETAIL}?id=${application.id}`)
+                  }
                 >
                   <span className="candidate-applicant">
                     <i>
@@ -184,7 +211,9 @@ export default function ApplicationListPage() {
                     </strong>
                   </span>
                   <span>
-                    <strong className="candidate-text-ellipsis">{application.jobPosition || '-'}</strong>
+                    <strong className="candidate-text-ellipsis">
+                      {application.jobPosition || '-'}
+                    </strong>
                   </span>
                   <span>
                     {application.careerYears === null || application.careerYears === undefined
@@ -192,7 +221,9 @@ export default function ApplicationListPage() {
                       : `경력 ${application.careerYears}년`}
                   </span>
                   <span>
-                    <span className={`company-job-status ${applicationStatusClassNames[application.status] || 'closed'}`}>
+                    <span
+                      className={`company-job-status ${applicationStatusClassNames[application.status] || 'closed'}`}
+                    >
                       {application.statusLabel || application.status || '-'}
                     </span>
                   </span>

@@ -1,0 +1,219 @@
+.company-job-list-shell,
+.company-candidate-shell,
+.job-create-shell,
+.company-job-detail-shell,
+.company-position-shell,
+.mypage-shell,
+.profile-edit-shell {
+  animation: companyPageEnter 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-job-list-shell,
+  .company-candidate-shell,
+  .job-create-shell,
+  .company-job-detail-shell,
+  .company-position-shell,
+  .mypage-shell,
+  .profile-edit-shell {
+    animation: none;
+  }
+}
+
+.signup-page {
+  min-height: 100vh;
+  background: #f8f9ff;
+}
+
+.login-page {
+  min-height: 100vh;
+  background: #f8f9ff;
+}
+
+.signup-layout {
+  min-height: calc(100vh - 80px);
+  display: grid;
+  grid-template-columns: minmax(360px, 0.85fr) minmax(440px, 1.15fr);
+}
+
+.signup-brand {
+  position: relative;
+  padding: 88px clamp(32px, 6vw, 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  color: #ffffff;
+  background: linear-gradient(152deg, #003c90, #0f52ba);
+}
+
+.signup-brand::after {
+  content: '';
+  position: absolute;
+  inset: 48% 0 0;
+  opacity: 0.18;
+  background: var(--brand-bg) center/cover;
+}
+
+.signup-brand > * {
+  position: relative;
+  z-index: 1;
+}
+
+.signup-brand h1 {
+  font-size: 56px;
+  line-height: 1.1;
+}
+
+.signup-brand p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.signup-brand aside {
+  max-width: 384px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #23415f;
+  backdrop-filter: blur(10px);
+}
+
+.signup-brand aside strong {
+  color: #003c90;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.signup-card,
+.login-card,
+.auth-panel,
+.page-panel {
+  width: min(448px, calc(100vw - 48px));
+  padding: 44px;
+  border: 1px solid rgba(195, 198, 211, 0.35);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 48px -20px rgba(0, 39, 100, 0.2);
+}
+
+.signup-layout > .signup-card {
+  align-self: center;
+  justify-self: center;
+}
+
+.signup-layout > .login-card {
+  align-self: center;
+  justify-self: center;
+  height: 690px;
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-card h2,
+.login-card h2,
+.auth-panel h1,
+.page-panel h1 {
+  color: #002764;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.signup-card > p,
+.login-card > p,
+.auth-panel > p,
+.page-panel > p {
+  color: #526071;
+  line-height: 1.6;
+}
+
+.login-form {
+  gap: 18px;
+}
+
+.auth-screen,
+.page-shell {
+  min-height: 100vh;
+  padding: 40px 24px;
+  display: grid;
+  place-items: center;
+  background: #eff4ff;
+}
+
+.page-panel {
+  width: min(720px, calc(100vw - 48px));
+}
+
+@media (max-width: 900px) {
+  .signup-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .signup-brand {
+    min-height: 420px;
+    padding: 48px 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .signup-card {
+    margin: 24px 0 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .signup-card,
+  .login-card,
+  .auth-panel,
+  .page-panel {
+    width: calc(100vw - 28px);
+    height: auto;
+    padding: 28px 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .signup-layout > .login-card {
+    height: auto;
+  }
+}
+
+.jobs-shell,
+.jobs-hero,
+.resume-shell,
+.job-filter-panel,
+.job-list,
+.detail-layout,
+.mypage-shell {
+  width: min(1280px, calc(100vw - 48px));
+  margin: 0 auto;
+}
+
+.mypage-shell {
+  padding: 48px 0 80px;
+}
+
+@media (max-width: 620px) {
+  .jobs-shell,
+  .jobs-hero,
+  .ai-recommend-shell,
+  .company-job-list-shell,
+  .company-job-detail-shell,
+  .job-create-shell,
+  .offer-shell,
+  .offer-detail-shell,
+  .resume-shell,
+  .resume-upload-shell,
+  .resume-detail-shell,
+  .job-apply-shell,
+  .job-filter-panel,
+  .job-list,
+  .detail-layout,
+  .mypage-shell {
+    width: min(100% - 28px, 1280px);
+  }
+}

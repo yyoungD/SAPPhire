@@ -1,0 +1,279 @@
+.primary-small,
+.hero-actions button,
+.form-stack button,
+.primary-action {
+  border: 0;
+  color: #ffffff;
+  background: #003c90;
+}
+
+.role-tabs {
+  margin: 24px 0;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  border-radius: 8px;
+  background: #e5eeff;
+}
+
+.role-tabs button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  color: #434652;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.role-tabs .active {
+  color: #ffffff;
+  background: #002764;
+}
+
+.form-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.form-stack label {
+  display: grid;
+  gap: 6px;
+  color: #434652;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.form-stack input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgba(195, 198, 211, 0.7);
+  border-radius: 4px;
+  background: #f8f9ff;
+  color: #0b1c30;
+  letter-spacing: 0;
+}
+
+.icon-input {
+  position: relative;
+}
+
+.icon-input > img {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.icon-input input {
+  padding-left: 46px;
+}
+
+.inline-input {
+  display: grid;
+  grid-template-columns: 1fr 94px;
+  gap: 8px;
+}
+
+.inline-input button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 4px;
+  color: #ffffff;
+  background: #002764;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  padding-right: 46px;
+}
+
+.icon-input.password-input input {
+  padding-left: 46px;
+  padding-right: 46px;
+}
+
+.password-input button {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0 4px 4px 0;
+  background: transparent;
+}
+
+.form-stack .password-input button {
+  min-height: 44px;
+}
+
+.password-input img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.72;
+}
+
+.login-options {
+  width: 100%;
+  margin-top: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-stack .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #434652;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.form-stack .checkbox-label input {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  min-height: 12px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(195, 198, 211, 0.9);
+  border-radius: 0;
+  background: #ffffff;
+  accent-color: #003c90;
+}
+
+.login-options .text-link {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  color: #002764;
+  background: transparent;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.form-stack button,
+.primary-action,
+.social-button {
+  min-height: 50px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.form-error {
+  margin: 0;
+  color: #c2362b;
+  font-size: 14px;
+}
+
+.form-loading {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 82, 186, 0.18);
+  border-radius: 6px;
+  color: #003c90;
+  background: #eef4ff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.form-stack button:disabled,
+.form-stack input:disabled,
+.role-tabs button:disabled,
+.social-button:disabled,
+.link-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.divider {
+  margin: 22px 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  color: #747783;
+  font-size: 12px;
+}
+
+.divider span {
+  height: 1px;
+  background: #e0e5ef;
+}
+
+.social-button {
+  width: 100%;
+  border: 1px solid rgba(195, 198, 211, 0.7);
+  background: #f8f9ff;
+  color: #0b1c30;
+}
+
+.login-social-area.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.login-social-area.is-company + .link-button {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.social-slot-link {
+  min-height: 50px;
+  margin-top: 0;
+  display: grid;
+  place-items: center;
+}
+
+.signup-social-area.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 560px) {
+  .inline-input {
+      grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+  .login-options {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+}
+
+.form-success {
+  margin: 0;
+  color: #047857;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.career-save-card .form-error,
+.career-save-card .form-success {
+  grid-column: 1 / -1;
+}

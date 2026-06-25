@@ -1,0 +1,84 @@
+.landing-page {
+  min-height: 100vh;
+  background: #eef3fb;
+}
+
+.landing-hero {
+  min-height: calc(100vh - 80px);
+  padding: clamp(48px, 8vw, 96px) 24px;
+  display: grid;
+  align-items: center;
+  background:
+    linear-gradient(120deg, rgba(0, 60, 144, 0.92), rgba(15, 82, 186, 0.72)),
+    url('../assejs/images/architectural-precision0.png') center/cover;
+  color: #ffffff;
+}
+
+.landing-hero > div {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #4d719a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-hero .eyebrow {
+  color: #bcd3f5;
+}
+
+.landing-hero h1 {
+  margin-bottom: 20px;
+  max-width: 700px;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 1.02;
+}
+
+.landing-hero p {
+  max-width: 640px;
+  color: #e3ecfb;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.hero-actions button {
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 6px;
+}
+
+@media (max-width: 560px) {
+  .hero-actions {
+      flex-direction: column;
+    }
+}
+
+.profile-edit-section-head .eyebrow {
+  margin-bottom: 6px;
+}
+
+.company-position-hero p:not(.eyebrow) {
+  max-width: 640px;
+  margin: 12px 0 0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.job-create-hero p:not(.eyebrow) {
+  margin: 0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+}

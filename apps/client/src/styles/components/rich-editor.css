@@ -1,0 +1,182 @@
+.rich-editor {
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.rich-editor-toolbar {
+  min-height: 54px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid rgba(195, 198, 211, 0.32);
+  background: #f7faff;
+}
+
+.rich-editor-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid rgba(195, 198, 211, 0.48);
+}
+
+.rich-editor-toolbar-group:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.rich-editor-toolbar button {
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #334155;
+  background: transparent;
+  font-weight: 800;
+}
+
+.rich-editor-toolbar button:hover,
+.rich-editor-toolbar button.active {
+  color: #003c90;
+  background: #e5eeff;
+}
+
+.rich-editor-content {
+  min-height: 360px;
+  padding: 28px;
+  border: 1px solid transparent;
+  color: #0b1c30;
+  line-height: 1.75;
+  outline: none;
+}
+
+.rich-editor-content p {
+  margin: 0 0 12px;
+}
+
+.rich-editor-content h2,
+.rich-editor-content h3 {
+  margin: 0 0 14px;
+  color: #0b1c30;
+  line-height: 1.35;
+}
+
+.rich-editor-content h2 {
+  font-size: 24px;
+}
+
+.rich-editor-content h3 {
+  font-size: 19px;
+}
+
+.rich-editor-content ul,
+.rich-editor-content ol {
+  padding-left: 22px;
+}
+
+.rich-editor-content blockquote {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-left: 4px solid #0f52ba;
+  color: #334155;
+  background: #eff4ff;
+}
+
+.rich-editor-content code {
+  font: inherit;
+}
+
+.rich-editor-content hr {
+  margin: 24px 0;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.rich-editor-error {
+  margin: 0;
+  padding: 0 20px 16px;
+  color: #c2362b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rich-editor-attachments {
+  min-height: 56px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid rgba(195, 198, 211, 0.32);
+  background: #ffffff;
+}
+
+.rich-editor-attach-button {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #003c90;
+  background: #e5eeff;
+}
+
+.rich-editor-attach-button:hover {
+  color: #ffffff;
+  background: #0f52ba;
+}
+
+.rich-editor-attachment-list {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rich-editor-attachment-item {
+  max-width: 260px;
+  min-height: 30px;
+  padding: 0 6px 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  color: #334155;
+  background: #f1f5f9;
+}
+
+.rich-editor-attachment-item button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #64748b;
+  background: transparent;
+}
+
+.rich-editor-attachment-item button:hover {
+  color: #003c90;
+  background: #dbe8fb;
+}
+
+.rich-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #94a3b8;
+  pointer-events: none;
+}
