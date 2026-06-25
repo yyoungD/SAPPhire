@@ -1,0 +1,117 @@
+.hero-actions .secondary {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+.primary-action:disabled {
+  box-shadow: none;
+  transform: none;
+}
+
+.link-button {
+  width: 100%;
+  margin-top: 14px;
+  border: 0;
+  color: #002764;
+  background: transparent;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.link-button:hover {
+  color: #0f52ba;
+  background: #eef4ff;
+}
+
+.link-button:focus-visible {
+  outline: 2px solid rgba(15, 82, 186, 0.35);
+  outline-offset: 2px;
+}
+
+.notification-dropdown-header button:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
+.resume-analyze-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.job-bookmark-button:disabled,
+.job-detail-bookmark-button:disabled,
+.job-detail-bookmark-saved button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.apply-submit-panel .primary-action,
+.apply-submit-panel .secondary {
+  width: 100%;
+}
+
+.apply-submit-panel .primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.section-edit-button:disabled {
+  cursor: not-allowed;
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.profile-save-card .primary-action,
+.profile-save-card .secondary {
+  width: 100%;
+}
+
+.profile-save-card .primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.offer-detail-action-card button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.offer-resume-link-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 8px;
+}
+
+.offer-cancel-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: #94a3b8;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.company-job-card-menu-list button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.company-job-detail-bottom-actions .secondary {
+  min-width: 112px;
+  border: 1px solid #cbd5e1;
+  color: #002764;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.company-job-detail-bottom-actions .secondary:hover {
+  color: #002764;
+  background: #eff6ff;
+}
+
+.job-create-actions .primary-action {
+  background: linear-gradient(135deg, #003c90, #0f52ba);
+  box-shadow: 0 16px 28px -18px rgba(0, 60, 144, 0.8);
+}
