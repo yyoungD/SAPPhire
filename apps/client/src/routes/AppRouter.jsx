@@ -29,7 +29,7 @@ import CompanyMyPage from '../pages/company/mypage/CompanyMyPage.jsx';
 import CompanyProfilePage from '../pages/company/profile/CompanyProfilePage.jsx';
 import CompanyProfileUpdatePage from '../pages/company/profile/CompanyProfileUpdatePage.jsx';
 import CompanyJobListPage from '../pages/company/jobs/CompanyJobListPage.jsx';
-import CompanyJobCreatePage from '../pages/company/jobs/CompanyJobCreatePage.jsx';
+import CompanyJobFeedCreatePage from '../pages/company/jobs/CompanyJobFeedCreatePage.jsx';
 import CompanyJobDetailPage from '../pages/company/jobs/CompanyJobDetailPage.jsx';
 import CompanyJobUpdatePage from '../pages/company/jobs/CompanyJobUpdatePage.jsx';
 import ApplicationListPage from '../pages/company/applications/ApplicationListPage.jsx';
@@ -99,7 +99,7 @@ export default function AppRouter() {
       [ROUTES.COMPANY_PROFILE]: guarded(CompanyProfilePage, ['COMPANY']),
       [ROUTES.COMPANY_PROFILE_UPDATE]: guarded(CompanyProfileUpdatePage, ['COMPANY']),
       [ROUTES.COMPANY_JOBS]: guarded(CompanyJobListPage, ['COMPANY']),
-      [ROUTES.COMPANY_JOB_CREATE]: guarded(CompanyJobCreatePage, ['COMPANY']),
+      [ROUTES.COMPANY_JOB_CREATE]: guarded(CompanyJobFeedCreatePage, ['COMPANY']),
       [ROUTES.COMPANY_JOB_DETAIL]: guarded(CompanyJobDetailPage, ['COMPANY']),
       [ROUTES.COMPANY_JOB_UPDATE]: guarded(CompanyJobUpdatePage, ['COMPANY']),
       [ROUTES.COMPANY_APPLICATIONS]: guarded(ApplicationListPage, ['COMPANY']),
